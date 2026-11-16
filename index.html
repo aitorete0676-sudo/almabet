@@ -1650,7 +1650,9 @@ function marketGroups(m) {
     { id: "tg", cat: "gol", title: "Equipo - Goleador", teamLines: true },
     { id: "mrg", cat: "gol", title: "Margen de victoria", std: ["mrg"] },
     { id: "next", cat: "pop", title: "Siguiente gol", std: ["next"] });
-  return G;
+  if (fullMatch(m)) return G;
+  // Solo lo que se puede comprobar con el acta: fuera remates, asistencias y córners
+  return G.filter(g => !["pga", "pst", "psh", "crn"].includes(g.id)).map(g => g.id === "most" ? { ...g, cat: "crd", title: "Equipo - Mayor número de tarjetas", std: ["crdw"] } : g);
 }
 const DEFAULT_OPEN = new Set(["pga", "pg", "1x2", "btts", "ou"]);
 const isOpen = id => S.openG[id] ?? DEFAULT_OPEN.has(id);
@@ -1687,9 +1689,10 @@ function groupBody(m, mk, g) {
 // Equipo cuyos jugadores se ven en las tablas (por defecto el Almazora si juega, si no el local)
 const pSide = m => { const v = S.pside[m.id]; if (v === 0 || v === 1) return teamP(m, v).length ? v : 1 - v; const s = sideOf(m); return s >= 0 ? s : teamP(m, 0).length ? 0 : 1; };
 function marketsHTML(m, mk) {
+  if (S.cat === "crn" && !fullMatch(m)) S.cat = "all";
   const G = marketGroups(m).filter(g => S.cat === "all" || g.cat === S.cat), ps_ = pSide(m);
   const sw = m.pidx.length && G.some(g => g.cat === "jug") ? `<div class="pteam">${[0, 1].map(k => `<button data-pside="${m.id}|${k}" class="${ps_ === k ? "on" : ""}" ${teamP(m, k).length ? "" : "disabled"}>${teamShirt(teamName(m, k))}<span>${esc(teamName(m, k))}</span></button>`).join("")}</div>` : "";
-  return `<div class="cats">${CATS.filter(([c]) => c !== "jug" || m.pidx.length).map(([c, t]) => `<button data-cat="${c}" class="${S.cat === c ? "on" : ""}">${t}</button>`).join("")}</div>
+  return `<div class="cats">${CATS.filter(([c]) => (c !== "jug" || m.pidx.length) && (c !== "crn" || fullMatch(m))).map(([c, t]) => `<button data-cat="${c}" class="${S.cat === c ? "on" : ""}">${t}</button>`).join("")}</div>
     ${m.suspended ? `<div class="suspbar">Mercados suspendidos un momento</div>` : ""}
     ${S.cat === "all" || S.cat === "pop" ? boostCards(m) : ""}${sw}
     ${G.map(g => { const open = isOpen(g.id); const tag = g.cat === "jug" ? `<span class="tagj">${esc(teamName(m, ps_))}${g.id !== "pany" ? ` <em class="tagp">Cambio+</em>` : ""}</span>` : g.id === "1x2" && m.status === "pre" ? `<span class="tagj">2 goles de ventaja = pagada</span>` : "";

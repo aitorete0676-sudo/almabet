@@ -347,7 +347,7 @@ th{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06
 .tagj{display:block;font-family:var(--f-cond);font-style:italic;font-weight:800;font-size:12px;letter-spacing:.03em;color:var(--up);text-transform:uppercase;margin-top:2px}
 .chev{width:10px;height:10px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg);transition:transform .2s;flex:none;margin-right:4px}
 .acc.open .chev{transform:rotate(-135deg)}
-.accb{padding:0 14px 14px;display:grid;gap:8px}
+.accb{padding:0 14px 14px;display:grid;gap:8px;grid-template-columns:minmax(0,1fr)}
 .accb .opts{padding:0;display:grid;gap:4px;grid-template-columns:repeat(var(--n),minmax(0,1fr))}
 .subh{font-size:12px;color:var(--muted);font-weight:600;margin-top:4px}
 .ltab{display:grid;gap:4px}
@@ -492,6 +492,10 @@ th{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06
 .bc-hd{padding:16px 15px 12px}.bc-btns{padding:0 15px 10px}.bc-leg{padding:6px 15px}.bc-game{padding:8px 15px 2px}.bc-ft{padding:14px 15px}.bc-mini{padding:18px 15px}
 .bc-mini{padding:9px 15px;min-height:54px}.bc-mco{padding:4px 12px;line-height:1.25;font-size:13px}.bc-mco.conf button{padding:6px 10px}.bc-msc i{min-width:22px;height:20px}
 .hm-fav{display:block;max-width:calc(100% - 120px);color:#cfd6d2;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.hm-fav.t{color:#fff;font-weight:800;font-size:15px}.hm-fav em{font-style:normal;color:var(--yellow);flex:none}.hm-fav.t{display:flex;gap:6px}.hm-fav i{font-style:normal;overflow:hidden;text-overflow:ellipsis;min-width:0}.hm-ban.b4 b{margin-bottom:auto}
+.pl-hd{display:flex;align-items:center;gap:12px;padding:6px 2px}.pl-hd .shirt{width:56px;height:56px}.pl-hd h2{margin:0;font-size:22px}.pl-hd small{color:var(--muted)}
+.pl-match{display:flex;align-items:center;gap:8px;width:100%;text-align:left;padding:4px 0 10px;flex-wrap:wrap}.pl-match .tshirt{width:22px;height:22px}.pl-match small{color:var(--muted);width:100%}
+.pl-tbl{margin:0}.pl-tbl .pn{padding-left:12px}.pl-match{padding-left:12px;padding-right:12px}
+.fut-desc{display:block;width:100%;box-sizing:border-box;padding-right:12px;word-break:break-word}
 </style>
 
 <header>
@@ -1249,6 +1253,24 @@ function legCount(l, m) {   // mercados de contar: valor actual y línea
   const cur = g === "ou" ? m.hg + m.ag : g === "crn" ? m.corners[0] + m.corners[1] : g === "crd" ? m.cards[0] + m.cards[1] : g === "tgh" ? m.hg : g === "tga" ? m.ag : null;
   return cur == null ? null : { cur, line };
 }
+// Ficha de jugador (desde el buscador): sus apuestas del próximo partido y las de temporada
+const PL_MK = [["pg1", "Marca"], ["pg2", "Marca 2 o más"], ["pga", "Marca o asiste"], ["pas", "Da una asistencia"], ["pye", "Ve tarjeta"], ["pst1", "1+ remates a puerta"], ["pst2", "2+ remates a puerta"], ["psh2", "2+ remates"], ["pg3", "Hat-trick"]];
+function playerView() {
+  const p = SQUAD[S.player]; if (!p) return `<div class="block empty">Jugador no encontrado.</div>`;
+  const m = allMatches().find(x => x.status !== "ft" && (x.home.nombre === p.team || x.away.nombre === p.team));
+  let next = "";
+  if (m) { const L = markets(m).list;
+    const rows = PL_MK.map(([key, t]) => { const k = L.find(x => x.key === key), o = k && k.outcomes.find(x => x.k === String(p.i)); return o ? `<div class="pr"><div class="pn"><div class="pnt"><b>${t}</b>${SUBP.has(key) ? `<span><em class="tagp">Cambio+</em></span>` : ""}</div></div>${oddBtn(m, k, o, false)}</div>` : ""; }).join("");
+    next = `<div class="block"><div class="bh">Próximo partido</div><button class="pl-match" data-open="${m.id}">${teamShirt(m.home.nombre)}<b>${esc(m.home.nombre)} v ${esc(m.away.nombre)}</b><small>${m.status === "pre" ? esc(fmtDate(m.fecha) || "") : m.hg + " - " + m.ag}</small></button>
+      ${rows ? `<div class="ptbl pl-tbl" style="--n:1">${rows}</div>` : `<div class="note">Todavía no hay cuotas de este jugador.</div>`}</div>`; }
+  else next = `<div class="block empty">No tiene partido próximo.</div>`;
+  const t = FUT_IX[p.team], fr = [["pich", "Pichichi de la liga"], ["xmas", "Máximo goleador en Navidad"], ...(t != null ? [["tsc" + t, "Máximo goleador de su equipo"]] : [])]
+    .map(([key, tt]) => { const k = futMarket(key), o = k && k.outcomes.find(x => x.k === "p" + p.i); return o && (o.p > 0 || k.done) ? `<div class="pr"><div class="pn"><div class="pnt"><b>${tt}</b></div></div>${futBtn(k, o)}</div>` : ""; }).join("");
+  return `<button class="abtn" data-view="home">‹ Volver</button>
+    <div class="pl-hd">${pshirt(p)}<div><h2>${esc(p.nombre)}</h2><small>${esc(p.team)}</small></div></div>
+    ${next}
+    <div class="block"><div class="bh">Temporada</div>${fr ? `<div class="ptbl pl-tbl" style="--n:1">${fr}</div>` : `<div class="note">Sin apuestas de temporada para este jugador.</div>`}</div>`;
+}
 const PITCH = '<svg class="bc-pitch" viewBox="0 0 28 18" aria-hidden="true"><rect x="1" y="1" width="26" height="16" rx="1.5"/><path d="M14 1v16M1 5.5h3.5v7H1M27 5.5h-3.5v7H27"/><circle cx="14" cy="9" r="2.6"/></svg>';
 // Reloj del partido en mm:ss (como el marcador de la tele)
 const betClock = m => { const now = Date.now(), st = m.st; let s = 0;
@@ -1426,7 +1448,7 @@ function homeTop() {
   let res = "";
   if (q.length >= 2) {
     const pl = SQUAD.filter(p => p.nombre.toLowerCase().includes(q)).slice(0, 5), tm = ms.filter(m => (m.home.nombre + " " + m.away.nombre).toLowerCase().includes(q)).slice(0, 5);
-    res = `<div class="hm-res">${pl.map(p => { const pm_ = ms.find(m => m.status !== "ft" && (m.home.nombre === p.team || m.away.nombre === p.team)); return `<button data-open="${pm_ ? pm_.id : ""}">${pshirt(p)}<span><b>${esc(p.nombre)}</b><small>${esc(p.team)}</small></span></button>`; }).join("")}
+    res = `<div class="hm-res">${pl.map(p => { const pm_ = ms.find(m => m.status !== "ft" && (m.home.nombre === p.team || m.away.nombre === p.team)); return `<button data-player="${p.i}">${pshirt(p)}<span><b>${esc(p.nombre)}</b><small>${esc(p.team)}</small></span></button>`; }).join("")}
       ${tm.map(m => `<button data-open="${m.id}">${teamShirt(m.home.nombre)}<span><b>${esc(m.home.nombre)} v ${esc(m.away.nombre)}</b><small>Jornada ${m.jornada || ""}</small></span></button>`).join("") || (pl.length ? "" : `<div class="hm-none">Sin resultados</div>`)}</div>`;
   }
   const tiles = [[mine ? `data-open="${mine.id}"` : "", teamShirt(DATA.miEquipo), "Almazora C"], [`data-hf="pre"`, `<b class="hm-num">${jor || "–"}</b>`, "Jornada"], [`data-view="live"`, `<b class="hm-num live">${nLive}</b>`, "En directo"], [`data-view="rank"`, "🏆", "Ranking"], [`data-view="table"`, "📊", "Tabla"]];
@@ -1654,9 +1676,16 @@ function futView() {
   const tk = by("tsc" + S.futTeam);
   const tacc = (() => { const id = "f-tsc", open = S.openG[id] ?? false;
     return `<div class="acc ${open ? "open" : ""}"><button class="acch" data-acc="${id}" aria-expanded="${open}"><span>Máximo goleador del equipo</span><i class="chev"></i></button>${open ? `<div class="accb">${tsel}${body(tk)}</div>` : ""}</div>`; })();
+  const ft = S.futTab || "liga";
+  const almT = by("tsc" + MY_T), almAcc = (() => { const id = "f-tscmy", open = S.openG[id] ?? true;
+    return `<div class="acc ${open ? "open" : ""}"><button class="acch" data-acc="${id}" aria-expanded="${open}"><span>Máximo goleador del ${esc(DATA.miEquipo)}</span><i class="chev"></i></button>${open ? `<div class="accb">${body(almT)}</div>` : ""}</div>`; })();
+  const sec = ft === "liga" ? ["champ", "winter", "top3", "last"].map(k => acc(by(k))).join("")
+    : ft === "gol" ? ["pich", "xmas"].map(k => acc(by(k))).join("") + tacc
+    : almAcc + ["apos", "agol"].map(k => acc(by(k))).join("");
   return `<h2 style="margin:4px 0 0;font-family:var(--f-cond);font-size:22px">Temporada</h2>
-    <div class="block"><div class="note">Apuestas que se resuelven a final de temporada (o en Navidad y en la primera vuelta). Van solo como sencilla y no se pueden cerrar antes. Si dos goleadores empatan, el pago se reparte entre ellos.</div></div>
-    <div class="block">${["champ", "winter", "pich", "xmas"].map(k => acc(by(k))).join("")}${tacc}${["top3", "apos", "agol", "last"].map(k => acc(by(k))).join("")}</div>`;
+    <div class="mb-tabs">${[["liga", "Liga"], ["gol", "Goleadores"], ["alm", "Almazora C"]].map(([k, t]) => `<button data-ftab="${k}" class="${ft === k ? "on" : ""}">${t}</button>`).join("")}</div>
+    <div class="block">${sec}</div>
+    <div class="block"><div class="note">Se resuelven a final de temporada (o en Navidad y al acabar la primera vuelta). Solo sencillas. Si dos goleadores empatan, el pago se reparte.</div></div>`;
 }
 function betsView() {
   const bets = S.wallet.bets;
@@ -1873,7 +1902,7 @@ function render() {
   document.querySelectorAll("#tabs button").forEach(b => b.classList.toggle("on", b.dataset.view === S.view || (S.view === "detail" && b.dataset.view === "home")));
   patch(document.getElementById("side"), sideHTML());
   const v = S.view;
-  patch(document.getElementById("main"), S.store === "auth" ? authView() : v === "detail" ? detailView() : v === "bets" ? betsView() : v === "table" ? tableView() : v === "rank" ? rankingView() : v === "fut" ? futView() : v === "how" ? howView() : listView(v === "live"));
+  patch(document.getElementById("main"), S.store === "auth" ? authView() : v === "detail" ? detailView() : v === "bets" ? betsView() : v === "table" ? tableView() : v === "rank" ? rankingView() : v === "fut" ? futView() : v === "player" ? playerView() : v === "how" ? howView() : listView(v === "live"));
   const slip = document.getElementById("slip");
   patch(slip, slipHTML());
   slip.classList.toggle("open", S.slipOpen && S.slip.length > 0);
@@ -1912,6 +1941,8 @@ document.addEventListener("click", e => {
   if (ds.view) { S.view = ds.view; S.detail = null; window.scrollTo(0, 0); }
   else if (ds.open) { S.view = "detail"; S.detail = ds.open; S.form = { side: String(Math.max(0, sideOf(findMatch(ds.open)))), pl: "", as: "", min: "" }; window.scrollTo(0, 0); }
   else if (ds.league !== undefined) { S.league = ds.league || null; S.view = "home"; }
+  else if (ds.player !== undefined) { S.view = "player"; S.player = +ds.player; S.q = ""; window.scrollTo(0, 0); }
+  else if (ds.ftab) S.futTab = ds.ftab;
   else if (ds.fpick) { const [, mk, oc] = ds.fpick.split("|"), i = S.slip.findIndex(s => s.key === ds.fpick);
     if (i >= 0) S.slip.splice(i, 1);
     else { const k = futMarket(mk), o = k && k.outcomes.find(x => x.k === oc);

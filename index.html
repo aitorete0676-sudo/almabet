@@ -1303,11 +1303,6 @@ function detailView() {
   <div class="block">
     <div class="bh">Cómo sale la cuota ahora mismo</div>
     <div class="model"><table><thead><tr><th>Resultado</th><th>Prob. del modelo</th><th>Prob. implícita</th><th>Cuota</th></tr></thead><tbody>${rows}</tbody></table></div>
-    <div class="note">Cuota = <code>1 / (prob × (1 + 1,5 × ${(x.margin * 100).toFixed(0)} % × (1 − prob)))</code>. La suma de probabilidades implícitas es ${(sumImp * 100).toFixed(1)} %: lo que pasa del 100 % es el margen de la casa.
-    ${m.source === "tabla" ? `<br>Calculado con la clasificación. Media del grupo: ${m.str.mu.toFixed(2)} goles por equipo y partido.
-      ${esc(m.home.nombre)}: ataque ${m.str.h.att.toFixed(2)}, defensa ${m.str.h.def.toFixed(2)} (${m.home.pts} pts, ${m.home.gf}-${m.home.gc}).
-      ${esc(m.away.nombre)}: ataque ${m.str.a.att.toFixed(2)}, defensa ${m.str.a.def.toFixed(2)} (${m.away.pts} pts, ${m.away.gf}-${m.away.gc}).
-      Goles esperados a 90': ${m.base.h.toFixed(2)} y ${m.base.a.toFixed(2)}.` : m.source === "cuotas" ? `<br>Este partido arrancó con cuotas fijadas a mano (${fo(m.initOdds["1"])} / ${fo(m.initOdds["X"])} / ${fo(m.initOdds["2"])}). El modelo dedujo ${m.base.h.toFixed(2)} y ${m.base.a.toFixed(2)} goles esperados.` : ""}</div>
   </div>
   <div class="block"><div class="bh">Cronología</div><div class="tl">
     ${evs.length ? evs.map(e => `<div class="ev"><span class="m">${e.min}${e.x ? "+" + e.x : ""}'</span><i class="ic ${e.t === "goal" ? "goal" : e.t}"></i><span>${esc(evName(m, e))}</span></div>`).join("") : `<div class="empty">${m.status === "pre" ? "El partido aún no ha empezado." : "Sin incidencias todavía."}</div>`}

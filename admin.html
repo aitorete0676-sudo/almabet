@@ -2130,7 +2130,7 @@ document.addEventListener("click", e => {
   else if (ds.lgcreate) { const name = (document.getElementById("lg-name") || {}).value || "";
     api("createLeague", { name }).then(j => { try { sessionStorage.setItem("ab-view", "ligas"); } catch (e) {} switchLg(j.id); }, e => toast(e.message)); return; }
   else if (ds.lgshare) { const url = location.origin + "/?unirse=" + ds.lgshare, txt = "Únete a mi liga de FFCVBet: " + url + " (código " + ds.lgshare + ")";
-    if (navigator.share) navigator.share({ title: "FFCVBet", text: "Únete a mi liga de FFCVBet (código " + ds.lgshare + ")", url }).catch(() => {}); else if (navigator.clipboard) navigator.clipboard.writeText(txt).then(() => toast("Enlace copiado")); return; }
+    if (navigator.share) navigator.share({ url }).catch(() => {}); else if (navigator.clipboard) navigator.clipboard.writeText(txt).then(() => toast("Enlace copiado")); return; }
   else if (ds.lgdel) S.lgDel = ds.lgdel;
   else if (ds.lgdelno) S.lgDel = null;
   else if (ds.lgdelyes) { const id = ds.lgdelyes; S.lgDel = null;

@@ -181,7 +181,7 @@ th{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06
 .bst-o s{font-size:12px;color:var(--muted)}.bst-o b{font-size:18px;color:#f5d417;font-weight:800}
 .bst-o.sel{background:#e4e8e6}.bst-o.sel s{display:none}
 .hm-odds b s{font-size:.6em;color:var(--muted);font-weight:600;margin-right:4px;vertical-align:middle}
-.hm-odds.sel{background:#e4e8e6}.hm-odds.sel small{color:#3b4541}
+.hm-odds.used{opacity:.55}.hm-odds.sel{background:#e4e8e6}.hm-odds.sel small{color:#3b4541}
 .hm-cf{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:auto}
 .bst-mini{background:linear-gradient(90deg,#f5d417,#ffb300);color:#14201b;font-weight:900;font-style:italic;text-transform:uppercase;font-size:10px;padding:2px 6px;border-radius:3px}
 .slm-bar{display:grid;grid-template-columns:28px minmax(0,1fr) auto;gap:2px 8px;align-items:start;background:#fff;color:#14201b;padding:12px 14px 12px 10px;cursor:pointer}
@@ -1254,14 +1254,15 @@ function boostLegsNow(m, legs) {
   const d = legs.map(l => legOf(m, l.mk, l.oc)); if (d.some(x => !x)) return null;
   if (d.length === 1) return d[0].odds; const ci = comboInfo(d); return ci.ok ? ci.odds : null;
 }
+const boostUsed = (mid, t) => ((S.wallet && S.wallet.bets) || []).some(b => b.boost === t && b.legs && b.legs[0] && b.legs[0].mid === mid && b.status !== "void");
 function boostCards(m) {
   const bs = boosts(m); if (!bs.length) return "";
   return `<div class="hm-sec"><span><span class="bst-tag">SuperCuotas</span> ${esc(m.home.nombre)} v ${esc(m.away.nombre)}</span></div>
-    <div class="hm-cards">${bs.map(b => { const key = "boost|" + m.id + "|" + b.t, sel = S.slip.some(s => s.key === key);
+    <div class="hm-cards">${bs.map(b => { const key = "boost|" + m.id + "|" + b.t, sel = S.slip.some(s => s.key === key), used = boostUsed(m.id, b.t);
       return `<div class="hm-card"><div class="hm-ct">${esc(b.t)}<span>${teamShirt(m.home.nombre)}${teamShirt(m.away.nombre)}</span></div>
         ${b.d.map(x => { const pi = /^p/.test(x.mk) ? SQUAD[+x.oc] : null; return `<div class="hm-leg">${pi ? pshirt(pi) : teamShirt(DATA.miEquipo)}<span>${esc(pi ? shortName(pi.nombre) + " - " + x.mname.replace(/^Jugador - /, "") : x.label + " - " + x.mname)}</span></div>`; }).join("")}
         <div class="hm-cf"><span>CREAR APUESTA</span><em class="bst-mini">Máx. ${BOOST_MAX} €</em></div>
-        <button class="hm-odds ${sel ? "sel" : ""}" data-boost="${esc(m.id + "|" + b.t)}">${sel ? CHECK : `<b><s>${fo(b.odds)}</s> ${fo(b.boosted)}</b>`}<small>10 €: ganancias de ${eur(10 * b.boosted)}</small></button></div>`; }).join("")}</div>`;
+        ${used ? `<button class="hm-odds used" disabled><b><s>${fo(b.odds)}</s> ${fo(b.boosted)}</b><small>Ya la has apostado</small></button>` : `<button class="hm-odds ${sel ? "sel" : ""}" data-boost="${esc(m.id + "|" + b.t)}">${sel ? CHECK : `<b><s>${fo(b.odds)}</s> ${fo(b.boosted)}</b>`}<small>10 €: ganancias de ${eur(10 * b.boosted)}</small></button>`}</div>`; }).join("")}</div>`;
 }
 function homeTop() {
   const ms = allMatches(), mine = ms.find(m => sideOf(m) >= 0 && m.status !== "ft") || ms.find(m => sideOf(m) >= 0);
@@ -1687,6 +1688,8 @@ function place() {
   if (d.some(x => !x.susp && x.odds !== x.added)) { S.msg = "Han cambiado las cuotas: acepta los cambios."; return render(); }
   const mk = legs => legs.map(x => ({ mid: x.mid, mk: x.mk, oc: x.oc, label: x.label, mname: x.mname, match: x.m.home.nombre + " v " + x.m.away.nombre, odds: x.odds, status: "pending",
     ...(x.mk === "1x2" && x.oc !== "X" && x.m.status === "pre" ? { ea: 1 } : {}) }));
+  if (d.some(x => x.boost) && d.length > 1) { S.msg = "La SuperCuota va sola: no se puede combinar."; return render(); }
+  if (d.some(x => x.boost && boostUsed(x.mid, x.label))) { S.msg = "Ya has apostado esta SuperCuota. Solo se puede una vez."; return render(); }
   if (d.some(x => x.boost && num(S.stakes[x.key]) > BOOST_MAX)) { S.msg = "En una SuperCuota el máximo son " + BOOST_MAX + " €."; return render(); }
   const W = S.wallet, items = d.filter(x => !x.susp && num(S.stakes[x.key]) > 0), cst = num(S.combo);
   const ci = cst > 0 ? comboInfo(d) : null;
@@ -1711,7 +1714,7 @@ document.addEventListener("click", e => {
     const [mid, mk, oc] = ds.pick.split("|"); const i = S.slip.findIndex(s => s.key === ds.pick);
     if (i >= 0) S.slip.splice(i, 1);
     else { const m = findMatch(mid), k = markets(m).list.find(x => x.key === mk), o = k.outcomes.find(x => x.k === oc);
-      S.slip.push({ key: ds.pick, mid, mk, oc, label: o.label, mname: k.name, added: o.odds }); }
+      (S.slip = S.slip.filter(x => !x.boost)).push({ key: ds.pick, mid, mk, oc, label: o.label, mname: k.name, added: o.odds }); }
     S.msg = "";
   }
   else if (ds.rm) { S.slip = S.slip.filter(s => s.key !== ds.rm); delete S.stakes[ds.rm]; }
@@ -1726,7 +1729,7 @@ document.addEventListener("click", e => {
   else if (ds.pside) { const [mid, k] = ds.pside.split("|"); S.pside[mid] = +k; }
   else if (ds.hf) { S.hf = ds.hf; S.view = "home"; S.detail = null; }
   else if (ds.preset != null && ds.preset !== "") { const mine = allMatches().find(m => sideOf(m) >= 0 && m.status !== "ft"), c = mine && presetCombos(mine)[+ds.preset];
-    if (c) { c.d.forEach(x => { if (!S.slip.some(y => y.key === x.key)) S.slip.push({ key: x.key, mid: x.mid, mk: x.mk, oc: x.oc, label: x.label, mname: x.mname, added: x.odds }); });
+    if (c) { S.slip = S.slip.filter(x => !x.boost); c.d.forEach(x => { if (!S.slip.some(y => y.key === x.key)) S.slip.push({ key: x.key, mid: x.mid, mk: x.mk, oc: x.oc, label: x.label, mname: x.mname, added: x.odds }); });
       S.combo = S.combo || "10"; toast("Añadida al boleto: " + c.t); } }
   else if (ds.obet) S.openBet[ds.obet] = !S.openBet[ds.obet];
   else if (ds.coNo) S.coConfirm = null;
@@ -1745,7 +1748,7 @@ document.addEventListener("click", e => {
   else if (ds.accept) { slipData().forEach(x => { const s0 = S.slip.find(y => y.key === x.key); if (s0 && x.odds != null) s0.added = x.odds; }); S.msg = ""; }
   else if (ds.reuse) { const b = S.wallet.bets.find(x => x.id === ds.reuse); if (b) { b.legs.forEach(l => { const key = l.mid + "|" + l.mk + "|" + l.oc; if (S.slip.some(x => x.key === key)) return;
       const m = findMatch(l.mid), k = m && markets(m).list.find(x => x.key === l.mk), o = k && k.outcomes.find(x => x.k === l.oc);
-      if (o && o.odds != null && m.status !== "ft") S.slip.push({ key, mid: l.mid, mk: l.mk, oc: l.oc, label: l.label, mname: k.name, added: o.odds }); });
+      if (o && o.odds != null && m.status !== "ft") (S.slip = S.slip.filter(x => !x.boost)).push({ key, mid: l.mid, mk: l.mk, oc: l.oc, label: l.label, mname: k.name, added: o.odds }); });
       S.slipOpen = true; toast(S.slip.length ? "Selecciones añadidas al boleto" : "Esos mercados ya están cerrados"); } }
   else if (ds.share) { const b = S.wallet.bets.find(x => x.id === ds.share); if (b) { const txt = "Mi apuesta en AlmaBet: " + eur(b.stake) + " a " + fo(b.odds) + "\n" + b.legs.map(l => "· " + l.label + " (" + l.mname + ") " + l.match).join("\n") + "\n" + location.origin;
       if (navigator.share) navigator.share({ text: txt }).catch(() => {}); else navigator.clipboard && navigator.clipboard.writeText(txt).then(() => toast("Copiado para compartir")); } return; }
@@ -1753,7 +1756,8 @@ document.addEventListener("click", e => {
   else if (ds.boost) { const i = ds.boost.indexOf("|"), mid = ds.boost.slice(0, i), t = ds.boost.slice(i + 1), key = "boost|" + mid + "|" + t, j = S.slip.findIndex(x => x.key === key);
     if (j >= 0) S.slip.splice(j, 1);
     else { const m = findMatch(mid), b = m && boosts(m).find(x => x.t === t);
-      if (b) S.slip.push({ key, mid, boost: 1, label: b.t, mname: "SuperCuota", legs: b.d.map(x => ({ mk: x.mk, oc: x.oc })), added: b.boosted }); }
+      if (b && boostUsed(mid, b.t)) toast("Ya has apostado esta SuperCuota. Solo se puede una vez.");
+      else if (b) S.slip = [{ key, mid, boost: 1, label: b.t, mname: "SuperCuota", legs: b.d.map(x => ({ mk: x.mk, oc: x.oc })), added: b.boosted }]; }
     S.msg = ""; }
   else if (ds.setamt) { S.slipOpen = true; render(); const f = document.querySelector(S.slip.length > 1 ? "#slip input[data-combo]:not(:disabled)" : "#slip input[data-stake]:not(:disabled)"); if (f) f.focus(); return; }
   else if (ds.adm) { if (!S.admin) return; S.confirmReset = false;

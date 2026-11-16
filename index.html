@@ -491,6 +491,7 @@ th{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06
 .mb-hd~.mb-tabs{padding:0 0 4px;margin:0 -8px}
 .bc-hd{padding:16px 15px 12px}.bc-btns{padding:0 15px 10px}.bc-leg{padding:6px 15px}.bc-game{padding:8px 15px 2px}.bc-ft{padding:14px 15px}.bc-mini{padding:18px 15px}
 .bc-mini{padding:9px 15px;min-height:54px}.bc-mco{padding:4px 12px;line-height:1.25;font-size:13px}.bc-mco.conf button{padding:6px 10px}.bc-msc i{min-width:22px;height:20px}
+.hm-fav{display:block;max-width:calc(100% - 120px);color:#cfd6d2;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.hm-fav.t{color:#fff;font-weight:800;font-size:15px}.hm-fav em{font-style:normal;color:var(--yellow);flex:none}.hm-fav.t{display:flex;gap:6px}.hm-fav i{font-style:normal;overflow:hidden;text-overflow:ellipsis;min-width:0}.hm-ban.b4 b{margin-bottom:auto}
 </style>
 
 <header>
@@ -1437,7 +1438,7 @@ function homeTop() {
       <span class="hm-cta">${mine.status === "pre" ? (cd ? "⏱ " + cd : "Sin hora") : mine.status === "ft" ? mine.hg + " - " + mine.ag : mine.hg + " - " + mine.ag + " · " + minLabel(mine)}</span><span class="hm-go">Apostar</span></button>`);
   if (leader) banners.push(`<button class="hm-ban b2" data-view="rank"><small>Líder del ranking</small><b>${esc(leader.username || (S.names[leader.id] && S.names[leader.id].name) || "Jugador")}</b><span class="hm-big">${eur(leader.balance || 0)}</span><span class="hm-go">Ver ranking</span></button>`);
   { const ch = futMarket("champ"), f0 = ch && ch.outcomes[0];
-    if (f0) banners.push(`<button class="hm-ban b4" data-view="fut"><small>Apuestas de temporada</small><b>Campeón, pichichi,<br>campeón de invierno…</b><span class="hm-big">${esc(f0.label)} ${fo(f0.odds)}</span><span class="hm-go">Ver todas</span></button>`); }
+    if (f0) banners.push(`<button class="hm-ban b4" data-view="fut"><small>Apuestas de temporada</small><b>Campeón, pichichi y más</b><span class="hm-fav">Favorito al título</span><span class="hm-fav t"><i>${esc(f0.label)}</i><em>${fo(f0.odds)}</em></span><span class="hm-go">Ver todas</span></button>`); }
   banners.push(`<button class="hm-ban b3" data-hf="pre"><small>Tercera FFCV · Grupo 2</small><b>Jornada ${jor || ""}</b><span class="hm-big">${ms.filter(m => m.jornada === jor).length} partidos</span><span class="hm-go">${nLive ? nLive + " en directo" : "Ver partidos"}</span></button>`);
   const hf = S.hf || "all";
   return `<div class="hm">

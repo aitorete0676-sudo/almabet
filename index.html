@@ -142,6 +142,8 @@ th{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06
 .stand tr.me td{color:var(--yellow);font-weight:700}
 .adjr td{padding-top:0!important}.adj{display:flex;gap:6px;align-items:center}.adj input{width:90px;padding:6px 8px;border-radius:4px;border:1px solid var(--line);background:var(--bg);color:var(--fg)}
 .pwf{position:relative}.pwf input{width:100%;padding-right:78px!important}.eye{position:absolute;right:6px;top:50%;transform:translateY(-50%);padding:6px 10px;font-size:13px;font-weight:700;color:#145a41}
+.co{display:flex;gap:8px;align-items:center;justify-content:flex-end;padding-top:8px;flex-wrap:wrap}.co span{font-size:13px;font-weight:600}.cobtn{background:var(--yellow);color:var(--ink);font-weight:700;border-radius:4px;padding:8px 12px}.cobtn:disabled{background:var(--btn);color:var(--muted);cursor:default}.cobtn.yes{background:var(--up);color:#fff}
+.tag.cashout,.tag.void{background:var(--btn);color:var(--fg)}
 .ptbl{margin:0 -12px}
 .ptbl .pr{display:grid;grid-template-columns:minmax(0,1fr) repeat(var(--n),minmax(52px,64px));align-items:center;border-top:1px solid var(--line);min-height:56px}
 .ptbl .ph{min-height:44px}
@@ -714,7 +716,7 @@ async function saveWallet() {
   if (walletBusy) { walletDirty = true; return; }
   walletBusy = true;
   try { await walletRef.set({ balance: S.wallet.balance, bets: S.wallet.bets });
-    const done = S.wallet.bets.filter(b => b.status === "won" || b.status === "lost");
+    const done = S.wallet.bets.filter(b => b.status === "won" || b.status === "lost" || b.status === "cashout");
     const staked = done.reduce((s, b) => s + b.stake, 0), ret = done.reduce((s, b) => s + (b.ret || 0), 0);
     await db.doc("ranking/" + S.uid).set({ balance: S.wallet.balance, profit: +(ret - staked).toFixed(2), bets: S.wallet.bets.length, at: Date.now() });
   } catch (e) { toast("No se ha podido guardar. Revisa la conexión."); }
@@ -854,6 +856,37 @@ function settle() {
     else if (b.legs.every(l => l.status === "won")) { b.status = "won"; b.ret = +(b.stake * b.odds).toFixed(2); S.wallet.balance = +(S.wallet.balance + b.ret).toFixed(2); changed = true; toast("Apuesta ganada: +" + eur(b.ret)); }
   });
   if (changed) saveWallet();
+}
+
+/* ===================== CERRAR APUESTA (cash out) ===================== */
+// Antes de que empiece ningún partido del boleto: se anula y se devuelve todo.
+// Con algún partido empezado: vale lo que pagaría × probabilidad actual de acertar, menos un 6 %.
+const CASHOUT_MARGIN = 0.06;
+function cashoutInfo(b) {
+  if (b.status !== "pending" || b.legs.some(l => l.status === "lost")) return null;
+  const ms = {}; b.legs.forEach(l => { ms[l.mid] = ms[l.mid] || findMatch(l.mid); });
+  if (Object.values(ms).some(m => !m)) return null;
+  if (Object.values(ms).every(m => m.status === "pre")) return { kind: "void", amount: b.stake };
+  let P = 1;
+  const groups = {}; b.legs.filter(l => l.status !== "won").forEach(l => (groups[l.mid] ??= []).push(l));
+  for (const mid in groups) { const m = ms[mid], g = groups[mid];
+    if (m.suspended || m.status === "ft") return { kind: "closed" };
+    if (g.length > 1) { P *= jointProb(m, g.map(l => ({ mk: l.mk, oc: l.oc }))); continue; }
+    const k = markets(m).list.find(x => x.key === g[0].mk), o = k && k.outcomes.find(x => x.k === g[0].oc);
+    if (!o || o.odds == null || o.p == null) return { kind: "closed" };
+    P *= o.p;
+  }
+  const amount = Math.floor(b.stake * b.odds * P * (1 - CASHOUT_MARGIN) * 100) / 100;
+  return amount >= 0.01 ? { kind: "cash", amount } : { kind: "closed" };
+}
+function doCashout(id) {
+  const b = S.wallet.bets.find(x => x.id === id), ci = b && cashoutInfo(b);
+  S.coConfirm = null;
+  if (!ci || ci.kind === "closed") { toast("Ahora mismo no se puede cerrar esta apuesta."); return render(); }
+  b.status = ci.kind === "void" ? "void" : "cashout"; b.ret = ci.amount; b.closedAt = Date.now();
+  S.wallet.balance = +(S.wallet.balance + ci.amount).toFixed(2);
+  toast(ci.kind === "void" ? "Apuesta anulada: te devolvemos " + eur(ci.amount) : "Apuesta cerrada: +" + eur(ci.amount));
+  saveWallet(); render();
 }
 
 /* ===================== ADMIN: lo que pasa en el partido ===================== */
@@ -1093,14 +1126,19 @@ function rankingView() {
 }
 function betsView() {
   const bets = S.wallet.bets;
-  const settled = bets.filter(b => b.status === "won" || b.status === "lost");
+  const settled = bets.filter(b => b.status === "won" || b.status === "lost" || b.status === "cashout");
   const staked = settled.reduce((s, b) => s + b.stake, 0), ret = settled.reduce((s, b) => s + (b.ret || 0), 0);
   const won = settled.filter(b => b.status === "won").length;
   const pl = ret - staked, roi = staked ? pl / staked * 100 : 0;
-  const tagTxt = { pending: "Pendiente", won: "Ganada", lost: "Perdida", void: "Anulada" };
+  const tagTxt = { pending: "Pendiente", won: "Ganada", lost: "Perdida", void: "Anulada", cashout: "Cerrada" };
   const card = b => `<div class="bet"><div class="hd"><b>${b.legs.length > 1 ? "Combinada (" + b.legs.length + ")" : "Sencilla"} · ${eur(b.stake)} a ${fo(b.odds)}</b><span class="tag ${b.status}">${tagTxt[b.status]}</span></div>
     ${b.legs.map(l => `<div class="leg"><span>${esc(l.label)} · ${esc(l.mname)} · ${esc(l.match)}</span><span class="r-${l.status}">${fo(l.odds)}</span></div>`).join("")}
-    <div class="leg"><span>${b.status === "pending" ? "Ganancia potencial" : "Retorno"}</span><span>${eur(b.status === "pending" ? b.stake * b.odds : (b.ret || 0))}</span></div></div>`;
+    <div class="leg"><span>${b.status === "pending" ? "Ganancia potencial" : "Retorno"}</span><span>${eur(b.status === "pending" ? b.stake * b.odds : (b.ret || 0))}</span></div>${coHTML(b)}</div>`;
+  function coHTML(b) { const ci = cashoutInfo(b); if (!ci) return "";
+    if (ci.kind === "closed") return `<div class="co"><button class="cobtn" disabled>Cerrar apuesta no disponible ahora</button></div>`;
+    const txt = ci.kind === "void" ? "Anular apuesta · te devuelve " + eur(ci.amount) : "Cerrar apuesta · " + eur(ci.amount);
+    if (S.coConfirm === b.id) return `<div class="co"><span>${ci.kind === "void" ? "¿Anular y recuperar " + eur(ci.amount) + "?" : "¿Cerrar por " + eur(ci.amount) + "?"}</span><button class="cobtn yes" data-co-yes="${b.id}">Sí</button><button class="cobtn" data-co-no="1">No</button></div>`;
+    return `<div class="co"><button class="cobtn" data-co="${b.id}">${txt}</button></div>`; }
   const pend = bets.filter(b => b.status === "pending"), done = bets.filter(b => b.status !== "pending");
   return `<div class="block"><div class="kpis">
       <div><small>Apostado</small><b>${eur(staked)}</b></div>
@@ -1305,6 +1343,9 @@ document.addEventListener("click", e => {
     if (!v) { toast("Escribe una cantidad."); return; }
     api("adjust", { user: u, amount: v * +sg }).then(() => { toast((+sg > 0 ? "Dados " : "Quitados ") + eur(v) + (+sg > 0 ? " a " : " a ") + u); if (inp) inp.value = ""; setTimeout(sbRanking, 500); }, e => toast(e.message)); return; }
   else if (ds.showpw) S.showPw = !S.showPw;
+  else if (ds.co) S.coConfirm = ds.co;
+  else if (ds.coNo) S.coConfirm = null;
+  else if (ds.coYes) { doCashout(ds.coYes); return; }
   else if (ds.authTab) { S.authTab = ds.authTab; S.authMsg = ""; }
   else if (ds.logout) { api("logout").catch(() => {}).then(() => { try { localStorage.removeItem(TK); } catch (e) {} location.reload(); }); return; }
   else if (ds.acc === "adm") S.openG.adm = !(S.openG.adm ?? true);

@@ -36,7 +36,7 @@ async function whoami(req) {
   return u ? { name, ...u } : null;
 }
 async function profit(w) {
-  const done = (w.bets || []).filter(b => b.status === "won" || b.status === "lost");
+  const done = (w.bets || []).filter(b => ["won", "lost", "cashout"].includes(b.status));
   return +(done.reduce((s, b) => s + (b.ret || 0), 0) - done.reduce((s, b) => s + (+b.stake || 0), 0)).toFixed(2);
 }
 async function allMatches() {

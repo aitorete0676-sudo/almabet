@@ -161,6 +161,19 @@ th{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06
 .sl-mk{font-weight:700;font-size:14px}.sl-m{font-size:13px;color:#55615c}.sl-chg{font-size:12px;color:#b45309;font-weight:600}
 .sl-od{color:#14201b;font-weight:800;font-size:16px;font-variant-numeric:tabular-nums;align-self:start}
 .sl-mini{display:none}
+.sl-ea{display:inline-block;margin-top:3px;font-size:11px;font-weight:800;font-style:italic;text-transform:uppercase;color:#1b8a5a;letter-spacing:.02em}
+.tagp{font-style:italic;font-weight:900;color:#3ddc97;letter-spacing:.03em;margin-left:6px;text-transform:uppercase;font-size:11px;border:1px solid #3ddc97;border-radius:3px;padding:0 4px}
+.bst-wrap{margin:8px 0 12px}
+.bst-h{display:flex;align-items:center;gap:10px;margin:0 0 8px}
+.bst-h small{color:var(--muted);font-size:12px}
+.bst-tag{background:linear-gradient(90deg,#f5d417,#ffb300);color:#14201b;font-weight:900;font-style:italic;text-transform:uppercase;font-size:13px;padding:3px 9px;border-radius:3px;letter-spacing:.03em}
+.bst-list{display:flex;flex-direction:column;gap:6px}
+.bst{display:grid;grid-template-columns:minmax(0,1fr) 92px;gap:2px 10px;align-items:center;background:var(--panel);border-left:3px solid #f5d417;border-radius:4px;padding:10px 10px 10px 12px}
+.bst-t{font-weight:800;font-size:15px}
+.bst-l{grid-column:1;font-size:13px;color:#c9d2ce;line-height:1.35}
+.bst-o{grid-column:2;grid-row:1/3;display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--btn);border-radius:4px;min-height:52px;font-variant-numeric:tabular-nums}
+.bst-o s{font-size:12px;color:var(--muted)}.bst-o b{font-size:18px;color:#f5d417;font-weight:800}
+.bst-o.sel{background:#e4e8e6}.bst-o.sel s{display:none}
 .slm-bar{display:grid;grid-template-columns:28px minmax(0,1fr) auto;gap:2px 8px;align-items:start;background:#fff;color:#14201b;padding:12px 14px 12px 10px;cursor:pointer}
 .slm-bar.multi{grid-template-columns:28px minmax(0,1fr) auto 44px}
 .slm-x{color:#55615c;font-size:18px;line-height:1;padding:2px 0}
@@ -656,7 +669,11 @@ const SQUAD = (DATA.plantilla || []).map((p, i) => {
 });
 const sideOf = m => m.home.nombre === DATA.miEquipo ? 0 : m.away.nombre === DATA.miEquipo ? 1 : -1;
 // Jugadores que siguen en el campo y su peso para gol / asistencia / amarilla
-function onPitch(m) { return SQUAD.filter(p => p.titular !== false && !(m.ps[p.i].r)); }
+function onPitch(m) { return SQUAD.filter(p => p.titular !== false && !m.ps[p.i].r && !m.ps[p.i].off); }
+// Cambio+: si cambian al jugador, la apuesta pasa al que entra (se suman lo que hicieron los dos)
+const SUBP = new Set(["pg1", "pg2", "pg3", "pga", "pas", "pst1", "pst2", "pst3", "psh1", "psh2", "psh3"]);
+const sumSt = (a, b) => ({ g: a.g + b.g, a: a.a + b.a, y: a.y, r: b.r, sot: a.sot + b.sot, sh: a.sh + b.sh, off: b.off });
+function subChain(m, i) { let st = m.ps[i], j = i, n = 0; while (m.ps[j].off && m.subIn[j] != null && n++ < 5) { j = m.subIn[j]; st = sumSt(st, m.ps[j]); } return { st, j }; }
 function share(m, field) { const on = onPitch(m), tot = on.reduce((s, p) => s + p[field], 0) || 1; return i => { const p = on.find(x => x.i === i); return p ? p[field] / tot : 0; }; }
 const pAtLeast = (k, l) => { if (k <= 0) return 1; let c = 0; for (let j = 0; j < k; j++) c += pois(j, l); return 1 - c; };
 const remaining = m => m.status === "pre" ? 90 : m.status === "ft" ? 0 : Math.max(0.5, 92 - m.minute);
@@ -757,7 +774,9 @@ function playerMarkets(m, lh, la, rem) {
   const myL = s ? la : lh, oppL = s ? lh : la, conceded = s ? m.hg : m.ag;
   const sg = share(m, "wg"), sa = share(m, "wa"), sy = share(m, "wy"), fin = m.status === "ft";
   const pm = (key, name, f, tab) => ({ key, name, tab, margin: PLAYER_MARGIN, players: true,
-    outcomes: SQUAD.filter(p => p.titular !== false).map(p => { const st = m.ps[p.i], pr = st.r && !f.keep ? (f(p, st) >= 1 ? 1 : 0) : f(p, st);
+    outcomes: SQUAD.filter(p => p.titular !== false).map(p => { let st = m.ps[p.i], q = p;
+      if (st.off && SUBP.has(key) && m.subIn[p.i] != null) { const c = subChain(m, p.i); st = c.st; q = SQUAD[c.j]; }
+      const pr = st.r && !f.keep ? (f(q, st) >= 1 ? 1 : 0) : f(q, st);
       return { k: String(p.i), label: p.nombre, p: pr, odds: fin ? null : price(pr, PLAYER_MARGIN) }; }) });
   const lg = p => myL * sg(p.i), la_ = p => myL * 0.7 * sa(p.i);
   const tY = YEL_RATE * rem;
@@ -810,7 +829,7 @@ function build(f) {
   minute = Math.max(st.phase === "pre" ? 0 : 1, minute);
   const m = { ...f, st, phase: st.phase, minute, extra, status: st.phase === "pre" ? "pre" : st.phase === "ft" ? "ft" : st.phase === "ht" ? "ht" : "live",
     hg: 0, ag: 0, ht: [0, 0], h2: [0, 0], yel: [0, 0], red: [0, 0], cards: [0, 0], corners: [0, 0], goals: [],
-    ps: SQUAD.map(() => ({ g: 0, a: 0, y: 0, r: 0, sot: 0, sh: 0 })), mom: (st.dom || 0) * 0.6, fecha: st.fecha || f.fechaDef };
+    ps: SQUAD.map(() => ({ g: 0, a: 0, y: 0, r: 0, sot: 0, sh: 0 })), subIn: {}, mom: (st.dom || 0) * 0.6, fecha: st.fecha || f.fechaDef };
   const my = sideOf(m);
   st.events.forEach(e => {
     const P_ = e.s === my && e.p != null ? m.ps[e.p] : null;
@@ -821,6 +840,7 @@ function build(f) {
     else if (e.t === "cor") m.corners[e.s]++;
     else if (e.t === "yel") { m.yel[e.s]++; m.cards[e.s]++; if (P_) { P_.y++; if (P_.y >= 2 && !P_.r) { P_.r = 1; m.red[e.s]++; } } }
     else if (e.t === "red") { m.cards[e.s]++; if (P_) { if (!P_.r) { P_.r = 1; m.red[e.s]++; } } else m.red[e.s]++; }
+    else if (e.t === "sub") { if (P_) { P_.off = 1; if (e.in != null && m.ps[e.in]) m.subIn[e.p] = e.in; } }
   });
   m.suspended = m.status !== "ft" && (st.susp || now < (st.suspUntil || 0));
   return m;
@@ -945,7 +965,8 @@ async function connect() {
 function legResult(leg, m) {
   const fin = m.status === "ft", F = [m.hg, m.ag], tg = m.hg + m.ag, k = leg.mk, oc = leg.oc, W = c => c ? "won" : "lost";
   const num_ = str => parseFloat(str), ix = oc === "h" ? 0 : 1, htDone = ["ht", "2h", "ft"].includes(m.phase);
-  if (k === "1x2") return fin ? W(oc === res3(...F)) : null;
+  if (k === "1x2") { if (leg.ea && oc !== "X") { let d = 0; for (const g of m.goals) { d += g === "h" ? 1 : -1; if ((oc === "1" && d >= 2) || (oc === "2" && d <= -2)) return "won"; } }
+    return fin ? W(oc === res3(...F)) : null; }
   if (k === "dc") return fin ? W(oc.includes(res3(...F))) : null;
   if (k === "btts") { if (F[0] > 0 && F[1] > 0) return W(oc === "Y"); return fin ? W(oc === "N") : null; }
   if (/^ou/.test(k)) { const l = k === "ou25" ? 2.5 : num_(k.slice(2)); if (tg > l) return W(oc === "O"); return fin ? W(oc === "U") : null; }
@@ -971,7 +992,8 @@ function legResult(leg, m) {
   if (k === "pcs") { const c = sideOf(m) ? m.hg : m.ag; if (c > 0) return W(oc === "N"); return fin ? W(oc === "Y") : null; }
   if (k.startsWith("next")) { const n = +k.slice(4);
     if (m.goals.length >= n) return W(oc === m.goals[n - 1]); return fin ? W(oc === "none") : null; }
-  if (k[0] === "p") { const st = m.ps[+oc]; if (!st) return null;
+  if (k[0] === "p") { let st = m.ps[+oc]; if (!st) return null;
+    if (st.off && SUBP.has(k) && m.subIn) st = subChain(m, +oc).st;
     const need = { pg1: st.g >= 1, pg2: st.g >= 2, pg3: st.g >= 3, pga: st.g + st.a >= 1, pas: st.a >= 1, pye: st.y >= 1 || !!st.r,
       pst1: st.sot >= 1, pst2: st.sot >= 2, pst3: st.sot >= 3, psh1: st.sh >= 1, psh2: st.sh >= 2, psh3: st.sh >= 3 }[k];
     if (need) return "won"; return fin ? "lost" : null; }
@@ -1033,11 +1055,11 @@ function legCount(l, m) {   // mercados de contar: valor actual y línea
 }
 function betCard(b, tagTxt) {
   const when = new Date(b.at).toLocaleString("es-ES", { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
-  const tipo = b.legs.length > 1 ? COMBO_NAME(b.legs.length) : "Sencilla";
+  const tipo = b.boost ? "SuperCuota" : b.legs.length > 1 ? COMBO_NAME(b.legs.length) : "Sencilla";
   const legs = b.legs.map(l => { const m = findMatch(l.mid), c = m && legCount(l, m);
     const ic = l.status === "won" ? `<i class="bc-ok">✓</i>` : l.status === "lost" ? `<i class="bc-ko">✕</i>` : `<i class="bc-pe"></i>`;
     const bar = c ? `<div class="bc-prog"><span class="bc-bar"><span style="width:${Math.min(100, c.cur / Math.ceil(c.line) * 100)}%"></span></span><b>${c.cur}</b></div>` : "";
-    return `<div class="bc-leg">${ic}<div><div class="bc-sel"><b>${esc(l.label)}</b><span>${fo(l.odds)}</span></div><div class="bc-mk">${esc(l.mname)}</div>${bar}</div></div>`; }).join("");
+    return `<div class="bc-leg">${ic}<div><div class="bc-sel"><b>${esc(l.label)}</b><span>${fo(l.odds)}</span></div><div class="bc-mk">${esc(l.mname)}${l.ea ? ` <span class="sl-ea">2 goles de ventaja = pagada</span>` : ""}${/^p/.test(l.mk) && SUBP.has(l.mk) ? ` <em class="tagp">Cambio+</em>` : ""}</div>${bar}</div></div>`; }).join("");
   const mids = [...new Set(b.legs.map(l => l.mid))];
   const games = mids.map(id => { const m = findMatch(id); if (!m) return "";
     const st = m.status === "pre" ? fmtDate(m.fecha) || "Sin empezar" : m.status === "ft" ? "Resultado final" : m.status === "ht" ? "Descanso" : minLabel(m);
@@ -1075,12 +1097,14 @@ function adminAct(id, act, arg) {
   else if (act === "susp") st.susp = !st.susp;
   else if (act === "fecha") st.fecha = arg;
   else if (act === "undo") st.events.pop();
-  else if (["goal", "yel", "red", "sot", "sh", "cor"].includes(act)) {
+  else if (["goal", "yel", "red", "sot", "sh", "cor", "sub"].includes(act)) {
     if (st.phase === "pre") { toast("Primero pulsa «Empezar partido»."); return; }
     const s = +S.form.side, mine = s === sideOf(m);
+    if (act === "sub" && (!mine || S.form.pl === "" || S.form.as === "" || S.form.pl === S.form.as)) { toast("Elige el jugador que sale y el que entra."); return; }
     const e = { t: act, s, min: m.minute, x: m.extra || 0, h: st.phase === "1h" || st.phase === "ht" ? 1 : 2, at: now };
     if (mine && S.form.pl !== "") e.p = +S.form.pl;
     if (act === "goal" && mine && S.form.as !== "" && S.form.as !== S.form.pl) e.as = +S.form.as;
+    if (act === "sub") e.in = +S.form.as;
     st.events.push(e);
     if (act === "goal" || act === "red") st.suspUntil = now + 45000;   // tras gol o roja, mercados cerrados 45 s
     S.form.pl = ""; S.form.as = "";
@@ -1105,6 +1129,7 @@ const evName = (m, e) => {
   if (e.t === "sot") return "Remate a puerta" + (pl ? " de " + pl : "") + " (" + tn + ")";
   if (e.t === "sh") return "Remate fuera" + (pl ? " de " + pl : "") + " (" + tn + ")";
   if (e.t === "cor") return "Córner para " + tn;
+  if (e.t === "sub") return "Cambio en " + tn + ": sale " + (pl || "?") + ", entra " + (SQUAD[e.in] ? SQUAD[e.in].nombre : "?");
   return "Roja " + (pl ? "para " + pl + " (" + tn + ")" : "para " + tn);
 };
 
@@ -1157,6 +1182,27 @@ function presetCombos(m) {
     if (d.some(x => !x) || new Set(d.map(x => x.key)).size < d.length) return null;
     const ci = comboInfo(d); return ci.ok ? { t, d, odds: ci.odds } : null; }).filter(Boolean);
 }
+// SuperCuotas: cuotas mejoradas un 25 % sobre apuestas ya montadas del partido del Almazora. Máximo 20 € por apuesta.
+const BOOST = 1.25, BOOST_MAX = 20;
+const boostOf = o => Math.max(Math.round((o + 0.1) * 100) / 100, roundOdds(o * BOOST));
+function boosts(m) {
+  if (!m || sideOf(m) < 0 || m.status === "ft") return [];
+  const pc = presetCombos(m).slice(0, 2), k = markets(m).list.find(x => x.key === "pg1");
+  const top = k && k.outcomes.filter(o => o.odds != null).sort((a, b) => a.odds - b.odds)[0];
+  const out = pc.map(c => ({ t: c.t, d: c.d, odds: c.odds }));
+  if (top) { const l = legOf(m, "pg1", top.k); if (l) out.unshift({ t: shortName(top.label) + " marca", d: [l], odds: l.odds }); }
+  return out.map(b => ({ ...b, boosted: boostOf(b.odds) }));
+}
+function boostLegsNow(m, legs) {
+  const d = legs.map(l => legOf(m, l.mk, l.oc)); if (d.some(x => !x)) return null;
+  if (d.length === 1) return d[0].odds; const ci = comboInfo(d); return ci.ok ? ci.odds : null;
+}
+function boostCards(m) {
+  const bs = boosts(m); if (!bs.length) return "";
+  return `<div class="bst-wrap"><div class="bst-h"><span class="bst-tag">SuperCuotas</span><small>Cuota mejorada · máx. ${BOOST_MAX} €</small></div><div class="bst-list">${bs.map(b => { const key = "boost|" + m.id + "|" + b.t, sel = S.slip.some(s => s.key === key);
+    return `<div class="bst"><div class="bst-t">${esc(b.t)}</div><div class="bst-l">${b.d.map(x => { const pi = /^p/.test(x.mk) ? SQUAD[+x.oc] : null; return esc(pi ? shortName(pi.nombre) + " - " + x.mname.replace(/^Jugador - /, "") : x.label + " - " + x.mname); }).join("<br>")}</div>
+      <button class="bst-o ${sel ? "sel" : ""}" data-boost="${esc(m.id + "|" + b.t)}"><s>${fo(b.odds)}</s><b>${sel ? CHECK : fo(b.boosted)}</b></button></div>`; }).join("")}</div></div>`;
+}
 function homeTop() {
   const ms = allMatches(), mine = ms.find(m => sideOf(m) >= 0 && m.status !== "ft") || ms.find(m => sideOf(m) >= 0);
   const nLive = ms.filter(m => m.status === "live" || m.status === "ht").length, jor = (ms.find(m => m.status !== "ft") || ms[0] || {}).jornada;
@@ -1183,6 +1229,7 @@ function homeTop() {
     <div class="hm-tiles">${tiles.map(([a, ic, t]) => `<button class="hm-tile" ${a}><span class="hm-ic">${ic}</span>${t}</button>`).join("")}</div>
     <div class="hm-bans">${banners.join("")}</div>
     <div class="mb-tabs hm-pills">${[["all", "Todos"], ["mine", "Almazora C"], ["live", "En directo"], ["pre", "Próximos"]].map(([k, t]) => `<button data-hf="${k}" class="${hf === k ? "on" : ""}">${t}</button>`).join("")}</div>
+    ${mine && (hf === "all" || hf === "mine") ? boostCards(mine) : ""}
     ${pres.length && (hf === "all" || hf === "mine") ? `<div class="hm-sec"><span>${teamShirt(DATA.miEquipo)} Crear apuesta · ${esc(mine.home.nombre)} v ${esc(mine.away.nombre)}</span></div>
       <div class="hm-cards">${pres.map((c, i) => `<div class="hm-card"><div class="hm-ct">${esc(c.t)}<span>${teamShirt(mine.home.nombre)}${teamShirt(mine.away.nombre)}</span></div>
         ${c.d.map(x => { const pi = /^p/.test(x.mk) ? SQUAD[+x.oc] : null; return `<div class="hm-leg">${pi ? shirt(pi.dorsal) : teamShirt(DATA.miEquipo)}<span>${esc(pi ? shortName(pi.nombre) + " - " + x.mname.replace(/^Jugador - /, "") : x.label + " - " + x.mname)}</span></div>`; }).join("")}
@@ -1224,15 +1271,15 @@ function adminPanel(m) {
       <div class="arow"><label>Evento</label>
         <select id="ad-side" data-form="side"><option value="0" ${s === 0 ? "selected" : ""}>${esc(m.home.nombre)}</option><option value="1" ${s === 1 ? "selected" : ""}>${esc(m.away.nombre)}</option></select>
         <select id="ad-pl" data-form="pl" ${mine ? "" : "disabled"}>${opts(S.form.pl)}</select>
-        <select id="ad-as" data-form="as" ${mine ? "" : "disabled"}>${mine ? `<option value="">Sin asistencia</option>` + SQUAD.map(p => `<option value="${p.i}" ${String(p.i) === S.form.as ? "selected" : ""}>Asist. ${esc(p.nombre)}</option>`).join("") : `<option value="">—</option>`}</select></div>
+        <select id="ad-as" data-form="as" ${mine ? "" : "disabled"}>${mine ? `<option value="">Sin asistencia / entra</option>` + SQUAD.map(p => `<option value="${p.i}" ${String(p.i) === S.form.as ? "selected" : ""}>Asist. o entra: ${esc(p.nombre)}</option>`).join("") : `<option value="">—</option>`}</select></div>
       <div class="arow"><label></label><button class="abtn goal" data-adm="goal" data-mid="${m.id}">Gol</button><button class="abtn yel" data-adm="yel" data-mid="${m.id}">Amarilla</button><button class="abtn red" data-adm="red" data-mid="${m.id}">Roja</button>
-        <button class="abtn" data-adm="sot" data-mid="${m.id}">Remate a puerta</button><button class="abtn" data-adm="sh" data-mid="${m.id}">Remate fuera</button><button class="abtn" data-adm="cor" data-mid="${m.id}">Córner</button>
+        <button class="abtn" data-adm="sot" data-mid="${m.id}">Remate a puerta</button><button class="abtn" data-adm="sh" data-mid="${m.id}">Remate fuera</button><button class="abtn" data-adm="cor" data-mid="${m.id}">Córner</button><button class="abtn" data-adm="sub" data-mid="${m.id}" ${mine ? "" : "disabled"}>Cambio</button>
         <button class="abtn" data-adm="undo" data-mid="${m.id}" ${m.st.events.length ? "" : "disabled"}>Deshacer último</button></div>
       <div class="arow"><label>Quién domina</label>${[[1, m.home.nombre], [0, "Igualado"], [-1, m.away.nombre]].map(([v, t]) => `<button class="abtn ${(m.st.dom || 0) === v ? "on" : ""}" data-adm="dom" data-val="${v}" data-mid="${m.id}">${esc(t)}</button>`).join("")}</div>
       <div class="arow"><label>Mercados</label><button class="abtn ${m.st.susp ? "on" : ""}" data-adm="susp" data-mid="${m.id}">${m.st.susp ? "Reabrir mercados" : "Suspender (penalti, lesión…)"}</button>
         ${ph !== "pre" ? (S.confirmReset === m.id ? `<span class="confirm">¿Borrar todo el partido? <button class="abtn red" data-adm="reset" data-mid="${m.id}">Sí, borrar</button><button class="abtn" data-cancel-reset="1">No</button></span>` : `<button class="abtn" data-ask-reset="${m.id}">Reiniciar partido</button>`) : ""}</div>
     </div>
-    <div class="note">Elige equipo (y jugador si es de tu equipo) y pulsa el evento. Un gol ya cuenta como remate a puerta, no lo metas dos veces. Tras un gol o una roja los mercados se cierran 45 segundos. El reloj corre solo desde que pulsas «Empezar»; si vas desfasado, ajusta el minuto.</div>` : ""}</div>`;
+    <div class="note">Elige equipo (y jugador si es de tu equipo) y pulsa el evento. Un gol ya cuenta como remate a puerta, no lo metas dos veces. Para un cambio: en el primer desplegable el que sale y en el segundo el que entra. Tras un gol o una roja los mercados se cierran 45 segundos. El reloj corre solo desde que pulsas «Empezar»; si vas desfasado, ajusta el minuto.</div>` : ""}</div>`;
 }
 function detailView() {
   const m = findMatch(S.detail); if (!m) return listView();
@@ -1333,7 +1380,8 @@ function marketsHTML(m, mk) {
   const G = marketGroups(m).filter(g => S.cat === "all" || g.cat === S.cat);
   return `<div class="cats">${CATS.filter(([c]) => c !== "jug" || sideOf(m) >= 0).map(([c, t]) => `<button data-cat="${c}" class="${S.cat === c ? "on" : ""}">${t}</button>`).join("")}</div>
     ${m.suspended ? `<div class="suspbar">Mercados suspendidos un momento</div>` : ""}
-    ${G.map(g => { const open = isOpen(g.id); const tag = g.cat === "jug" ? `<span class="tagj">${esc(DATA.miEquipo)}</span>` : "";
+    ${S.cat === "all" || S.cat === "pop" ? boostCards(m) : ""}
+    ${G.map(g => { const open = isOpen(g.id); const tag = g.cat === "jug" ? `<span class="tagj">${esc(DATA.miEquipo)}${g.id !== "pany" ? ` <em class="tagp">Cambio+</em>` : ""}</span>` : g.id === "1x2" && m.status === "pre" ? `<span class="tagj">2 goles de ventaja = pagada</span>` : "";
       return `<div class="acc ${open ? "open" : ""}"><button class="acch" data-acc="${g.id}" aria-expanded="${open}"><span>${esc(g.title)}${tag}</span><i class="chev"></i></button>${open ? `<div class="accb">${groupBody(m, mk, g)}</div>` : ""}</div>`; }).join("")}`;
 }
 function tableView() {
@@ -1369,7 +1417,7 @@ function betsView() {
   const pend = bets.filter(b => b.status === "pending"), done = bets.filter(b => b.status !== "pending");
   const isLive = b => b.legs.some(l => { const m = findMatch(l.mid); return m && (m.status === "live" || m.status === "ht"); });
   const tab = S.betTab || "pend", list = (tab === "pend" ? pend : tab === "live" ? pend.filter(isLive) : done).slice().reverse();
-  const mini = b => `<button class="bc-mini" data-obet="${b.id}"><b>${eur(b.stake)} ${b.legs.length > 1 ? COMBO_NAME(b.legs.length) : "Sencilla"}</b><span>${esc(b.legs[0].match)}</span><span class="bc-tag ${b.status}">${tagTxt[b.status]}</span></button>`;
+  const mini = b => `<button class="bc-mini" data-obet="${b.id}"><b>${eur(b.stake)} ${b.boost ? "SuperCuota" : b.legs.length > 1 ? COMBO_NAME(b.legs.length) : "Sencilla"}</b><span>${esc(b.legs[0].match)}</span><span class="bc-tag ${b.status}">${tagTxt[b.status]}</span></button>`;
   const body = list.length ? list.map(b => tab === "done" && !S.openBet[b.id] ? mini(b) : betCard(b, tagTxt)).join("")
     : `<div class="mb-empty">No hay apuestas que mostrar en estos momentos<br>${tab === "pend" ? "Las apuestas pendientes" : tab === "live" ? "Las apuestas de partidos en juego" : "Las apuestas terminadas"} se mostrarán aquí</div>`;
   return `<div class="mb-hd"><h1>Mis apuestas</h1><span class="mb-bal">${eur(S.wallet.balance)}</span></div>
@@ -1453,7 +1501,7 @@ function jointProb(m, legs) { return simsWhere(m, legs).length / NSIM; }
 // Cuota que se muestra en un botón cuando ya hay selecciones del mismo partido en el boleto: probabilidad condicionada
 function condOdds(m, mkt, oc) {
   if (oc.odds == null || m.status === "ft" || m.suspended) return oc.odds;
-  const same = S.slip.filter(s => s.mid === m.id); if (!same.length) return oc.odds;
+  const same = S.slip.filter(s => s.mid === m.id && !s.boost); if (!same.length) return oc.odds;
   simSet(m);
   const ck = same.map(s => s.mk + ":" + s.oc).sort().join(",") + ">" + mkt.key + ":" + oc.k, cc = condCache[m.id];
   if (ck in cc) return cc[ck];
@@ -1465,6 +1513,7 @@ function condOdds(m, mkt, oc) {
 // Cuota total de un boleto combinado: partidos distintos se multiplican; selecciones del mismo partido, por simulación
 function comboInfo(d) {
   if (d.length < 2) return { ok: false, why: "Añade al menos 2 selecciones." };
+  if (d.some(x => x.boost)) return { ok: false, why: "Las SuperCuotas solo van como sencilla." };
   if (new Set(d.map(x => x.key)).size < d.length) return { ok: false, why: "Hay selecciones repetidas." };
   const groups = {}; d.forEach(x => (groups[x.mid] ??= []).push(x));
   let odds = 1; const parts = [];
@@ -1478,7 +1527,9 @@ function comboInfo(d) {
   return { ok: odds > 0, odds: Math.round(odds * 100) / 100, parts };
 }
 function slipData() {
-  return S.slip.map(s => { const m = findMatch(s.mid); const mk = m && markets(m).list.find(k => k.key === s.mk);
+  return S.slip.map(s => { const m = findMatch(s.mid);
+    if (s.boost) { const base = m && m.status !== "ft" ? boostLegsNow(m, s.legs) : null, legs = base ? s.legs.map(l => legOf(m, l.mk, l.oc)) : null;
+      return { ...s, m, legs, was: base, odds: base ? boostOf(base) : null, susp: !m || m.suspended || !base }; } const mk = m && markets(m).list.find(k => k.key === s.mk);
     const oc = mk && mk.outcomes.find(o => o.k === s.oc);
     return { ...s, m, odds: oc ? oc.odds : null, mname: mk ? mk.name : s.mname, susp: !m || m.suspended || !oc || oc.odds == null }; });
 }
@@ -1494,6 +1545,8 @@ function slipHTML() {
     const dim = x.susp || x.odds !== x.added;
     return `<div class="sl-row ${dim ? "dim" : ""}"><button class="sl-x" data-rm="${x.key}" aria-label="Quitar">✕</button>
       <div class="sl-main"><b class="sl-pick">${esc(x.label)}</b><span class="sl-mk">${esc(x.mname)}</span><span class="sl-m">${x.m ? esc(x.m.home.nombre) + " v " + esc(x.m.away.nombre) : ""}</span>
+        ${x.boost && x.legs ? `<span class="sl-m">${x.legs.map(l => esc(l.label + " - " + l.mname.replace(/^Jugador - /, ""))).join(" · ")}</span><span class="sl-chg">SuperCuota (antes ${fo(x.was)}) · máx. ${BOOST_MAX} €</span>` : ""}
+        ${x.mk === "1x2" && x.oc !== "X" && x.m && x.m.status === "pre" ? `<span class="sl-ea">Pagada si gana por 2 goles</span>` : ""}
         ${x.odds != null && x.odds !== x.added ? `<span class="sl-chg">Antes ${fo(x.added)}</span>` : ""}</div>
       <span class="sl-od">${x.susp ? LOCK : fo(x.odds)}</span>
       <input class="sl-in" id="st-${x.key.replace(/[^\w]/g, "_")}" data-stake="${x.key}" inputmode="decimal" placeholder="Cantidad" aria-label="Cantidad" ${x.susp ? "disabled" : ""}></div>`; }).join("");
@@ -1563,14 +1616,16 @@ function place() {
   const d = slipData(); S.msg = "";
   if (S.store === "sb" && S.admin) { S.msg = "La cuenta de administrador no apuesta. Entra con tu cuenta de jugador."; return render(); }
   if (d.some(x => !x.susp && x.odds !== x.added)) { S.msg = "Han cambiado las cuotas: acepta los cambios."; return render(); }
-  const mk = legs => legs.map(x => ({ mid: x.mid, mk: x.mk, oc: x.oc, label: x.label, mname: x.mname, match: x.m.home.nombre + " v " + x.m.away.nombre, odds: x.odds, status: "pending" }));
+  const mk = legs => legs.map(x => ({ mid: x.mid, mk: x.mk, oc: x.oc, label: x.label, mname: x.mname, match: x.m.home.nombre + " v " + x.m.away.nombre, odds: x.odds, status: "pending",
+    ...(x.mk === "1x2" && x.oc !== "X" && x.m.status === "pre" ? { ea: 1 } : {}) }));
+  if (d.some(x => x.boost && num(S.stakes[x.key]) > BOOST_MAX)) { S.msg = "En una SuperCuota el máximo son " + BOOST_MAX + " €."; return render(); }
   const W = S.wallet, items = d.filter(x => !x.susp && num(S.stakes[x.key]) > 0), cst = num(S.combo);
   const ci = cst > 0 ? comboInfo(d) : null;
   if (cst > 0 && (!ci || !ci.ok)) { S.msg = ci ? ci.why : "No se puede hacer la combinada."; return render(); }
   const total = items.reduce((t, x) => t + num(S.stakes[x.key]), 0) + cst;
   if (!total) { S.msg = "Escribe una cantidad."; return render(); }
   if (total > W.balance + 1e-9) { S.msg = "Saldo insuficiente."; return render(); }
-  items.forEach(x => { const st = num(S.stakes[x.key]); W.balance = +(W.balance - st).toFixed(2); W.bets.push({ id: Date.now() + "-" + Math.random().toString(36).slice(2, 7), stake: st, odds: x.odds, legs: mk([x]), status: "pending", at: Date.now() }); });
+  items.forEach(x => { const st = num(S.stakes[x.key]); W.balance = +(W.balance - st).toFixed(2); W.bets.push({ id: Date.now() + "-" + Math.random().toString(36).slice(2, 7), stake: st, odds: x.odds, legs: x.boost ? mk(x.legs) : mk([x]), status: "pending", at: Date.now(), ...(x.boost ? { boost: x.label, was: x.was } : {}) }); });
   if (cst > 0) { W.balance = +(W.balance - cst).toFixed(2); W.bets.push({ id: Date.now() + "-c" + Math.random().toString(36).slice(2, 5), stake: cst, odds: ci.odds, legs: mk(d), status: "pending", at: Date.now() }); }
   const nb = items.length + (cst > 0 ? 1 : 0);
   toast((nb > 1 ? nb + " apuestas realizadas" : "Apuesta realizada") + " · " + eur(total));
@@ -1624,6 +1679,11 @@ document.addEventListener("click", e => {
   else if (ds.share) { const b = S.wallet.bets.find(x => x.id === ds.share); if (b) { const txt = "Mi apuesta en AlmaBet: " + eur(b.stake) + " a " + fo(b.odds) + "\n" + b.legs.map(l => "· " + l.label + " (" + l.mname + ") " + l.match).join("\n") + "\n" + location.origin;
       if (navigator.share) navigator.share({ text: txt }).catch(() => {}); else navigator.clipboard && navigator.clipboard.writeText(txt).then(() => toast("Copiado para compartir")); } return; }
   else if (ds.toggle) S.slipOpen = !S.slipOpen;
+  else if (ds.boost) { const i = ds.boost.indexOf("|"), mid = ds.boost.slice(0, i), t = ds.boost.slice(i + 1), key = "boost|" + mid + "|" + t, j = S.slip.findIndex(x => x.key === key);
+    if (j >= 0) S.slip.splice(j, 1);
+    else { const m = findMatch(mid), b = m && boosts(m).find(x => x.t === t);
+      if (b) S.slip.push({ key, mid, boost: 1, label: b.t, mname: "SuperCuota", legs: b.d.map(x => ({ mk: x.mk, oc: x.oc })), added: b.boosted }); }
+    S.msg = ""; }
   else if (ds.setamt) { S.slipOpen = true; render(); const f = document.querySelector(S.slip.length > 1 ? "#slip input[data-combo]:not(:disabled)" : "#slip input[data-stake]:not(:disabled)"); if (f) f.focus(); return; }
   else if (ds.adm) { if (!S.admin) return; S.confirmReset = false;
     return adminAct(ds.mid, ds.adm, ds.adm === "dom" ? +ds.val : ds.adm === "setmin" ? S.form.min : undefined); }

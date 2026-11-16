@@ -629,10 +629,10 @@ const shortTeam = n => String(n || "").replace(/\b(C\.?\s?F\.?|C\.?\s?D\.?|F\.?\
 const DATA = DATA_MAIN; DATA.ligas[0].comp = "main";
 const EXTRA = (window.__COMPS || []).filter(c => c && c.data && c.comp);
 EXTRA.forEach(c => { const nm = c.comp.name || c.data.liga;
-  DATA.ligas.push({ nombre: nm, equipos: c.data.equipos || [], comp: c.comp.id });
+  DATA.ligas.push({ nombre: nm, equipos: c.data.equipos || [], comp: c.comp.id, team: c.comp.team || "" });
   Object.assign(DATA.plantillas = DATA.plantillas || {}, c.data.plantillas || {});
   (c.data.partidos || []).forEach(p => DATA.partidos.push({ ...p, liga: nm })); });
-DATA.corto = "Almazora C";
+DATA.corto = "Almazora C"; DATA.ligas[0].team = DATA.miEquipo;
 const LIGA = DATA.ligas[0].nombre;
 // Mercados completos (córners, remates, asistencias) solo en partidos de los equipos que se siguen en directo; el resto, solo lo que sale en las actas
 const FULL_T = new Set([DATA.miEquipo].concat(...EXTRA.map(c => c.comp.full || [])));
@@ -1173,7 +1173,7 @@ function useFut(mid) {
 }
 DATA.ligas.forEach(lg => { if (!(lg.equipos || []).length) return;
   const mid = lg.comp && lg.comp !== "main" ? "fut-" + lg.comp : "fut", teams = lg.equipos.map(e => e.nombre), ix = {}; teams.forEach((n, i) => ix[n] = i);
-  const my = teams.find(t => FULL_T.has(t)) || teams[0], myT = ix[my], nt = teams.length, sj = 2 * (nt - 1), ts = new Set(teams);
+  const my = lg.team && ix[lg.team] != null ? lg.team : null, myT = my ? ix[my] : 0, nt = teams.length, sj = 2 * (nt - 1), ts = new Set(teams);
   FUTS[mid] = { FUT: mid, LG0: lg, NT: nt, SEASON_J: sj, WINTER_J: sj / 2, FUT_TEAMS: teams, FUT_IX: ix, MY_T: myT, FUT_MY: my,
     AGOL_LINE: Math.floor(((lg.equipos[myT].gf || 0) / Math.max(1, lg.equipos[myT].pj || 1)) * sj) + 0.5,   // fija toda la temporada
     FUT_ALL: SQUAD.filter(p => ts.has(p.team)).map(p => p.i), cache: { key: "", sim: null }, mk: {} };
@@ -1254,8 +1254,8 @@ function futMarkets() {
   add("xmas", "Máximo goleador en Navidad", "El que más goles lleve al acabar la jornada " + XMAS_J + ".", pls(A.xmas, ALL), "player");
   FUT_TEAMS.forEach((t, i) => add("tsc" + i, "Máximo goleador · " + t, "El que más goles marque con su equipo en toda la liga.", pls(A.tsc[i], SQUAD.filter(p => p.team === t).map(p => p.i)), "player"));
   add("top3", "Acaba entre los 3 primeros", "Cada equipo, por separado.", teams(A.top3), "team");
-  add("apos", "Puesto final del " + FUT_MY, "", [{ k: "a1", label: "Entre los 8 primeros", c: A.apos.a1 }, { k: "a2", label: "Del 9º al 12º", c: A.apos.a2 }, { k: "a3", label: "Del 13º al " + NT + "º", c: A.apos.a3 }], "opt");
-  add("agol", "Goles del " + FUT_MY + " en la liga", "Goles a favor en las " + SEASON_J + " jornadas.", [{ k: "O", label: "Más de " + fmtL(AGOL_LINE), c: A.agol.O }, { k: "U", label: "Menos de " + fmtL(AGOL_LINE), c: A.agol.U }], "opt");
+  if (FUT_MY) add("apos", "Puesto final del " + FUT_MY, "", [{ k: "a1", label: "Entre los 8 primeros", c: A.apos.a1 }, { k: "a2", label: "Del 9º al 12º", c: A.apos.a2 }, { k: "a3", label: "Del 13º al " + NT + "º", c: A.apos.a3 }], "opt");
+  if (FUT_MY) add("agol", "Goles del " + FUT_MY + " en la liga", "Goles a favor en las " + SEASON_J + " jornadas.", [{ k: "O", label: "Más de " + fmtL(AGOL_LINE), c: A.agol.O }, { k: "U", label: "Menos de " + fmtL(AGOL_LINE), c: A.agol.U }], "opt");
   add("last", "Farolillo rojo", "El último al acabar la liga.", teams(A.last), "team");
   futMkCache = { ck, list }; FUT_CUR.mk = futMkCache; return futMkCache;
 }
@@ -1734,7 +1734,7 @@ function futBtn(k, o) {
 }
 function futView() {
   const ft = S.futTab || "liga";
-  const secs = Object.keys(FUTS).map(mid => { useFut(mid); return `<div class="block"><div class="bh">${esc(LG0.nombre)}</div>${futSec(ft)}</div>`; }).join("");
+  const secs = Object.keys(FUTS).map(mid => { useFut(mid); if (ft === "alm" && !FUT_MY) return ""; return `<div class="block"><div class="bh">${esc(LG0.nombre)}</div>${futSec(ft)}</div>`; }).join("");
   return `<h2 style="margin:4px 0 0;font-family:var(--f-cond);font-size:22px">Temporada</h2>
     <div class="mb-tabs">${[["liga", "Liga"], ["gol", "Goleadores"], ["alm", "Almazora"]].map(([k, t]) => `<button data-ftab="${k}" class="${ft === k ? "on" : ""}">${t}</button>`).join("")}</div>
     ${secs}

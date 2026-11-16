@@ -66,6 +66,11 @@ async function listComps() {
   if (await redis("SET", "compseed1", "1", "NX")) {   // Segona FFCV G1 (Almazora B): mercados completos solo para el Almazora B
     await setJ("comp:905431612", { id: "905431612", name: "Segona FFCV · Grupo 1", team: "C.D. Almazora 'B'", full: ["C.D. Almazora 'B'"], created: Date.now() }); await redis("SADD", "comps", "905431612");
   }
+  if (await redis("SET", "compseed2", "1", "NX")) {   // Primera FFCV G1 y Lliga Comunitat Grup Nord (Almazora A): solo mercados de actas
+    await setJ("comp:905431607", { id: "905431607", name: "Primera FFCV · Grupo 1", team: "", full: [], created: Date.now() });
+    await setJ("comp:905431822", { id: "905431822", name: "Lliga Comunitat · Grup Nord", team: "C.D. Almazora 'A'", full: [], created: Date.now() });
+    await redis("SADD", "comps", "905431607", "905431822");
+  }
   const out = [{ id: MAIN, name: "Tercera FFCV · Grupo 2", team: "C.D. Almazora 'C'" }];
   for (const id of ((await redis("SMEMBERS", "comps")) || []).sort()) { const c = await getJ("comp:" + id); if (c) out.push({ id, name: c.name, team: c.team, full: c.full || [] }); }
   return out;
@@ -164,10 +169,11 @@ module.exports = async (req, res) => {
     }
     if (a === "compsData") {   // todas las competiciones extra (la Tercera G2 va dentro de la app)
       await listComps();
-      const out = [];
-      for (const id of ((await redis("SMEMBERS", "comps")) || []).sort()) { const C = await getJ("comp:" + id); if (!C) continue;
-        try { out.push({ comp: { id, name: C.name, team: C.team, full: C.full || [] }, data: await compData(id, b.refresh && superAdmin) }); } catch (e) {} }
-      return send(200, { comps: out });
+      const ORDER = ["905431612", "905431607", "905431822"];   // Segona, Primera, Lliga Comunitat; las demás detrás
+      const ids = ((await redis("SMEMBERS", "comps")) || []).sort((x, y) => ((ORDER.indexOf(x) + 1) || 99) - ((ORDER.indexOf(y) + 1) || 99) || x.localeCompare(y));
+      const out = await Promise.all(ids.map(async id => { const C = await getJ("comp:" + id); if (!C) return null;
+        try { return { comp: { id, name: C.name, team: C.team || "", full: C.full || [] }, data: await compData(id, b.refresh && superAdmin) }; } catch (e) { return null; } }));
+      return send(200, { comps: out.filter(Boolean) });
     }
     if (a === "createLeague") {   // liga de amigos: solo nombre; se apuesta en todas las competiciones
       const name = String(b.name || "").trim().slice(0, 40);

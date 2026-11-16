@@ -896,7 +896,7 @@ async function api(action, body) {
 }
 async function sbSaveWallet() {
   if (sbBusy) { sbDirty = true; return; } sbBusy = true;
-  try { await api("wallet", { balance: S.wallet.balance, bets: S.wallet.bets, bonusIds: S.wallet.bonusIds, moves: S.wallet.moves }); } catch (e) { toast("No se ha podido guardar. Revisa la conexión."); }
+  try { await api("wallet", { balance: S.wallet.balance, bets: S.wallet.bets, bonusIds: S.wallet.bonusIds, moves: S.wallet.moves, lastPay: S.wallet.lastPay }); } catch (e) { toast("No se ha podido guardar. Revisa la conexión."); }
   sbBusy = false; if (sbDirty) { sbDirty = false; sbSaveWallet(); } else sbRanking();
 }
 async function sbRanking() { try { const { ranking } = await api("ranking"); S.ranking = ranking; ranking.forEach(r => S.names[r.id] = { name: r.username }); render(); } catch (e) {} }
@@ -912,10 +912,17 @@ async function applyBonus(list) {
   }
   if (list.length) api("ackBonus", { ids: list.map(x => x.id) }).catch(() => {});
 }
+const MONTHLY = 150;
+const ymNow = () => { const d = new Date(new Date().toLocaleString("en-US", { timeZone: "Europe/Madrid" })); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0"); };
 async function sbStart() {
   const d = await api("me");
   S.uid = d.username; S.me = d.username; S.admin = !!d.admin;
-  S.wallet = { balance: +d.wallet.balance, bets: d.wallet.bets || [], bonusIds: d.wallet.bonusIds || [], moves: d.wallet.moves || [] }; S.states = d.matches || {};
+  S.wallet = { balance: +d.wallet.balance, bets: d.wallet.bets || [], bonusIds: d.wallet.bonusIds || [], moves: d.wallet.moves || [], lastPay: d.wallet.lastPay || "" }; S.states = d.matches || {};
+  // Paga mensual: 150 € el día 1 de cada mes (la primera vez solo se apunta el mes)
+  if (!S.admin) { const cur = ymNow();
+    if (!S.wallet.lastPay) { S.wallet.lastPay = cur; sbSaveWallet(); }
+    else if (S.wallet.lastPay < cur) { S.wallet.balance = +(S.wallet.balance + MONTHLY).toFixed(2); S.wallet.lastPay = cur;
+      S.wallet.moves.unshift({ amount: MONTHLY, note: "Paga mensual", at: Date.now() }); sbSaveWallet(); setTimeout(() => toast("Paga del mes: +" + eur(MONTHLY)), 1800); } }
   S.store = "sb"; if (S.view === "login") S.view = "home";
   setInterval(sbPoll, 4000); sbPoll(); sbRanking(); setInterval(sbRanking, 30000); settle(); render();
 }
@@ -1385,11 +1392,23 @@ function tableView() {
 }
 function rankingView() {
   if (S.store !== "db" && S.store !== "sb") return `<div class="block empty">El ranking funciona en el enlace compartido de AlmaBet. Abierto como fichero en tu ordenador solo guarda tus apuestas.</div>`;
+  const MES = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
+  const ms = allMatches(), curJ = (ms.filter(m => m.status !== "ft").map(m => m.jornada || 0).sort((a, b) => a - b)[0]) || Math.max(0, ...ms.map(m => m.jornada || 0));
+  const rt = S.rankTab || "j", mon = MES[+ymNow().slice(5) - 1];
+  const tabs = `<div class="mb-tabs"><button data-rtab="j" class="${rt === "j" ? "on" : ""}">Jornada ${curJ}</button><button data-rtab="m" class="${rt === "m" ? "on" : ""}">Mes</button><button data-rtab="g" class="${rt === "g" ? "on" : ""}">General</button></div>`;
+  if (rt !== "g") {
+    const key = r => rt === "j" ? ((r.pj || {})[curJ] || 0) : (r.month === ymNow() ? r.pm || 0 : 0), cnt = r => rt === "j" ? ((r.nj || {})[curJ] || 0) : (r.month === ymNow() ? r.nm || 0 : 0);
+    const list = S.ranking.slice().sort((a, b) => key(b) - key(a) || cnt(b) - cnt(a));
+    const rr = list.map((r, i) => { const nm = (S.names[r.id] && S.names[r.id].name) || "Jugador", v = key(r);
+      return `<tr class="${r.id === S.uid ? "me" : ""}"><td>${i + 1}. ${esc(nm)}</td><td class="${v >= 0 ? "pos" : "neg"}">${(v >= 0 ? "+" : "") + eur(v)}</td><td>${cnt(r)}</td></tr>`; }).join("");
+    return tabs + `<div class="block"><div class="bh">${rt === "j" ? "Ranking de la jornada " + curJ : "Ranking de " + mon}</div><div class="model"><table class="stand"><thead><tr><th>Jugador</th><th>Beneficio</th><th>Apuestas</th></tr></thead><tbody>${rr || `<tr><td colspan="3">Nadie ha apostado todavía.</td></tr>`}</tbody></table></div>
+      <div class="note">${rt === "j" ? "Cuenta lo ganado menos lo apostado en las apuestas ya resueltas de esta jornada. Cuando acabe, empieza la siguiente de cero." : "Cuenta lo ganado menos lo apostado en las apuestas resueltas este mes. Se reinicia el día 1. Ese día todos reciben " + eur(MONTHLY) + "."}</div></div>`;
+  }
   const rows = S.ranking.map((r, i) => { const nm = (S.names[r.id] && S.names[r.id].name) || (r.id === S.uid ? "Tú" : "Jugador");
-    const adm = S.store === "sb" && S.admin ? `<tr class="adjr"><td colspan="4"><span class="adj"><input id="adj-${esc(r.id)}" inputmode="decimal" placeholder="€" aria-label="Cantidad para ${esc(nm)}"><button class="abtn" data-adj="${esc(r.id)}|1">+ Dar</button><button class="abtn red" data-adj="${esc(r.id)}|-1">− Quitar</button></span></td></tr>` : "";
-    return `<tr class="${r.id === S.uid ? "me" : ""}"><td>${i + 1}. ${esc(nm)}</td><td>${eur(r.balance || 0)}</td><td class="${(r.profit || 0) >= 0 ? "pos" : "neg"}">${(r.profit >= 0 ? "+" : "") + eur(r.profit || 0)}</td><td>${r.bets || 0}</td></tr>${adm}`; }).join("");
-  return `<div class="block"><div class="bh">Ranking de saldo</div><div class="model"><table class="stand"><thead><tr><th>Jugador</th><th>Saldo</th><th>Beneficio</th><th>Apuestas</th></tr></thead><tbody>${rows || `<tr><td colspan="4">Nadie ha apostado todavía.</td></tr>`}</tbody></table></div>
-    <div class="note">Todos empiezan con ${eur(DATA.saldoInicial)} ficticios. ${S.store === "sb" ? (S.admin ? "Como administrador puedes dar o quitar dinero: escribe la cantidad y pulsa Dar o Quitar. Le llega en unos segundos." : "") : "Apareces aquí al hacer tu primera apuesta."}</div></div>`;
+    const adm = S.store === "sb" && S.admin ? `<tr class="adjr"><td colspan="3"><span class="adj"><input id="adj-${esc(r.id)}" inputmode="decimal" placeholder="€" aria-label="Cantidad para ${esc(nm)}"><button class="abtn" data-adj="${esc(r.id)}|1">+ Dar</button><button class="abtn red" data-adj="${esc(r.id)}|-1">− Quitar</button></span></td></tr>` : "";
+    return `<tr class="${r.id === S.uid ? "me" : ""}"><td>${i + 1}. ${esc(nm)}</td><td>${eur(r.balance || 0)}</td><td class="${(r.profit || 0) >= 0 ? "pos" : "neg"}">${(r.profit >= 0 ? "+" : "") + eur(r.profit || 0)}</td></tr>${adm}`; }).join("");
+  return tabs + `<div class="block"><div class="bh">Ranking general</div><div class="model"><table class="stand"><thead><tr><th>Jugador</th><th>Saldo</th><th>Beneficio</th></tr></thead><tbody>${rows || `<tr><td colspan="3">Nadie ha apostado todavía.</td></tr>`}</tbody></table></div>
+    <div class="note">Todos empiezan con ${eur(DATA.saldoInicial)} ficticios y reciben ${eur(MONTHLY)} el día 1 de cada mes. ${S.store === "sb" ? (S.admin ? "Como administrador puedes dar o quitar dinero: escribe la cantidad y pulsa Dar o Quitar. Le llega en unos segundos." : "") : "Apareces aquí al hacer tu primera apuesta."}</div></div>`;
 }
 function betsView() {
   const bets = S.wallet.bets;
@@ -1618,8 +1637,8 @@ function place() {
   const total = items.reduce((t, x) => t + num(S.stakes[x.key]), 0) + cst;
   if (!total) { S.msg = "Escribe una cantidad."; return render(); }
   if (total > W.balance + 1e-9) { S.msg = "Saldo insuficiente."; return render(); }
-  items.forEach(x => { const st = num(S.stakes[x.key]); W.balance = +(W.balance - st).toFixed(2); W.bets.push({ id: Date.now() + "-" + Math.random().toString(36).slice(2, 7), stake: st, odds: x.odds, legs: x.boost ? mk(x.legs) : mk([x]), status: "pending", at: Date.now(), ...(x.boost ? { boost: x.label, was: x.was } : {}) }); });
-  if (cst > 0) { W.balance = +(W.balance - cst).toFixed(2); W.bets.push({ id: Date.now() + "-c" + Math.random().toString(36).slice(2, 5), stake: cst, odds: ci.odds, legs: mk(d), status: "pending", at: Date.now() }); }
+  items.forEach(x => { const st = num(S.stakes[x.key]); W.balance = +(W.balance - st).toFixed(2); W.bets.push({ id: Date.now() + "-" + Math.random().toString(36).slice(2, 7), stake: st, odds: x.odds, legs: x.boost ? mk(x.legs) : mk([x]), status: "pending", at: Date.now(), j: x.m.jornada || 0, ...(x.boost ? { boost: x.label, was: x.was } : {}) }); });
+  if (cst > 0) { W.balance = +(W.balance - cst).toFixed(2); W.bets.push({ id: Date.now() + "-c" + Math.random().toString(36).slice(2, 5), stake: cst, odds: ci.odds, legs: mk(d), status: "pending", at: Date.now(), j: Math.max(...d.map(x => x.m.jornada || 0)) }); }
   const nb = items.length + (cst > 0 ? 1 : 0);
   toast((nb > 1 ? nb + " apuestas realizadas" : "Apuesta realizada") + " · " + eur(total));
   S.slip = []; S.stakes = {}; S.combo = ""; S.slipOpen = false; saveWallet(); settle(); render();
@@ -1646,6 +1665,7 @@ document.addEventListener("click", e => {
   else if (ds.showpw) S.showPw = !S.showPw;
   else if (ds.co) S.coConfirm = ds.co;
   else if (ds.btab) S.betTab = ds.btab;
+  else if (ds.rtab) S.rankTab = ds.rtab;
   else if (ds.hf) { S.hf = ds.hf; S.view = "home"; S.detail = null; }
   else if (ds.preset != null && ds.preset !== "") { const mine = allMatches().find(m => sideOf(m) >= 0 && m.status !== "ft"), c = mine && presetCombos(mine)[+ds.preset];
     if (c) { c.d.forEach(x => { if (!S.slip.some(y => y.key === x.key)) S.slip.push({ key: x.key, mid: x.mid, mk: x.mk, oc: x.oc, label: x.label, mname: x.mname, added: x.odds }); });

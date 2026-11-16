@@ -35,6 +35,17 @@ async function whoami(req) {
   const u = await getJ("user:" + name);
   return u ? { name, ...u } : null;
 }
+const ymMadrid = t => { const d = new Date(new Date(t).toLocaleString("en-US", { timeZone: "Europe/Madrid" })); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0"); };
+const betJ = b => b.j || (+(String(((b.legs || [])[0] || {}).mid || "").match(/^j(\d+)-/) || [])[1] || 0);
+function periods(w) {
+  const done = (w.bets || []).filter(b => ["won", "lost", "cashout"].includes(b.status)), cur = ymMadrid(Date.now());
+  const pj = {}, nj = {}; let pm = 0, nm = 0;
+  done.forEach(b => { const pl = (b.ret || 0) - (+b.stake || 0), j = betJ(b);
+    if (j) { pj[j] = +((pj[j] || 0) + pl).toFixed(2); nj[j] = (nj[j] || 0) + 1; }
+    if (ymMadrid(b.closedAt || b.at) === cur) { pm += pl; nm++; } });
+  (w.bets || []).filter(b => b.status === "pending").forEach(b => { const j = betJ(b); if (j) nj[j] = (nj[j] || 0) + 1; });
+  return { pj, nj, pm: +pm.toFixed(2), nm, month: cur };
+}
 async function profit(w) {
   const done = (w.bets || []).filter(b => ["won", "lost", "cashout"].includes(b.status));
   return +(done.reduce((s, b) => s + (b.ret || 0), 0) - done.reduce((s, b) => s + (+b.stake || 0), 0)).toFixed(2);
@@ -97,7 +108,7 @@ module.exports = async (req, res) => {
       return send(200, { ok: true });
     }
     if (a === "wallet") {
-      const w = { balance: +b.balance, bets: Array.isArray(b.bets) ? b.bets : [], bonusIds: Array.isArray(b.bonusIds) ? b.bonusIds.slice(-200) : [], moves: Array.isArray(b.moves) ? b.moves.slice(0, 50) : [] };
+      const w = { balance: +b.balance, bets: Array.isArray(b.bets) ? b.bets : [], bonusIds: Array.isArray(b.bonusIds) ? b.bonusIds.slice(-200) : [], moves: Array.isArray(b.moves) ? b.moves.slice(0, 50) : [], lastPay: String(b.lastPay || "").slice(0, 7) };
       if (!isFinite(w.balance)) return send(400, { error: "Saldo no válido." });
       await setJ("wallet:" + me.name, w);
       return send(200, { ok: true });
@@ -109,7 +120,7 @@ module.exports = async (req, res) => {
       for (const n of names) { const u = await getJ("user:" + n); if (u && !u.admin && n !== adminU) players.push(n); }
       const rows = await Promise.all(players.map(async n => { const w = (await getJ("wallet:" + n)) || { balance: START, bets: [] };
         const pend = ((await redis("LRANGE", "bonus:" + n, 0, -1)) || []).reduce((t, x) => t + JSON.parse(x).amount, 0);
-        return { id: n, username: n, balance: Math.max(0, +w.balance + pend), profit: await profit(w), bets: (w.bets || []).length }; }));
+        return { id: n, username: n, balance: Math.max(0, +w.balance + pend), profit: await profit(w), bets: (w.bets || []).length, ...periods(w) }; }));
       rows.sort((x, y) => y.balance - x.balance);
       return send(200, { ranking: rows });
     }

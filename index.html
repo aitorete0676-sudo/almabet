@@ -270,6 +270,12 @@ th{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06
 .bc-pitch{width:28px;height:18px;fill:none;stroke:#cfd6d2;stroke-width:1.4}
 .bc-game{cursor:pointer}
 .bc-msc{display:grid;gap:4px}.bc-msc i{font-style:normal;background:var(--btn);min-width:24px;height:24px;display:grid;place-items:center;font-weight:800;border-radius:2px;color:var(--fg)}
+.bc-mini{cursor:pointer}.bc-mco{background:var(--btn);border-radius:4px;padding:6px 14px;font-weight:700;font-size:14px;display:flex;flex-direction:column;align-items:center;line-height:1.3;white-space:nowrap}.bc-mco b{color:var(--fg)!important;font-size:14px}
+.bc-mco.conf{flex-direction:row;gap:6px;background:none;padding:0}.bc-mco.conf button{background:var(--btn);border-radius:4px;padding:8px 10px;font-weight:700;font-size:13px}.bc-mco.conf button:first-child{background:#1b6e50}
+.bc-ring{width:10px;height:10px;margin:5px;border:1.5px solid #cfd6d2;border-radius:50%;background:var(--panel2)}
+.bc-cab{display:grid;grid-template-columns:22px auto auto 1fr;gap:8px;align-items:center;padding:4px 14px 2px}.bc-cab b{font-style:italic;font-weight:900;font-size:17px;letter-spacing:.01em}.bc-cab b span{color:#3ddc97}.bc-cab em{font-style:normal;font-size:16px;font-variant-numeric:tabular-nums;margin-left:8px}
+.bc-legs.sg{padding-left:16px}.bc-legs.sg.multi::before{left:40px}
+.bc-dt{grid-column:3/5;color:#cfd6d2;font-size:14px;text-align:right}
 .hm{display:grid;gap:14px;margin-bottom:6px}
 .hm-search{display:flex;align-items:center;gap:10px;background:#1c3b30;border-radius:26px;padding:10px 16px}.hm-search span{font-size:20px;color:#cfd6d2}
 .hm-search input{flex:1;background:none;border:0;color:var(--fg);font:inherit;font-size:16px;outline:none}.hm-search input::placeholder{color:#cfd6d2}
@@ -1240,20 +1246,26 @@ const PITCH = '<svg class="bc-pitch" viewBox="0 0 28 18" aria-hidden="true"><rec
 const betClock = m => { const now = Date.now(), st = m.st; let s = 0;
   if (m.phase === "1h" && st.k1) s = Math.max(0, (now - st.k1) / 1000); else if (m.phase === "2h" && st.k2) s = 2700 + Math.max(0, (now - st.k2) / 1000); else return minLabel(m);
   s = Math.floor(s); return String(Math.floor(s / 60)).padStart(2, "0") + ":" + String(s % 60).padStart(2, "0"); };
+const isSameGame = b => b.legs.length > 1 && b.legs.every(l => l.mid === b.legs[0].mid);
+const betType = b => b.boost ? "SuperCuota" : isSameGame(b) ? "Crear apuesta" : b.legs.length > 1 ? COMBO_NAME(b.legs.length) : "Sencilla";
 function betCard(b, tagTxt) {
   const when = new Date(b.at).toLocaleString("es-ES", { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
-  const tipo = b.boost ? "SuperCuota" : b.legs.length > 1 ? COMBO_NAME(b.legs.length) : "Sencilla";
+  const tipo = betType(b), same = isSameGame(b);
   const legs = b.legs.map(l => { const m = findMatch(l.mid), c = m && legCount(l, m);
-    const ic = l.status === "won" ? `<i class="bc-ok">✓</i>` : l.status === "lost" ? `<i class="bc-ko">✕</i>` : `<i class="bc-pe"></i>`;
+    const ic = l.status === "won" ? `<i class="bc-ok">✓</i>` : l.status === "lost" ? `<i class="bc-ko">✕</i>` : same ? `<i class="bc-ring"></i>` : `<i class="bc-pe"></i>`;
     const M_ = c ? Math.max(c.line + 0.5, c.cur + 0.4) * 1.08 : 1, X = c ? Math.min(100, c.cur / M_ * 100) : 0, Y = c ? c.line / M_ * 100 : 0;
     const bar = c ? `<div class="bp"><div class="bp-tr"><span class="bp-fill ${c.cur > c.line ? "ok" : ""}" style="width:${X}%"></span><i class="bp-ln" style="left:${Y}%"><em>${fmtL(c.line)}</em></i><b class="bp-cur" style="left:${X}%">${c.cur}</b></div></div>` : "";
     const sub = /^p/.test(l.mk) && SUBP.has(l.mk) ? `<em class="bc-subp">Cambio+</em>` : "";
-    const lab = /^p(st|sh)\d$/.test(l.mk) && c ? l.label + " - Más de " + fmtL(c.line) : l.label;
-    return `<div class="bc-leg">${ic}<div><div class="bc-sel"><b>${esc(lab)}</b><span>${fo(l.odds)}</span></div><div class="bc-mk">${esc(l.mname)}${l.ea ? ` <span class="sl-ea">2 goles de ventaja = pagada</span>` : ""}</div></div>${sub}${bar}</div>`; }).join("");
+    const PV = { pg1: "marcará", pg2: "marcará 2 o más", pg3: "marcará 3 o más", pga: "marcará o dará asistencia", pas: "dará asistencia", pye: "verá tarjeta" };
+    const lab = /^p(st|sh)\d$/.test(l.mk) && c ? l.label + " - Más de " + fmtL(c.line) : PV[l.mk] && !/ (marcará|verá|dará)/.test(l.label) ? l.label + " " + PV[l.mk] : l.label;
+    return `<div class="bc-leg">${ic}<div><div class="bc-sel"><b>${esc(lab)}</b>${same ? "" : `<span>${fo(l.odds)}</span>`}</div><div class="bc-mk">${esc(l.mname)}${l.ea ? ` <span class="sl-ea">2 goles de ventaja = pagada</span>` : ""}</div></div>${sub}${bar}</div>`; }).join("");
   const mids = [...new Set(b.legs.map(l => l.mid))];
   const games = mids.map(id => { const m = findMatch(id); if (!m) return "";
     const st = m.status === "pre" ? fmtDate(m.fecha) || "Sin empezar" : m.status === "ft" ? "Final" : m.status === "ht" ? "Descanso" : betClock(m);
     const sc = v => m.status === "pre" ? "" : `<span class="bc-sc">${v}</span>`;
+    if (m.status === "pre") { const d = m.fecha ? new Date(m.fecha) : null, ok = d && !isNaN(d);
+      const day = ok ? d.toLocaleDateString("es-ES", { weekday: "short", day: "numeric", month: "short" }).replace(/,/g, "").replace(/^./, c => c.toUpperCase()) : "Sin fecha", hr = ok ? d.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" }) : "";
+      return `<div class="bc-game" data-open="${m.id}"><div class="bc-tm">${teamShirt(m.home.nombre)}<b>${esc(m.home.nombre)}</b><span class="bc-dt">${esc(day)}</span></div><div class="bc-tm">${teamShirt(m.away.nombre)}<b>${esc(m.away.nombre)}</b><span class="bc-dt">${esc(hr)}</span></div></div>`; }
     return `<div class="bc-game" data-open="${m.id}"><div class="bc-tm">${teamShirt(m.home.nombre)}<b>${esc(m.home.nombre)}</b>${sc(m.hg)}</div><div class="bc-tm">${teamShirt(m.away.nombre)}<b>${esc(m.away.nombre)}</b>${sc(m.ag)}</div>
       <div class="bc-clk"><span>${esc(st)}</span>${PITCH}</div></div>`; }).join("");
   const win = b.status === "pending" ? b.stake * b.odds : (b.ret || 0);
@@ -1264,9 +1276,10 @@ function betCard(b, tagTxt) {
       : `<button class="bc-co" data-co="${b.id}">${ci.kind === "void" ? "Anular apuesta" : "Cerrar apuesta"}<b>${eur(ci.amount)}</b></button>`;
   } else if (ci) co = `<button class="bc-co" disabled>Cerrar apuesta no disponible</button>`;
   return `<div class="bc-date">${esc(when)}</div><div class="bc">
-    <div class="bc-hd" data-obet="${b.id}"><b>${eur(b.stake)} ${tipo}</b>${b.status !== "pending" ? `<span class="bc-tag ${b.status}">${tagTxt[b.status]}</span>` : ""}</div>
+    <div class="bc-hd" data-obet="${b.id}"><b>${eur(b.stake)}&nbsp; ${tipo}</b>${b.status !== "pending" ? `<span class="bc-tag ${b.status}">${tagTxt[b.status]}</span>` : ""}</div>
     <div class="bc-btns"><button data-reuse="${b.id}">↻ Reutilizar selecciones</button><button data-share="${b.id}">⇪ Compartir</button></div>
-    <div class="bc-legs ${b.legs.length > 1 ? "multi" : ""}">${legs}</div>${games}
+    ${same ? `<div class="bc-cab">${b.status === "won" ? `<i class="bc-ok">✓</i>` : b.status === "lost" ? `<i class="bc-ko">✕</i>` : `<i class="bc-ring"></i>`}<b>CREAR <span>APUESTA</span></b><em>${fo(b.odds)}</em></div>` : ""}
+    <div class="bc-legs ${b.legs.length > 1 ? "multi" : ""} ${same ? "sg" : ""}">${legs}</div>${games}
     <div class="bc-ft"><div><small>Imp:</small><b>${eur(b.stake)}</b></div><div><small>${b.status === "pending" ? "Ganancias" : "Retorno"}</small><b>${eur(win)}</b></div></div>
     ${co}</div>`;
 }
@@ -1658,8 +1671,11 @@ function betsView() {
   const canCo = b => { const c = cashoutInfo(b); return c && c.kind !== "closed"; };
   const tab = S.betTab || "pend", list = (tab === "pend" ? pend : tab === "co" ? pend.filter(canCo) : tab === "live" ? pend.filter(isLive) : done).slice().reverse();
   const mini = b => { const ms_ = [...new Set(b.legs.map(l => l.mid))].map(findMatch).filter(Boolean), one = ms_.length === 1 && ms_[0].status !== "pre" ? ms_[0] : null;
-    const right = b.status !== "pending" ? `<span class="bc-tag ${b.status}">${tagTxt[b.status]}</span>` : one ? `<span class="bc-msc"><i>${one.hg}</i><i>${one.ag}</i></span>` : "";
-    return `<button class="bc-mini" data-obet="${b.id}"><b>${eur(b.stake)} ${b.boost ? "SuperCuota" : b.legs.length > 1 ? COMBO_NAME(b.legs.length) : "Sencilla"}</b><span>${esc([...new Set(b.legs.map(l => l.match))].join(", "))}</span>${right}</button>`; };
+    const ci = b.status === "pending" ? cashoutInfo(b) : null, co = ci && ci.kind !== "closed";
+    const right = b.status !== "pending" ? `<span class="bc-tag ${b.status}">${tagTxt[b.status]}</span>`
+      : co ? (S.coConfirm === b.id ? `<span class="bc-mco conf"><button data-co-yes="${b.id}">Sí, ${eur(ci.amount)}</button><button data-co-no="1">No</button></span>` : `<button class="bc-mco" data-co="${b.id}">${ci.kind === "void" ? "Anular apuesta" : "Cerrar apuesta"}<b>${eur(ci.amount)}</b></button>`)
+      : one ? `<span class="bc-msc"><i>${one.hg}</i><i>${one.ag}</i></span>` : "";
+    return `<div class="bc-mini" data-obet="${b.id}" role="button" tabindex="0"><b>${eur(b.stake)}&nbsp; ${betType(b)}</b><span>${esc([...new Set(b.legs.map(l => l.match))].join(", "))}</span>${right}</div>`; };
   const opened = (b, i) => S.openBet[b.id] ?? (i === 0);
   const body = list.length ? list.map((b, i) => opened(b, i) ? betCard(b, tagTxt) : mini(b)).join("")
     : `<div class="mb-empty">No hay apuestas que mostrar en estos momentos<br>${tab === "pend" ? "Las apuestas pendientes" : tab === "co" ? "Las apuestas que puedes cerrar" : tab === "live" ? "Las apuestas de partidos en juego" : "Las apuestas terminadas"} se mostrarán aquí</div>`;

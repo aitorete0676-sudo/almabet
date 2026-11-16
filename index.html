@@ -622,14 +622,20 @@ const DATA_MAIN = {
   saldoInicial: 1000
 };
 // Otras ligas: datos que manda el servidor (clasificación, plantillas sacadas de las actas y partidos de la jornada)
-const LGX = window.__LGDATA || null, IS_MAIN = !LGX, COMP = LGX ? LGX.comp.id : "main";
+// Otras competiciones (p. ej. Segona FFCV G1): datos que manda el servidor (clasificación, plantillas de las actas y partidos). Todo en la misma página.
+const LGX = null, IS_MAIN = true, COMP = "main";
 const shortTeam = n => String(n || "").replace(/\b(C\.?\s?F\.?|C\.?\s?D\.?|F\.?\s?C\.?|U\.?\s?D\.?|C\.?\s?E\.?|S\.?\s?A\.?\s?D\.?|A\.?\s?D\.?|Club|Deportivo|Fútbol|Futbol)(?=\s|$)/gi, "").replace(/'/g, "").replace(/\s+/g, " ").trim() || n;
-const DATA = LGX ? { miEquipo: LGX.comp.team || ((LGX.data.equipos || [])[0] || {}).nombre || "", plantilla: [], plantillas: LGX.data.plantillas || {}, saldoInicial: 1000,
-    ligas: [{ nombre: LGX.data.liga, equipos: LGX.data.equipos }], partidos: (LGX.data.partidos || []).map(p => ({ ...p, liga: LGX.data.liga })) } : DATA_MAIN;
-DATA.corto = IS_MAIN ? "Almazora C" : shortTeam(DATA.miEquipo);
+const DATA = DATA_MAIN; DATA.ligas[0].comp = "main";
+const EXTRA = (window.__COMPS || []).filter(c => c && c.data && c.comp);
+EXTRA.forEach(c => { const nm = c.comp.name || c.data.liga;
+  DATA.ligas.push({ nombre: nm, equipos: c.data.equipos || [], comp: c.comp.id });
+  Object.assign(DATA.plantillas = DATA.plantillas || {}, c.data.plantillas || {});
+  (c.data.partidos || []).forEach(p => DATA.partidos.push({ ...p, liga: nm })); });
+DATA.corto = "Almazora C";
 const LIGA = DATA.ligas[0].nombre;
 // Mercados completos (córners, remates, asistencias) solo en partidos de los equipos que se siguen en directo; el resto, solo lo que sale en las actas
-const FULL_T = new Set(IS_MAIN ? [DATA.miEquipo] : (LGX.comp.full || [DATA.miEquipo]));
+const FULL_T = new Set([DATA.miEquipo].concat(...EXTRA.map(c => c.comp.full || [])));
+const compOf = mid => { const m = typeof findMatch === "function" && findMatch(mid), lg = m && DATA.ligas.find(l => l.nombre === m.league); return (lg && lg.comp) || "main"; };
 const fullMatch = m => FULL_T.has(m.home.nombre) || FULL_T.has(m.away.nombre);
 const ACTA_ONLY = k => /^crn/.test(k) || /^pst|^psh/.test(k) || k === "pas" || k === "pga";
 
@@ -737,7 +743,7 @@ const SQUAD = RAW.map((p, i) => {
     wa: x * (pw.a || 1) * (1 + 0.5 * (p.asistencias || 0)) * (p.balonParado ? 1.35 : 1) * (p.creador ? 1.15 : 1),
     wy: x * ((p.amarillas || 0) + 1.5 * (p.rojas || 0) + 0.4 * pw.y) / (eq + 2) };   // tarjetas reales + un poco según la posición
 });
-const sideOf = m => m.home.nombre === DATA.miEquipo ? 0 : m.away.nombre === DATA.miEquipo ? 1 : -1;
+const sideOf = m => FULL_T.has(m.home.nombre) ? 0 : FULL_T.has(m.away.nombre) ? 1 : -1;   // Almazora C y Almazora B
 // Jugadores que siguen en el campo y su peso para gol / asistencia / amarilla
 const teamName = (m, s) => (s ? m.away : m.home).nombre;
 const teamP = (m, s) => m.pidx.map(i => SQUAD[i]).filter(p => p.team === teamName(m, s));
@@ -871,7 +877,7 @@ function playerMarkets(m, lh, la, rem) {
     pm("pas", "Jugador - Asistirá", (p, st) => st.a >= 1 ? 1 : 1 - Math.exp(-la_(p)), "Asistirá"),
     pm("pye", "Jugador - Tarjeta", (p, st) => st.y >= 1 || st.r ? 1 : 1 - Math.exp(-sd(p).tY * sd(p).sy(p.i) * (1 + 0.7 * Math.max(0, -m.mom * (sideP(m, p) ? -1 : 1)))), "Recibirá tarjeta")];
   if (s >= 0) out.push(
-    { key: "pcs", name: "Portería a cero de " + DATA.miEquipo, margin: 0.06, group: "esp",
+    { key: "pcs", name: "Portería a cero de " + (s ? m.away.nombre : m.home.nombre), margin: 0.06, group: "esp",
       outcomes: [["Y", "Sí", pcs], ["N", "No", 1 - pcs]].map(([k, label, p]) => ({ k, label, p, odds: fin ? null : price(p, 0.06) })) });
   return out;
 }
@@ -954,7 +960,7 @@ async function saveWallet() {
 async function saveMatch(id, st) {
   S.states[id] = st; render();
   if (S.store === "local") return lsSave();
-  if (S.store === "sb") { try { await api("saveMatch", { id, state: st }); } catch (e) { toast(e.message); } return; }
+  if (S.store === "sb") { try { await api("saveMatch", { id, state: st, comp: compOf(id) }); } catch (e) { toast(e.message); } return; }
   try { await db.doc("matches/" + id).set(st); } catch (e) { toast(e && e.code === "not_granted" ? "Solo el administrador puede cambiar los partidos." : "No se ha podido guardar el partido."); }
 }
 /* ---------- Versión web (Vercel): cuentas propias con usuario y contraseña ---------- */
@@ -966,9 +972,6 @@ const LGK = "almabet-lg" + (/^\/admin/.test(location.pathname) ? "-admin" : "");
 let CUR_LG = window.__LG || "";
 const setLg = id => { try { localStorage.setItem(LGK, id); } catch (e) {} };
 const switchLg = id => { setLg(id); location.reload(); };
-const CMK = "almabet-comp" + (/^\/admin/.test(location.pathname) ? "-admin" : "");
-const switchComp = id => { try { localStorage.setItem(CMK, id); } catch (e) {} location.reload(); };
-const compChips = () => (S.comps || []).length > 1 ? `<div class="cmp-row">${S.comps.map(c => `<button class="${c.id === COMP ? "on" : ""}" data-compo="${esc(c.id)}">${esc(c.name)}</button>`).join("")}</div>` : "";
 async function api(action, body) {
   const r = await fetch(CFG.api, { method: "POST", headers: { "Content-Type": "application/json", Authorization: "Bearer " + tok() }, body: JSON.stringify({ action, lg: CUR_LG || undefined, comp: COMP, ...(body || {}) }) });
   let j = {}; try { j = await r.json(); } catch (e) {}
@@ -1002,7 +1005,6 @@ async function sbStart() {
   if (window.__LGERR) { S.lgErr = window.__LGERR; }
   const d = await api("me");
   S.leagues = d.leagues || []; S.me = d.username; S.comps = d.comps || [];
-  if (COMP !== "main" && !S.comps.some(c => c.id === COMP)) return switchComp("main");
   if (d.noLeague && S.pendingJoin) { const c = S.pendingJoin; S.pendingJoin = null; try { const j = await api("joinLeague", { code: c }); return switchLg(j.id); } catch (e) { S.lgErr = e.message; } }
   if (d.noLeague) {   // no está en la liga elegida (o en ninguna)
     const other = S.leagues[0];
@@ -1012,9 +1014,10 @@ async function sbStart() {
   if (!CUR_LG || (d.league && d.league.id !== CUR_LG)) { CUR_LG = d.league ? d.league.id : "main"; setLg(CUR_LG); }
   S.league_ = d.league || null; S.super = !!d.super; S.owner = !!d.owner;
   if (S.pendingJoin) { const c = S.pendingJoin; S.pendingJoin = null; try { const j = await api("joinLeague", { code: c }); if (j.id !== CUR_LG) return switchLg(j.id); toast("Ya estás en esta liga"); } catch (e) { toast(e.message); } }
-  if (LGX && LGX.data.pendingActas > 0) { S.pendActas = LGX.data.pendingActas;
-    const t = setInterval(async () => { try { const j = await api("compData"); S.pendActas = j.data ? j.data.pendingActas : 0; render();
-      if (!S.pendActas) { clearInterval(t); toast("Actas del grupo leídas: actualizando cuotas…"); setTimeout(() => { if (!S.slip.length) location.reload(); }, 1500); } } catch (e) {} }, 15000); }
+  { const pend = EXTRA.reduce((t, c) => t + (c.data.pendingActas || 0), 0);
+    if (pend > 0) { S.pendActas = pend;
+      const t = setInterval(async () => { try { const j = await api("compsData"); S.pendActas = (j.comps || []).reduce((x, c) => x + ((c.data || {}).pendingActas || 0), 0); render();
+        if (!S.pendActas) { clearInterval(t); toast("Actas leídas: actualizando cuotas…"); setTimeout(() => { if (!S.slip.length) location.reload(); }, 1500); } } catch (e) {} }, 15000); } }
   S.uid = d.username; S.me = d.username; S.admin = !!d.admin;
   S.wallet = { balance: +d.wallet.balance, bets: d.wallet.bets || [], bonusIds: d.wallet.bonusIds || [], moves: d.wallet.moves || [], lastPay: d.wallet.lastPay || "" }; S.states = d.matches || {};
   // Paga mensual: 150 € el día 1 de cada mes (la primera vez solo se apunta el mes)
@@ -1516,23 +1519,25 @@ function homeTop() {
     ${mine && (hf === "all" || hf === "mine") ? boostCards(mine) : ""}
   </div>`;
 }
+// Próximos partidos: por competición (Tercera primero) y jornada
+const preGroups = arr => { const g = {}; arr.forEach(m => { const k = leagues.indexOf(m.league) + "|" + (m.jornada || 0); (g[k] ??= [m.jornada || 0, m.league, []])[2].push(m); });
+  return Object.keys(g).sort((x, y) => { const [a1, b1] = x.split("|").map(Number), [a2, b2] = y.split("|").map(Number); return a1 - a2 || b1 - b2; }).map(k => g[k]); };
 function listView(liveOnly) {
   const ms = allMatches().filter(m => !S.league || m.league === S.league);
   const my = ms.filter(m => sideOf(m) >= 0 && m.status !== "ft");
   const live = ms.filter(m => m.status === "live" || m.status === "ht"), pre = ms.filter(m => m.status === "pre"), ft = ms.filter(m => m.status === "ft");
   const block = (arr, title, dot) => arr.length ? `<div class="block"><div class="bh">${dot ? `<span class="livepill"><i class="dot"></i></span>` : ""}<span>${esc(title)}</span><span class="sp"></span><div class="cols"><span>1</span><span>X</span><span>2</span></div></div>${arr.map(rowHTML).join("")}</div>` : "";
   const h2 = t => `<h2 style="margin:4px 0 0;font-family:var(--f-cond);font-size:22px">${t}</h2>`;
-  let h = compChips() + (liveOnly ? "" : homeTop());
+  let h = liveOnly ? "" : homeTop();
   const hf = liveOnly ? "all" : (S.hf || "all");
-  if (hf === "mine") return h + (my.length ? h2("Tu equipo: " + esc(DATA.miEquipo)) + `<div class="block mine">${my.map(rowHTML).join("")}</div>` : `<div class="block empty">No hay partidos de ${esc(DATA.corto)} pendientes.</div>`);
+  if (hf === "mine") return h + (my.length ? `<div class="block">${my.map(rowHTML).join("")}</div>` : `<div class="block empty">No hay partidos de ${esc(DATA.corto)} pendientes.</div>`);
   if (hf === "live") return h + (block(live, leagues[0], true) || `<div class="block empty">Ahora no se está jugando ningún partido.</div>`);
-  if (hf === "pre") { const byJ = {}; pre.forEach(m => (byJ[m.jornada || 0] ??= []).push(m));
-    return h + (Object.keys(byJ).map(j => block(byJ[j], (j > 0 ? "Jornada " + j + " · " : "") + leagues[0], false)).join("") || `<div class="block empty">No hay partidos programados.</div>`); }
-  if (my.length && !liveOnly) h += h2("Tu equipo: " + esc(DATA.miEquipo)) + `<div class="block mine">${my.map(rowHTML).join("")}<div class="note">Abre el partido para apostar por cada jugador: gol, doblete, asistencia, amarilla y portería a cero.</div></div>`;
+  if (hf === "pre") { const byJ = preGroups(pre);
+    return h + (byJ.map(([j, lg, arr]) => block(arr, (j > 0 ? "Jornada " + j + " · " : "") + lg, false)).join("") || `<div class="block empty">No hay partidos programados.</div>`); }
   h += h2("En directo") + (block(live, leagues[0], true) || `<div class="block empty">Ahora no se está jugando ningún partido.${S.admin ? " Abre uno y pulsa «Empezar partido» cuando arranque." : ""}</div>`);
   if (!liveOnly) {
-    const byJ = {}; pre.forEach(m => (byJ[m.jornada || 0] ??= []).push(m));
-    h += h2("Próximos partidos") + (Object.keys(byJ).map(j => block(byJ[j], (j > 0 ? "Jornada " + j + " · " : "") + leagues[0], false)).join("") || `<div class="block empty">No hay partidos programados.</div>`);
+    const byJ = preGroups(pre);
+    h += h2("Próximos partidos") + (byJ.map(([j, lg, arr]) => block(arr, (j > 0 ? "Jornada " + j + " · " : "") + lg, false)).join("") || `<div class="block empty">No hay partidos programados.</div>`);
     if (ft.length) h += h2("Finalizados") + block(ft, leagues[0], false);
   }
   return h;
@@ -1667,7 +1672,7 @@ function marketsHTML(m, mk) {
 function tableView() {
   return DATA.ligas.map(lg => { const L = leagueStats(lg);
     const rows = lg.equipos.slice().sort((a, b) => (b.pts - a.pts) || ((b.gf - b.gc) - (a.gf - a.gc)) || (b.gf - a.gf)).map((e, i) => { const st = strength(e, L);
-      return `<tr class="${e.nombre === DATA.miEquipo ? "me" : ""}"><td>${i + 1}. ${esc(e.nombre)}</td><td>${e.pj ?? "—"}</td><td><b>${e.pts ?? "—"}</b></td><td>${e.gf ?? "—"}</td><td>${e.gc ?? "—"}</td><td>${e.gf != null ? (e.gf - e.gc > 0 ? "+" : "") + (e.gf - e.gc) : "—"}</td><td>${esc(e.racha || "")}</td><td>${st ? st.att.toFixed(2) : "—"}</td><td>${st ? st.def.toFixed(2) : "—"}</td></tr>`; }).join("");
+      return `<tr class="${FULL_T.has(e.nombre) ? "me" : ""}"><td>${i + 1}. ${esc(e.nombre)}</td><td>${e.pj ?? "—"}</td><td><b>${e.pts ?? "—"}</b></td><td>${e.gf ?? "—"}</td><td>${e.gc ?? "—"}</td><td>${e.gf != null ? (e.gf - e.gc > 0 ? "+" : "") + (e.gf - e.gc) : "—"}</td><td>${esc(e.racha || "")}</td><td>${st ? st.att.toFixed(2) : "—"}</td><td>${st ? st.def.toFixed(2) : "—"}</td></tr>`; }).join("");
     return `<div class="block"><div class="bh">${esc(lg.nombre)}</div><div class="model"><table class="stand"><thead><tr><th>Equipo</th><th>PJ</th><th>Pts</th><th>GF</th><th>GC</th><th>DG</th><th>Racha</th><th>Ataque</th><th>Defensa</th></tr></thead><tbody>${rows}</tbody></table></div></div>`; }).join("");
 }
 function rankingView() {
@@ -1738,7 +1743,7 @@ function futView() {
 function ligasView() {
   const L = S.leagues || [], cur = CUR_LG, curL = L.find(l => l.id === cur), cr = S.lgCreate || {}, C = S.comps || [];
   const list = L.map(l => `<div class="lg-row ${l.id === cur ? "on" : ""}"><div><b>${esc(l.name)}</b>${l.admin ? `<small>Administras</small>` : ""}</div>${l.id === cur && S.store === "sb" ? `<span class="lg-cur">Abierta</span>` : `<button class="abtn pri" data-lgo="${esc(l.id)}">Abrir</button>`}</div>`).join("");
-  const comps = C.map(c => `<div class="lg-row ${c.id === COMP ? "on" : ""}"><div><b>${esc(c.name)}</b></div>${c.id === COMP ? `<span class="lg-cur">Viendo</span>` : `<button class="abtn" data-compo="${esc(c.id)}">Ver</button>`}</div>`).join("");
+  const comps = C.map(c => `<div class="lg-row ${c.id === COMP ? "on" : ""}"><div><b>${esc(c.name)}</b></div><span class="lg-cur">En Inicio</span></div>`).join("");
   const sup = S.super || (S.admin && CUR_LG === "main");
   return `<h2 style="margin:4px 0 0;font-family:var(--f-cond);font-size:22px">Ligas</h2>
     ${S.lgErr ? `<div class="block empty">${esc(S.lgErr)}</div>` : ""}
@@ -2019,12 +2024,11 @@ document.addEventListener("click", e => {
   else if (ds.lgo) return switchLg(ds.lgo);
   else if (ds.lgjoin) { const c = (document.getElementById("lg-code") || {}).value || "";
     api("joinLeague", { code: c }).then(j => switchLg(j.id), e => toast(e.message)); return; }
-  else if (ds.compo) return switchComp(ds.compo);
   else if (ds.compfind) { const u = (document.getElementById("cp-url") || {}).value || ""; S.lgCreate = { url: u, busy: "Buscando el grupo…" }; render();
     api("groupTeams", { group: u }).then(j => { S.lgCreate = { url: u, teams: j.teams, liga: j.liga }; render(); }, e => { S.lgCreate = { url: u }; toast(e.message); render(); }); return; }
   else if (ds.compadd) { const cr = S.lgCreate || {}, team = (document.getElementById("cp-team") || {}).value;
     S.lgCreate = { ...cr, busy: "Añadiendo…" }; render();
-    api("addComp", { group: cr.url, team }).then(j => switchComp(j.id), e => { S.lgCreate = { ...cr, busy: "" }; toast(e.message); render(); }); return; }
+    api("addComp", { group: cr.url, team }).then(() => location.reload(), e => { S.lgCreate = { ...cr, busy: "" }; toast(e.message); render(); }); return; }
   else if (ds.lgcreate) { const name = (document.getElementById("lg-name") || {}).value || "";
     api("createLeague", { name }).then(j => { try { sessionStorage.setItem("ab-view", "ligas"); } catch (e) {} switchLg(j.id); }, e => toast(e.message)); return; }
   else if (ds.lgshare) { const url = location.origin + "/?unirse=" + ds.lgshare, txt = "Únete a mi liga de AlmaBet: " + url + " (código " + ds.lgshare + ")";
@@ -2122,14 +2126,14 @@ setInterval(() => { settle(); render(); }, 1000);
 // Carga la liga elegida antes de arrancar la app (tu liga original va dentro del propio código)
 (function () {
   var CFG = window.ALMABET_CONFIG || {}, adm = /^\/admin/.test(location.pathname), get = function (k) { try { return localStorage.getItem(k) || ""; } catch (e) { return ""; } };
-  var tok = get("almabet-token" + (adm ? "-admin" : "")), lg = get("almabet-lg" + (adm ? "-admin" : "")), comp = get("almabet-comp" + (adm ? "-admin" : ""));
+  var tok = get("almabet-token" + (adm ? "-admin" : "")), lg = get("almabet-lg" + (adm ? "-admin" : ""));
   window.__LG = lg;
   function run() { var s = document.createElement("script"); s.textContent = document.getElementById("app-src").textContent; document.body.appendChild(s); }
-  if (!CFG.api || !tok || !comp || comp === "main") return run();
-  fetch(CFG.api, { method: "POST", headers: { "Content-Type": "application/json", Authorization: "Bearer " + tok }, body: JSON.stringify({ action: "compData", lg: lg, comp: comp }) })
-    .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
-    .then(function (x) { if (x.ok && x.j.data) window.__LGDATA = x.j; else { window.__LGERR = (x.j && x.j.error) || "No se ha podido cargar la competición."; try { localStorage.removeItem("almabet-comp" + (adm ? "-admin" : "")); } catch (e) {} } run(); })
-    .catch(function () { window.__LGERR = "Sin conexión."; run(); });
+  if (!CFG.api || !tok) return run();
+  fetch(CFG.api, { method: "POST", headers: { "Content-Type": "application/json", Authorization: "Bearer " + tok }, body: JSON.stringify({ action: "compsData", lg: lg }) })
+    .then(function (r) { return r.json(); })
+    .then(function (j) { window.__COMPS = j.comps || []; if (j.error) window.__LGERR = j.error; run(); })
+    .catch(function () { run(); });
 })();
 </script>
 

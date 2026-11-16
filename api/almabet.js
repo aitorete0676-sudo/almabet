@@ -82,10 +82,19 @@ async function ensureMain() {
   const code = await newCode(MAIN);
   await setJ("lg:" + MAIN, { id: MAIN, name: "Almazora C · Tercera FFCV G2", code, groupId: "905431622", team: "C.D. Almazora 'C'", owner: null, created: Date.now() });
 }
-async function allMatches(comp = MAIN) {
-  const h = await redis("HGETALL", CM(comp)) || [];
-  const o = {}; for (let i = 0; i < h.length; i += 2) o[h[i]] = JSON.parse(h[i + 1]);
+async function allMatches() {   // estados de todos los partidos de todas las competiciones (se ven en la misma página)
+  const o = {};
+  for (const c of [MAIN].concat((await redis("SMEMBERS", "comps")) || [])) {
+    const h = await redis("HGETALL", CM(c)) || [];
+    for (let i = 0; i < h.length; i += 2) o[h[i]] = JSON.parse(h[i + 1]);
+  }
   return o;
+}
+async function compData(comp, refresh) {
+  const ck = "lgdata:" + comp; let d = await getJ(ck);
+  const stale = !d || Date.now() - d.updated > 6 * 3600e3 || d.pendingActas > 0 || refresh;
+  if (stale) { try { d = await buildGroup({ groupId: comp, getJ, setJ, maxActas: 12 }); await setJ(ck, d); } catch (e) { if (!d) throw e; } }
+  return d;
 }
 
 module.exports = async (req, res) => {
@@ -153,12 +162,12 @@ module.exports = async (req, res) => {
       await redis("SADD", "comps", gid);
       return send(200, { id: gid, comps: await listComps() });
     }
-    if (a === "compData") {   // datos de una competición (clasificación, plantillas de las actas, partidos)
-      if (comp === MAIN) return send(200, { main: true });
-      const C = await getJ("comp:" + comp), ck = "lgdata:" + comp; let d = await getJ(ck);
-      const stale = !d || Date.now() - d.updated > 6 * 3600e3 || d.pendingActas > 0 || (b.refresh && superAdmin);
-      if (stale) { try { d = await buildGroup({ groupId: comp, getJ, setJ, maxActas: 12 }); await setJ(ck, d); } catch (e) { if (!d) return send(502, { error: "No se han podido leer los datos del grupo: " + e.message }); } }
-      return send(200, { data: d, comp: { id: comp, name: C.name, team: C.team, full: C.full || [] } });
+    if (a === "compsData") {   // todas las competiciones extra (la Tercera G2 va dentro de la app)
+      await listComps();
+      const out = [];
+      for (const id of ((await redis("SMEMBERS", "comps")) || []).sort()) { const C = await getJ("comp:" + id); if (!C) continue;
+        try { out.push({ comp: { id, name: C.name, team: C.team, full: C.full || [] }, data: await compData(id, b.refresh && superAdmin) }); } catch (e) {} }
+      return send(200, { comps: out });
     }
     if (a === "createLeague") {   // liga de amigos: solo nombre; se apuesta en todas las competiciones
       const name = String(b.name || "").trim().slice(0, 40);
@@ -187,11 +196,11 @@ module.exports = async (req, res) => {
 
     if (a === "me") {
       const w = (await getJ(KK.wallet(me.name))) || { balance: START, bets: [] };
-      return send(200, { username: me.name, admin, super: superAdmin && !realMember, owner: lg !== MAIN && L.owner === me.name, wallet: w, matches: await allMatches(comp), leagues: await myLeagues(), comps: await listComps(), comp, league: { id: lg, name: L.name, code: L.code } });
+      return send(200, { username: me.name, admin, super: superAdmin && !realMember, owner: lg !== MAIN && L.owner === me.name, wallet: w, matches: await allMatches(), leagues: await myLeagues(), comps: await listComps(), comp, league: { id: lg, name: L.name, code: L.code } });
     }
     if (a === "matches") {
       const bonus = ((await redis("LRANGE", KK.bonus(me.name), 0, -1)) || []).map(x => JSON.parse(x));
-      return send(200, { matches: await allMatches(comp), bonus });
+      return send(200, { matches: await allMatches(), bonus });
     }
     if (a === "ackBonus") { const ids = new Set(b.ids || []);
       const list = (await redis("LRANGE", KK.bonus(me.name), 0, -1)) || [];

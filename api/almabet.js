@@ -182,7 +182,7 @@ module.exports = async (req, res) => {
       return send(200, { ok: true });
     }
     if (a === "playerBets") {
-      if (!admin) return send(403, { error: "Solo el administrador puede ver las apuestas de otros." });
+      if (!admin || lg !== MAIN) return send(403, { error: "Solo el administrador de la liga original puede ver las apuestas de otros." });
       if (!(await redis("SISMEMBER", KK.members, norm(b.user)))) return send(404, { error: "Ese jugador no está en la liga." });
       const w = (await getJ(KK.wallet(norm(b.user)))) || { bets: [] };
       return send(200, { bets: (w.bets || []).slice(-150) });

@@ -174,6 +174,10 @@ th{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06
 .bst-o{grid-column:2;grid-row:1/3;display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--btn);border-radius:4px;min-height:52px;font-variant-numeric:tabular-nums}
 .bst-o s{font-size:12px;color:var(--muted)}.bst-o b{font-size:18px;color:#f5d417;font-weight:800}
 .bst-o.sel{background:#e4e8e6}.bst-o.sel s{display:none}
+.hm-odds b s{font-size:.6em;color:var(--muted);font-weight:600;margin-right:4px;vertical-align:middle}
+.hm-odds.sel{background:#e4e8e6}.hm-odds.sel small{color:#3b4541}
+.hm-cf{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:auto}
+.bst-mini{background:linear-gradient(90deg,#f5d417,#ffb300);color:#14201b;font-weight:900;font-style:italic;text-transform:uppercase;font-size:10px;padding:2px 6px;border-radius:3px}
 .slm-bar{display:grid;grid-template-columns:28px minmax(0,1fr) auto;gap:2px 8px;align-items:start;background:#fff;color:#14201b;padding:12px 14px 12px 10px;cursor:pointer}
 .slm-bar.multi{grid-template-columns:28px minmax(0,1fr) auto 44px}
 .slm-x{color:#55615c;font-size:18px;line-height:1;padding:2px 0}
@@ -1187,7 +1191,7 @@ const BOOST = 1.25, BOOST_MAX = 20;
 const boostOf = o => Math.max(Math.round((o + 0.1) * 100) / 100, roundOdds(o * BOOST));
 function boosts(m) {
   if (!m || sideOf(m) < 0 || m.status === "ft") return [];
-  const pc = presetCombos(m).slice(0, 2), k = markets(m).list.find(x => x.key === "pg1");
+  const pc = presetCombos(m), k = markets(m).list.find(x => x.key === "pg1");
   const top = k && k.outcomes.filter(o => o.odds != null).sort((a, b) => a.odds - b.odds)[0];
   const out = pc.map(c => ({ t: c.t, d: c.d, odds: c.odds }));
   if (top) { const l = legOf(m, "pg1", top.k); if (l) out.unshift({ t: shortName(top.label) + " marca", d: [l], odds: l.odds }); }
@@ -1199,9 +1203,12 @@ function boostLegsNow(m, legs) {
 }
 function boostCards(m) {
   const bs = boosts(m); if (!bs.length) return "";
-  return `<div class="bst-wrap"><div class="bst-h"><span class="bst-tag">SuperCuotas</span><small>Cuota mejorada · máx. ${BOOST_MAX} €</small></div><div class="bst-list">${bs.map(b => { const key = "boost|" + m.id + "|" + b.t, sel = S.slip.some(s => s.key === key);
-    return `<div class="bst"><div class="bst-t">${esc(b.t)}</div><div class="bst-l">${b.d.map(x => { const pi = /^p/.test(x.mk) ? SQUAD[+x.oc] : null; return esc(pi ? shortName(pi.nombre) + " - " + x.mname.replace(/^Jugador - /, "") : x.label + " - " + x.mname); }).join("<br>")}</div>
-      <button class="bst-o ${sel ? "sel" : ""}" data-boost="${esc(m.id + "|" + b.t)}"><s>${fo(b.odds)}</s><b>${sel ? CHECK : fo(b.boosted)}</b></button></div>`; }).join("")}</div></div>`;
+  return `<div class="hm-sec"><span><span class="bst-tag">SuperCuotas</span> ${esc(m.home.nombre)} v ${esc(m.away.nombre)}</span></div>
+    <div class="hm-cards">${bs.map(b => { const key = "boost|" + m.id + "|" + b.t, sel = S.slip.some(s => s.key === key);
+      return `<div class="hm-card"><div class="hm-ct">${esc(b.t)}<span>${teamShirt(m.home.nombre)}${teamShirt(m.away.nombre)}</span></div>
+        ${b.d.map(x => { const pi = /^p/.test(x.mk) ? SQUAD[+x.oc] : null; return `<div class="hm-leg">${pi ? shirt(pi.dorsal) : teamShirt(DATA.miEquipo)}<span>${esc(pi ? shortName(pi.nombre) + " - " + x.mname.replace(/^Jugador - /, "") : x.label + " - " + x.mname)}</span></div>`; }).join("")}
+        <div class="hm-cf"><span>CREAR APUESTA</span><em class="bst-mini">SuperCuota</em></div>
+        <button class="hm-odds ${sel ? "sel" : ""}" data-boost="${esc(m.id + "|" + b.t)}">${sel ? CHECK : `<b><s>${fo(b.odds)}</s> ${fo(b.boosted)}</b>`}<small>10 €: ganancias de ${eur(10 * b.boosted)}</small></button></div>`; }).join("")}</div>`;
 }
 function homeTop() {
   const ms = allMatches(), mine = ms.find(m => sideOf(m) >= 0 && m.status !== "ft") || ms.find(m => sideOf(m) >= 0);
@@ -1222,7 +1229,6 @@ function homeTop() {
       <span class="hm-cta">${mine.status === "pre" ? (cd ? "⏱ " + cd : "Sin hora") : mine.status === "ft" ? mine.hg + " - " + mine.ag : mine.hg + " - " + mine.ag + " · " + minLabel(mine)}</span><span class="hm-go">Apostar</span></button>`);
   if (leader) banners.push(`<button class="hm-ban b2" data-view="rank"><small>Líder del ranking</small><b>${esc(leader.username || (S.names[leader.id] && S.names[leader.id].name) || "Jugador")}</b><span class="hm-big">${eur(leader.balance || 0)}</span><span class="hm-go">Ver ranking</span></button>`);
   banners.push(`<button class="hm-ban b3" data-hf="pre"><small>Tercera FFCV · Grupo 2</small><b>Jornada ${jor || ""}</b><span class="hm-big">${ms.filter(m => m.jornada === jor).length} partidos</span><span class="hm-go">${nLive ? nLive + " en directo" : "Ver partidos"}</span></button>`);
-  const pres = mine ? presetCombos(mine) : [];
   const hf = S.hf || "all";
   return `<div class="hm">
     <label class="hm-search"><span>⌕</span><input id="hm-q" data-search="1" placeholder="Buscar jugador o equipo" autocomplete="off" value="${esc(S.q || "")}"></label>${res}
@@ -1230,10 +1236,6 @@ function homeTop() {
     <div class="hm-bans">${banners.join("")}</div>
     <div class="mb-tabs hm-pills">${[["all", "Todos"], ["mine", "Almazora C"], ["live", "En directo"], ["pre", "Próximos"]].map(([k, t]) => `<button data-hf="${k}" class="${hf === k ? "on" : ""}">${t}</button>`).join("")}</div>
     ${mine && (hf === "all" || hf === "mine") ? boostCards(mine) : ""}
-    ${pres.length && (hf === "all" || hf === "mine") ? `<div class="hm-sec"><span>${teamShirt(DATA.miEquipo)} Crear apuesta · ${esc(mine.home.nombre)} v ${esc(mine.away.nombre)}</span></div>
-      <div class="hm-cards">${pres.map((c, i) => `<div class="hm-card"><div class="hm-ct">${esc(c.t)}<span>${teamShirt(mine.home.nombre)}${teamShirt(mine.away.nombre)}</span></div>
-        ${c.d.map(x => { const pi = /^p/.test(x.mk) ? SQUAD[+x.oc] : null; return `<div class="hm-leg">${pi ? shirt(pi.dorsal) : teamShirt(DATA.miEquipo)}<span>${esc(pi ? shortName(pi.nombre) + " - " + x.mname.replace(/^Jugador - /, "") : x.label + " - " + x.mname)}</span></div>`; }).join("")}
-        <div class="hm-cf"><span>CREAR APUESTA</span></div><button class="hm-odds" data-preset="${i}"><b>${fo(c.odds)}</b><small>10 €: ganancias de ${eur(10 * c.odds)}</small></button></div>`).join("")}</div>` : ""}
   </div>`;
 }
 function listView(liveOnly) {

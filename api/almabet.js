@@ -109,12 +109,12 @@ module.exports = async (req, res) => {
     if (L && lg !== MAIN && a === "me") await redis("SADD", "lgall", lg);   // ligas creadas antes de existir la lista
     const realMember = !!L && !!(await redis("SISMEMBER", KK.members, me.name));
     const member = realMember || (!!L && superAdmin);   // el admin de la liga original gestiona todas las ligas
-    const admin = member && (superAdmin || L.owner === me.name);
+    const admin = member && superAdmin;   // solo el admin de la liga original administra (en todas las ligas)
     async function myLeagues() {
       const ids = superAdmin ? ((await redis("SMEMBERS", "lgall")) || []) : ((await redis("SMEMBERS", "ul:" + me.name)) || []);
       if (await redis("SISMEMBER", "lgm:" + MAIN, me.name)) ids.unshift(MAIN);
       const out = [];
-      for (const id of [...new Set(ids)]) { const l = await getJ("lg:" + id); if (l) out.push({ id, name: l.name, code: l.code, team: l.team, groupId: l.groupId, admin: superAdmin || l.owner === me.name }); }
+      for (const id of [...new Set(ids)]) { const l = await getJ("lg:" + id); if (l) out.push({ id, name: l.name, code: l.code, team: l.team, groupId: l.groupId, admin: superAdmin }); }
       return out;
     }
     // --- Ligas: crear, unirse, ver las mías, datos del grupo ---
@@ -128,12 +128,12 @@ module.exports = async (req, res) => {
       const liga = (st.competicion || "Liga") + (st.grupo ? " · " + String(st.grupo).replace(/^Grup\s*-\s*/i, "Grupo ") : "");
       if (a === "groupTeams") return send(200, { groupId: gid, liga, teams });
       const team = teams.find(t => t === b.team); if (!team) return send(400, { error: "Elige tu equipo de la lista." });
-      const mine = (await redis("INCR", "lgcount:" + me.name)); if (mine > 5) return send(429, { error: "Ya has creado 5 ligas." });
+      const mine = (await redis("INCR", "lgcount:" + me.name)); if (mine > 5 && !superAdmin) return send(429, { error: "Ya has creado 5 ligas." });
       const id = crypto.randomBytes(5).toString("hex"), code = await newCode(id);
       const name = String(b.name || "").trim().slice(0, 40) || team + " · " + liga;
       await setJ("lg:" + id, { id, name, code, groupId: gid, team, owner: me.name, created: Date.now() });
-      await redis("SADD", "lgm:" + id, me.name); await redis("SADD", "ul:" + me.name, id); await redis("SADD", "lgall", id);
-      await setJ(K(id).wallet(me.name), { balance: START, bets: [] });
+      await redis("SADD", "lgall", id);
+      if (!superAdmin) { await redis("SADD", "lgm:" + id, me.name); await redis("SADD", "ul:" + me.name, id); await setJ(K(id).wallet(me.name), { balance: START, bets: [] }); }
       return send(200, { id, code, leagues: await myLeagues() });
     }
     if (a === "joinLeague") {

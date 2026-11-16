@@ -1720,7 +1720,7 @@ function futView() {
 // Ligas: las mías, invitar, unirse con código y crear una nueva
 function ligasView() {
   const L = S.leagues || [], cur = CUR_LG, curL = L.find(l => l.id === cur), cr = S.lgCreate || {};
-  const list = L.map(l => `<div class="lg-row ${l.id === cur ? "on" : ""}"><div><b>${esc(l.name)}</b><small>${esc(l.team)}${l.admin ? " · Eres el admin" : ""}</small></div>${l.id === cur && S.store === "sb" ? `<span class="lg-cur">Abierta</span>` : `<button class="abtn pri" data-lgo="${esc(l.id)}">Abrir</button>`}</div>`).join("");
+  const list = L.map(l => `<div class="lg-row ${l.id === cur ? "on" : ""}"><div><b>${esc(l.name)}</b><small>${esc(l.team)}${l.admin ? " · Administras" : ""}</small></div>${l.id === cur && S.store === "sb" ? `<span class="lg-cur">Abierta</span>` : `<button class="abtn pri" data-lgo="${esc(l.id)}">Abrir</button>`}</div>`).join("");
   return `<h2 style="margin:4px 0 0;font-family:var(--f-cond);font-size:22px">Ligas</h2>
     ${S.lgErr ? `<div class="block empty">${esc(S.lgErr)}</div>` : ""}
     ${L.length ? `<div class="block"><div class="bh">Mis ligas</div>${list}</div>` : `<div class="block"><div class="note">Todavía no estás en ninguna liga. Únete con el código que te pasen o crea la tuya.</div></div>`}
@@ -1731,7 +1731,7 @@ function ligasView() {
       ${cr.teams ? `<label for="lg-team">${esc(cr.liga)} · Tu equipo</label><select id="lg-team">${cr.teams.map(t => `<option>${esc(t)}</option>`).join("")}</select>
         <label for="lg-name">Nombre de la liga (opcional)</label><input id="lg-name" maxlength="40" placeholder="Ej.: Los del vestuario" autocomplete="off"><button class="abtn pri" data-lgcreate="1" ${cr.busy ? "disabled" : ""}>Crear liga</button>`
         : `<button class="abtn" data-lgfind="1" ${cr.busy ? "disabled" : ""}>Buscar grupo</button>`}
-      ${cr.busy ? `<div class="note">${esc(cr.busy)}</div>` : ""}<div class="note">Tú serás el admin: metes los eventos de los partidos y das o quitas saldo. Los datos del grupo (clasificación, plantillas y partidos) se actualizan solos desde las actas.</div>
+      ${cr.busy ? `<div class="note">${esc(cr.busy)}</div>` : ""}<div class="note">Los datos del grupo (clasificación, plantillas y partidos) se cargan y se actualizan solos desde las actas. Los resultados y el saldo los gestiona el administrador de AlmaBet.</div>
     </div></div>
     ${S.store === "noleague" ? `<button class="abtn" data-logout="1">Cerrar sesión (${esc(S.me || "")})</button>` : ""}`;
 }

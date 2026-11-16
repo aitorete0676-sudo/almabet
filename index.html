@@ -95,7 +95,8 @@ main{min-width:0;display:flex;flex-direction:column;gap:12px}
 .o:hover{background:var(--btnh)}
 .o .v{font-weight:700;color:var(--yellow);font-size:15px}
 .o .l{font-size:12px;color:#d6ddd9;line-height:1.1;text-align:center}
-.o.sel{background:var(--yellow)} .o.sel .v,.o.sel .l{color:var(--ink)}
+.o.sel{background:#e4e8e6} .o.sel .l{color:#14201b} .o.sel .v{color:#1b8a5a}
+.ck{width:20px;height:20px;fill:none;stroke:#1b8a5a;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;display:block}
 .o.up::after,.o.down::after{content:"";position:absolute;right:4px;top:4px;border:5px solid transparent}
 .o.up::after{border-bottom-color:var(--up);top:-1px}
 .o.down::after{border-top-color:var(--down);top:5px}
@@ -158,7 +159,27 @@ th{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06
 .sl-main{display:flex;flex-direction:column;min-width:0}
 .sl-pick{color:#145a41;font-size:16px;font-weight:800}
 .sl-mk{font-weight:700;font-size:14px}.sl-m{font-size:13px;color:#55615c}.sl-chg{font-size:12px;color:#b45309;font-weight:600}
-.sl-od{background:#f5d417;color:#14201b;font-weight:800;padding:2px 6px;border-radius:2px;font-variant-numeric:tabular-nums;align-self:start}
+.sl-od{color:#14201b;font-weight:800;font-size:16px;font-variant-numeric:tabular-nums;align-self:start}
+.sl-mini{display:none}
+.slm-bar{display:grid;grid-template-columns:28px minmax(0,1fr) auto;gap:2px 8px;align-items:start;background:#fff;color:#14201b;padding:12px 14px 12px 10px;cursor:pointer}
+.slm-bar.multi{grid-template-columns:28px minmax(0,1fr) auto 44px}
+.slm-x{color:#55615c;font-size:18px;line-height:1;padding:2px 0}
+.slm-txt{display:flex;flex-direction:column;min-width:0;gap:1px}
+.slm-txt .spk{color:#145a41;font-weight:800;font-size:16px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.slm-txt .smk{font-weight:700;font-size:15px;color:#3b4541;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.slm-txt .smt{font-size:14px;color:#6a7571;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.slm-txt .scb{font-style:italic;font-weight:900;font-size:17px;text-transform:uppercase;letter-spacing:.2px;color:#3b4541}
+.slm-txt .row1{display:flex;align-items:center;gap:8px;min-width:0}
+.slm-pill{flex:none;border:2px solid #145a41;color:#145a41;border-radius:12px;padding:0 9px;font-weight:800;font-size:14px;line-height:20px}
+.slm-od{font-weight:800;font-size:18px;font-variant-numeric:tabular-nums;padding-top:1px}
+.slm-od .lock{width:14px;height:14px;fill:#8d9893}
+.slm-up{align-self:stretch;border-left:1px solid #d5dbd8;display:grid;place-items:center;margin:-2px 0}
+.slm-up i{width:11px;height:11px;border-left:2px solid #14201b;border-top:2px solid #14201b;transform:rotate(45deg);margin-top:5px}
+.slm-btns{display:grid;grid-template-columns:1fr 1fr}
+.slm-btns button{padding:15px 12px;font-size:17px;font-weight:800;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.slm-set{background:#0f2a20;color:#3ddc97}
+.slm-go{background:#7d8481;color:#e9ecea;text-align:center!important}
+.slm-go.on{background:var(--yellow);color:var(--ink)}
 .sl-in{width:100%;min-width:0;border:1px solid #9aa3a0;border-radius:3px;padding:9px 8px;font:inherit;font-size:16px;text-align:right;background:#fff;color:#14201b}
 .sl-in::placeholder{color:#8d9893}
 .dim .sl-pick,.dim .sl-mk,.dim .sl-m{opacity:.45}.dim .sl-od{opacity:.5}.dim .sl-in{opacity:.5}
@@ -217,6 +238,35 @@ th{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06
 .bc-legs.multi{position:relative}.bc-legs.multi::before{content:"";position:absolute;left:24px;top:20px;bottom:20px;width:2px;background:#56615c}
 .bc-legs .bc-ok,.bc-legs .bc-ko,.bc-legs .bc-pe{position:relative;z-index:1}.bc-pe{background:var(--panel2)}
 .bc-prog{display:flex;align-items:center;gap:0;margin-top:8px}.bc-prog .bc-bar{flex:1;width:auto;height:4px}.bc-prog b{background:#3ddc97;color:#06150e;border-radius:6px;min-width:34px;text-align:center;padding:1px 8px;font-size:15px;margin-left:-2px}
+.hm{display:grid;gap:14px;margin-bottom:6px}
+.hm-search{display:flex;align-items:center;gap:10px;background:#1c3b30;border-radius:26px;padding:10px 16px}.hm-search span{font-size:20px;color:#cfd6d2}
+.hm-search input{flex:1;background:none;border:0;color:var(--fg);font:inherit;font-size:16px;outline:none}.hm-search input::placeholder{color:#cfd6d2}
+.hm-res{background:var(--panel2);border-radius:8px;overflow:hidden}.hm-res button{display:flex;gap:10px;align-items:center;width:100%;text-align:left;padding:8px 12px;border-bottom:1px solid var(--line)}
+.hm-res span{display:flex;flex-direction:column}.hm-res small{color:var(--muted)}.hm-res .shirt,.hm-res .tshirt{width:30px;height:30px}.hm-none{padding:12px;color:var(--muted)}
+.hm-tiles{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin:0 -2px}.hm-tiles::-webkit-scrollbar{display:none}
+.hm-tile{flex:none;width:86px;height:84px;background:var(--panel);border:1px solid var(--line);border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;font-weight:700;font-size:13px}
+.hm-ic{font-size:26px;line-height:1;display:grid;place-items:center;height:32px}.hm-ic .tshirt{width:32px;height:32px}
+.hm-num{width:30px;height:30px;border-radius:50%;border:2px solid #3ddc97;color:#3ddc97;display:grid;place-items:center;font-size:16px}.hm-num.live{border-color:var(--live);color:var(--live)}
+.hm-bans{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none}.hm-bans::-webkit-scrollbar{display:none}
+.hm-ban{flex:none;width:86%;max-width:420px;scroll-snap-align:start;position:relative;min-height:168px;border-radius:10px;padding:16px;text-align:left;display:flex;flex-direction:column;gap:4px;overflow:hidden;border:1px solid rgba(255,255,255,.08)}
+.hm-ban.b1{background:radial-gradient(circle at 85% 30%,rgba(245,212,23,.25),transparent 45%),linear-gradient(135deg,#14704f,#0c3326)}
+.hm-ban.b2{background:radial-gradient(circle at 80% 70%,rgba(61,220,151,.25),transparent 50%),linear-gradient(135deg,#1c2b25,#0c3326)}
+.hm-ban.b3{background:linear-gradient(135deg,#2a3330,#14704f)}
+.hm-ban small{color:#3ddc97;font-weight:800;text-transform:uppercase;font-size:12px;letter-spacing:.04em}
+.hm-ban b{font-family:var(--f-cond);font-style:italic;font-weight:800;font-size:19px;line-height:1.1;text-transform:uppercase;max-width:62%}
+.hm-big{font-size:22px;font-weight:800;color:var(--yellow)}
+.hm-shirts{position:absolute;right:14px;top:28px;display:flex;gap:2px}.hm-shirts .tshirt{width:52px;height:52px}
+.hm-cta{margin-top:auto;font-weight:700;font-size:14px;color:#dfe6e2}
+.hm-go{position:absolute;right:14px;bottom:14px;border:2px solid #3ddc97;color:#3ddc97;border-radius:6px;padding:6px 12px;font-weight:800}
+.hm-pills{padding:0}
+.hm-sec{display:flex;align-items:center;font-weight:800;font-size:17px}.hm-sec span{display:flex;align-items:center;gap:8px}.hm-sec .tshirt{width:26px;height:26px}
+.hm-cards{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;padding-bottom:4px}.hm-cards::-webkit-scrollbar{display:none}
+.hm-card{flex:none;width:82%;max-width:360px;scroll-snap-align:start;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:14px 12px 10px;display:flex;flex-direction:column;gap:6px}
+.hm-ct{display:flex;justify-content:space-between;align-items:center;font-weight:800;font-size:16px}.hm-ct .tshirt{width:22px;height:22px}
+.hm-leg{display:flex;align-items:center;gap:8px;font-size:14px;color:#dfe6e2}.hm-leg .shirt,.hm-leg .tshirt{width:24px;height:24px;margin:0}
+.hm-cf span{font-family:var(--f-cond);font-style:italic;font-weight:800;color:#3ddc97;font-size:15px}
+.hm-odds{background:var(--panel2);border-radius:6px;padding:8px;display:flex;flex-direction:column;align-items:center}.hm-odds b{color:var(--yellow);font-size:24px;font-weight:800}.hm-odds small{color:#cfd6d2}
+@media (max-width:760px){.bal{border:2px solid #2fbf7c;border-radius:22px;padding:4px 14px;background:#0f2a20}.bal small{display:none}.bal #bal{font-size:16px;color:#fff}}
 .ptbl{margin:0 -12px}
 .ptbl .pr{display:grid;grid-template-columns:minmax(0,1fr) repeat(var(--n),minmax(52px,64px));align-items:center;border-top:1px solid var(--line);min-height:56px}
 .ptbl .ph{min-height:44px}
@@ -229,7 +279,7 @@ th{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06
 .shirt{width:38px;height:38px;flex:none;margin-left:-4px}
 .ptbl .o{background:none;border-radius:0;height:56px;justify-content:center}
 .ptbl .o .v{color:#3ddc97;font-size:15px;font-weight:600}
-.ptbl .o.sel{background:var(--yellow)}.ptbl .o.sel .v{color:var(--ink)}
+.ptbl .o.sel{background:#e4e8e6}
 .ptbl .o:disabled .v{color:var(--muted)}
 .vermas{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:14px;border-top:1px solid var(--line);font-weight:600;font-size:15px}
 .acc.open .ptbl .vermas .chev{transform:rotate(45deg);margin-top:-5px}.acc.open .ptbl .vermas .chev.up{transform:rotate(-135deg);margin-top:5px}
@@ -346,6 +396,9 @@ th{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06
   .slip{position:fixed;left:0;right:0;bottom:0;top:auto;z-index:40;border-radius:8px 8px 0 0;max-height:75vh;overflow:auto;transform:translateY(calc(100% - 60px - env(safe-area-inset-bottom,0px)));transition:transform .25s;padding-bottom:env(safe-area-inset-bottom,0px);box-shadow:0 -6px 24px rgba(0,0,0,.5)}
   .slip.open{transform:none}
   .slip .bh{cursor:pointer;min-height:60px}
+  .slip:not(.open){transform:none;overflow:visible;border-radius:0}
+  #slip:not(.open)>:not(.sl-mini){display:none!important}
+  .slip:not(.open)>.sl-mini{display:block}
   .row{grid-template-columns:44px minmax(0,1fr);row-gap:6px}
   .row .odds3{grid-column:1/-1;grid-template-columns:repeat(3,minmax(0,1fr))}
   .row .more{display:none}
@@ -354,7 +407,7 @@ th{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06
   .score .tn{font-size:16px} .score .sc{font-size:32px}
   .bal{font-size:17px}
   .tabs{display:none}
-  .grid{padding-bottom:calc(140px + env(safe-area-inset-bottom,0px))}
+  .grid{padding-bottom:calc(190px + env(safe-area-inset-bottom,0px))}
   .slip{bottom:calc(62px + env(safe-area-inset-bottom,0px));padding-bottom:0;max-height:70vh}
   .slip.none{display:none}
   .bnav{display:grid}
@@ -720,8 +773,8 @@ function playerMarkets(m, lh, la, rem) {
     pm("psh1", "Remates", (p, st) => pAtLeast(1 - st.sh, lg(p) / SHOT_CONV), "1 o más"),
     pm("psh2", "Remates", (p, st) => pAtLeast(2 - st.sh, lg(p) / SHOT_CONV), "2 o más"),
     pm("psh3", "Remates", (p, st) => pAtLeast(3 - st.sh, lg(p) / SHOT_CONV), "3 o más"),
-    pm("pas", "Cualquier jugador", (p, st) => st.a >= 1 ? 1 : 1 - Math.exp(-la_(p)), "Asistirá"),
-    pm("pye", "Cualquier jugador", (p, st) => st.y >= 1 || st.r ? 1 : 1 - Math.exp(-tY * sy(p.i) * (1 + 0.7 * Math.max(0, -m.mom * (s ? -1 : 1)))), "Recibirá tarjeta"),
+    pm("pas", "Jugador - Asistirá", (p, st) => st.a >= 1 ? 1 : 1 - Math.exp(-la_(p)), "Asistirá"),
+    pm("pye", "Jugador - Tarjeta", (p, st) => st.y >= 1 || st.r ? 1 : 1 - Math.exp(-tY * sy(p.i) * (1 + 0.7 * Math.max(0, -m.mom * (s ? -1 : 1)))), "Recibirá tarjeta"),
     { key: "pcs", name: "Portería a cero de " + DATA.miEquipo, margin: 0.06, group: "esp",
       outcomes: [["Y", "Sí", pcs], ["N", "No", 1 - pcs]].map(([k, label, p]) => ({ k, label, p, odds: fin ? null : price(p, 0.06) })) }
   ];
@@ -744,7 +797,7 @@ const FIX = DATA.partidos.map((f, i) => {
 const blankState = () => ({ phase: "pre", k1: 0, k2: 0, events: [], dom: 0, susp: false, suspUntil: 0, fecha: "" });
 
 const S = { view: "home", league: null, detail: null, slip: [], mode: "single", stakes: {}, combo: "", prev: {}, flash: {}, slipOpen: false, msg: "",
-  states: {}, wallet: { balance: DATA.saldoInicial, bets: [] }, store: "loading", admin: false, uid: null, ranking: [], names: {}, form: { side: "0", pl: "", as: "", min: "" }, confirmReset: false, openG: {}, cat: "all", ptab: {}, more: {}, betTab: "pend", openBet: {} };
+  states: {}, wallet: { balance: DATA.saldoInicial, bets: [] }, store: "loading", admin: false, uid: null, ranking: [], names: {}, form: { side: "0", pl: "", as: "", min: "" }, confirmReset: false, openG: {}, cat: "all", ptab: {}, more: {}, betTab: "pend", openBet: {}, hf: "all", q: "" };
 
 // Construye el partido "vivo" a partir del estado guardado
 function build(f) {
@@ -1039,6 +1092,7 @@ function adminAct(id, act, arg) {
 const eur = n => n.toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €";
 const fo = o => o == null ? "" : o.toFixed(2);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const CHECK = '<svg class="ck" viewBox="0 0 24 24" aria-label="Elegida"><path d="M4 12.5l5 5L20 6.5"/></svg>';
 const LOCK = '<svg class="lock" viewBox="0 0 24 24" aria-label="Cerrado"><path d="M7 10V7a5 5 0 0 1 10 0v3h1a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V11a1 1 0 0 1 1-1zm2 0h6V7a3 3 0 0 0-6 0z"/></svg>';
 let toastT; function toast(t) { const el = document.getElementById("toast"); el.textContent = t; el.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => el.hidden = true, 2600); }
 const fmtDate = s => { if (!s) return "Sin fecha"; const d = new Date(s); if (isNaN(d)) return s;
@@ -1062,13 +1116,14 @@ function clockOf(m) {
 }
 function oddBtn(m, mkt, oc, showLabel) {
   const key = m.id + "|" + mkt.key + "|" + oc.k;
+  if (!S.slip.some(s => s.key === key)) oc = { ...oc, odds: condOdds(m, mkt, oc) };
   const prev = S.prev[key], now = Date.now();
   if (prev != null && oc.odds != null && prev !== oc.odds) S.flash[key] = { dir: oc.odds > prev ? "up" : "down", until: now + 4000 };
   S.prev[key] = oc.odds;
   const fl = S.flash[key] && S.flash[key].until > now ? S.flash[key].dir : "";
   const closed = oc.odds == null || m.suspended;
   const sel = S.slip.some(s => s.key === key);
-  const inner = (showLabel ? `<span class="l">${esc(oc.label)}</span>` : "") + `<span class="v">${closed ? LOCK : fo(oc.odds)}</span>`;
+  const inner = (showLabel ? `<span class="l">${esc(oc.label)}</span>` : "") + `<span class="v">${sel ? CHECK : closed ? LOCK : fo(oc.odds)}</span>`;
   return `<button class="o ${sel ? "sel" : ""} ${fl}" data-pick="${key}" ${closed ? "disabled" : ""} aria-label="${esc(oc.label)} ${fo(oc.odds)}">${inner}</button>`;
 }
 function rowHTML(m) {
@@ -1084,13 +1139,68 @@ function rowHTML(m) {
     <button class="more" data-open="${m.id}">${S.admin ? "Gestionar" : "+" + (mk.list.length - 1) + " mercados"}</button>
   </div>`;
 }
+/* ===================== INICIO: buscador, accesos, banners y "crear apuesta" ===================== */
+function legOf(m, key, oc) { const k = markets(m).list.find(x => x.key === key), o = k && k.outcomes.find(x => x.k === String(oc));
+  return o && o.odds != null ? { key: m.id + "|" + key + "|" + o.k, mid: m.id, mk: key, oc: o.k, label: o.label, mname: k.name, added: o.odds, odds: o.odds, m, susp: m.suspended } : null; }
+function presetCombos(m) {
+  const mk = markets(m).list, side = sideOf(m); if (side < 0 || m.status === "ft") return [];
+  const best = (key, n) => { const k = mk.find(x => x.key === key); return k ? k.outcomes.filter(o => o.odds != null).sort((a, b) => a.odds - b.odds).slice(0, n) : []; };
+  const sc = best("pg1", 3), ga = best("pga", 3), yl = best("pye", 2), st = best("pst1", 3);
+  const win = side === 0 ? "1" : "2", dc = side === 0 ? "1X" : "X2";
+  const raw = [
+    ["El goleador", [["pg1", sc[0] && sc[0].k], ["1x2", win], ["ou1.5", "O"]]],
+    ["Ataque a tope", [["pga", ga[1] && ga[1].k], ["pst1", st[0] && st[0].k], ["btts", "Y"]]],
+    ["Partido caliente", [["pye", yl[0] && yl[0].k], ["pye", yl[1] && yl[1].k], ["dc", dc]]],
+    ["Doblete de goles", [["pg1", sc[0] && sc[0].k], ["pg1", sc[1] && sc[1].k], ["ou2.5", "O"]]]
+  ];
+  return raw.map(([t, legs]) => { const d = legs.map(([k, o]) => o != null ? legOf(m, k, o) : null);
+    if (d.some(x => !x) || new Set(d.map(x => x.key)).size < d.length) return null;
+    const ci = comboInfo(d); return ci.ok ? { t, d, odds: ci.odds } : null; }).filter(Boolean);
+}
+function homeTop() {
+  const ms = allMatches(), mine = ms.find(m => sideOf(m) >= 0 && m.status !== "ft") || ms.find(m => sideOf(m) >= 0);
+  const nLive = ms.filter(m => m.status === "live" || m.status === "ht").length, jor = (ms.find(m => m.status !== "ft") || ms[0] || {}).jornada;
+  const q = (S.q || "").trim().toLowerCase();
+  let res = "";
+  if (q.length >= 2) {
+    const pl = SQUAD.filter(p => p.nombre.toLowerCase().includes(q)).slice(0, 5), tm = ms.filter(m => (m.home.nombre + " " + m.away.nombre).toLowerCase().includes(q)).slice(0, 5);
+    res = `<div class="hm-res">${pl.map(p => `<button data-open="${mine ? mine.id : ""}">${shirt(p.dorsal)}<span><b>${esc(p.nombre)}</b><small>${esc(DATA.miEquipo)}</small></span></button>`).join("")}
+      ${tm.map(m => `<button data-open="${m.id}">${teamShirt(m.home.nombre)}<span><b>${esc(m.home.nombre)} v ${esc(m.away.nombre)}</b><small>Jornada ${m.jornada || ""}</small></span></button>`).join("") || (pl.length ? "" : `<div class="hm-none">Sin resultados</div>`)}</div>`;
+  }
+  const tiles = [[mine ? `data-open="${mine.id}"` : "", teamShirt(DATA.miEquipo), "Almazora C"], [`data-hf="pre"`, `<b class="hm-num">${jor || "–"}</b>`, "Jornada"], [`data-view="live"`, `<b class="hm-num live">${nLive}</b>`, "En directo"], [`data-view="rank"`, "🏆", "Ranking"], [`data-view="table"`, "📊", "Tabla"]];
+  const cd = mine && mine.status === "pre" && mine.fecha ? (() => { const t = new Date(mine.fecha) - Date.now(); if (t <= 0) return "Empieza ya"; const d = Math.floor(t / 864e5), h = Math.floor(t % 864e5 / 36e5), mi = Math.floor(t % 36e5 / 6e4); return (d ? d + "d " : "") + h + "h " + mi + "min"; })() : "";
+  const leader = (S.ranking || [])[0];
+  const banners = [];
+  if (mine) banners.push(`<button class="hm-ban b1" data-open="${mine.id}"><small>${mine.status === "pre" ? "Partido destacado · Jornada " + (mine.jornada || "") : mine.status === "ft" ? "Resultado final" : "¡En directo!"}</small>
+      <b>${esc(mine.home.nombre)}<br>v ${esc(mine.away.nombre)}</b><div class="hm-shirts">${teamShirt(mine.home.nombre)}${teamShirt(mine.away.nombre)}</div>
+      <span class="hm-cta">${mine.status === "pre" ? (cd ? "⏱ " + cd : "Sin hora") : mine.status === "ft" ? mine.hg + " - " + mine.ag : mine.hg + " - " + mine.ag + " · " + minLabel(mine)}</span><span class="hm-go">Apostar</span></button>`);
+  if (leader) banners.push(`<button class="hm-ban b2" data-view="rank"><small>Líder del ranking</small><b>${esc(leader.username || (S.names[leader.id] && S.names[leader.id].name) || "Jugador")}</b><span class="hm-big">${eur(leader.balance || 0)}</span><span class="hm-go">Ver ranking</span></button>`);
+  banners.push(`<button class="hm-ban b3" data-hf="pre"><small>Tercera FFCV · Grupo 2</small><b>Jornada ${jor || ""}</b><span class="hm-big">${ms.filter(m => m.jornada === jor).length} partidos</span><span class="hm-go">${nLive ? nLive + " en directo" : "Ver partidos"}</span></button>`);
+  const pres = mine ? presetCombos(mine) : [];
+  const hf = S.hf || "all";
+  return `<div class="hm">
+    <label class="hm-search"><span>⌕</span><input id="hm-q" data-search="1" placeholder="Buscar jugador o equipo" autocomplete="off" value="${esc(S.q || "")}"></label>${res}
+    <div class="hm-tiles">${tiles.map(([a, ic, t]) => `<button class="hm-tile" ${a}><span class="hm-ic">${ic}</span>${t}</button>`).join("")}</div>
+    <div class="hm-bans">${banners.join("")}</div>
+    <div class="mb-tabs hm-pills">${[["all", "Todos"], ["mine", "Almazora C"], ["live", "En directo"], ["pre", "Próximos"]].map(([k, t]) => `<button data-hf="${k}" class="${hf === k ? "on" : ""}">${t}</button>`).join("")}</div>
+    ${pres.length && (hf === "all" || hf === "mine") ? `<div class="hm-sec"><span>${teamShirt(DATA.miEquipo)} Crear apuesta · ${esc(mine.home.nombre)} v ${esc(mine.away.nombre)}</span></div>
+      <div class="hm-cards">${pres.map((c, i) => `<div class="hm-card"><div class="hm-ct">${esc(c.t)}<span>${teamShirt(mine.home.nombre)}${teamShirt(mine.away.nombre)}</span></div>
+        ${c.d.map(x => { const pi = /^p/.test(x.mk) ? SQUAD[+x.oc] : null; return `<div class="hm-leg">${pi ? shirt(pi.dorsal) : teamShirt(DATA.miEquipo)}<span>${esc(pi ? shortName(pi.nombre) + " - " + x.mname.replace(/^Jugador - /, "") : x.label + " - " + x.mname)}</span></div>`; }).join("")}
+        <div class="hm-cf"><span>CREAR APUESTA</span></div><button class="hm-odds" data-preset="${i}"><b>${fo(c.odds)}</b><small>10 €: ganancias de ${eur(10 * c.odds)}</small></button></div>`).join("")}</div>` : ""}
+  </div>`;
+}
 function listView(liveOnly) {
   const ms = allMatches().filter(m => !S.league || m.league === S.league);
   const my = ms.filter(m => sideOf(m) >= 0 && m.status !== "ft");
   const live = ms.filter(m => m.status === "live" || m.status === "ht"), pre = ms.filter(m => m.status === "pre"), ft = ms.filter(m => m.status === "ft");
   const block = (arr, title, dot) => arr.length ? `<div class="block"><div class="bh">${dot ? `<span class="livepill"><i class="dot"></i></span>` : ""}<span>${esc(title)}</span><span class="sp"></span><div class="cols"><span>1</span><span>X</span><span>2</span></div></div>${arr.map(rowHTML).join("")}</div>` : "";
   const h2 = t => `<h2 style="margin:4px 0 0;font-family:var(--f-cond);font-size:22px">${t}</h2>`;
-  let h = "";
+  let h = liveOnly ? "" : homeTop();
+  const hf = liveOnly ? "all" : (S.hf || "all");
+  if (hf === "mine") return h + (my.length ? h2("Tu equipo: " + esc(DATA.miEquipo)) + `<div class="block mine">${my.map(rowHTML).join("")}</div>` : `<div class="block empty">No hay partidos del Almazora C pendientes.</div>`);
+  if (hf === "live") return h + (block(live, leagues[0], true) || `<div class="block empty">Ahora no se está jugando ningún partido.</div>`);
+  if (hf === "pre") { const byJ = {}; pre.forEach(m => (byJ[m.jornada || 0] ??= []).push(m));
+    return h + (Object.keys(byJ).map(j => block(byJ[j], (j > 0 ? "Jornada " + j + " · " : "") + leagues[0], false)).join("") || `<div class="block empty">No hay partidos programados.</div>`); }
   if (my.length && !liveOnly) h += h2("Tu equipo: " + esc(DATA.miEquipo)) + `<div class="block mine">${my.map(rowHTML).join("")}<div class="note">Abre el partido para apostar por cada jugador: gol, doblete, asistencia, amarilla y portería a cero.</div></div>`;
   h += h2("En directo") + (block(live, leagues[0], true) || `<div class="block empty">Ahora no se está jugando ningún partido.${S.admin ? " Abre uno y pulsa «Empezar partido» cuando arranque." : ""}</div>`);
   if (!liveOnly) {
@@ -1325,13 +1435,32 @@ function simulateFinal(m) {
   f.corners[0] += rpois(cH * rem); f.corners[1] += rpois(cA * rem);
   return f;
 }
-const simCache = {};
-function jointProb(m, legs) {
-  const key = m.id + "|" + legs.map(l => l.mk + ":" + l.oc).sort().join(",") + "|" + m.phase + m.minute + "|" + m.st.events.length + "|" + (m.st.dom || 0);
-  if (simCache[key] != null) return simCache[key];
-  let ok = 0;
-  for (let i = 0; i < NSIM; i++) { const f = simulateFinal(m); if (legs.every(l => legResult(l, f) === "won")) ok++; }
-  return simCache[key] = ok / NSIM;
+// Un único lote de simulaciones por partido y estado: así todas las cuotas del mismo partido van relacionadas
+const simSets = {}, condCache = {};
+const simKey = m => m.phase + m.minute + "|" + m.st.events.length + "|" + (m.st.dom || 0) + "|" + m.hg + "-" + m.ag;
+function simSet(m) {
+  const k = simKey(m), c = simSets[m.id];
+  if (c && c.k === k) return c;
+  const sims = []; for (let i = 0; i < NSIM; i++) sims.push(simulateFinal(m));
+  condCache[m.id] = {};
+  return simSets[m.id] = { k, sims, sub: {} };
+}
+function simsWhere(m, legs) {
+  const set = simSet(m), sig = legs.map(l => l.mk + ":" + l.oc).sort().join(",");
+  return set.sub[sig] ??= set.sims.filter(f => legs.every(l => legResult(l, f) === "won"));
+}
+function jointProb(m, legs) { return simsWhere(m, legs).length / NSIM; }
+// Cuota que se muestra en un botón cuando ya hay selecciones del mismo partido en el boleto: probabilidad condicionada
+function condOdds(m, mkt, oc) {
+  if (oc.odds == null || m.status === "ft" || m.suspended) return oc.odds;
+  const same = S.slip.filter(s => s.mid === m.id); if (!same.length) return oc.odds;
+  simSet(m);
+  const ck = same.map(s => s.mk + ":" + s.oc).sort().join(",") + ">" + mkt.key + ":" + oc.k, cc = condCache[m.id];
+  if (ck in cc) return cc[ck];
+  const base = simsWhere(m, same);
+  if (base.length < 150) return cc[ck] = oc.odds;
+  const p = base.filter(f => legResult({ mk: mkt.key, oc: oc.k }, f) === "won").length / base.length;
+  return cc[ck] = p < 0.003 ? null : Math.min(501, Math.max(1.01, roundOdds(1 / (p * (1 + SAME_MARGIN)))));
 }
 // Cuota total de un boleto combinado: partidos distintos se multiplican; selecciones del mismo partido, por simulación
 function comboInfo(d) {
@@ -1377,7 +1506,16 @@ function slipHTML() {
   }
   const ok = S.store !== "loading" && S.store !== "auth" && total > 0 && total <= S.wallet.balance + 1e-9 && !changed.length && !(num(S.combo) > 0 && !ci.ok) && !d.some(x => x.susp && num(S.stakes[x.key]) > 0);
   const msg = S.msg || (total > S.wallet.balance + 1e-9 ? "Saldo insuficiente." : "");
-  return `<div class="bh" data-toggle="1"><span class="cnt">${n}</span><span class="bt">Selecciones<button class="sl-clear" data-clear="1">Vaciar boleto</button></span>
+  const one = d[0], sameM = d.every(x => x.mid === one.mid);
+  const mini = `<div class="sl-mini">${n === 1
+    ? `<div class="slm-bar" data-toggle="1"><button class="slm-x" data-rm="${one.key}" aria-label="Quitar">✕</button>
+        <div class="slm-txt"><span class="spk">${esc(one.label)}</span><span class="smk">${esc(one.mname)}</span><span class="smt">${one.m ? esc(one.m.home.nombre) + " v " + esc(one.m.away.nombre) : ""}</span></div>
+        <span class="slm-od">${one.susp ? LOCK : fo(one.odds)}</span></div>`
+    : `<div class="slm-bar multi" data-toggle="1"><button class="slm-x" data-clear="1" aria-label="Vaciar boleto">✕</button>
+        <div class="slm-txt"><span class="scb">${sameM ? "Crear apuesta" : COMBO_NAME(n)}</span><span class="row1"><span class="spk">${esc(one.label)} - ${esc(one.mname.replace(/^Jugador - /, ""))}</span><span class="slm-pill">+${n - 1}</span></span></div>
+        <span class="slm-od">${ci.ok ? fo(ci.odds) : LOCK}</span><span class="slm-up" aria-label="Abrir boleto"><i></i></span></div>`}
+    <div class="slm-btns"><button class="slm-set" data-setamt="1">Establecer cantidad</button><button class="slm-go ${ok ? "on" : ""}" ${ok ? 'data-place="1"' : 'data-setamt="1"'}>${ok ? "Apostar " + eur(total) : "Apostar"}</button></div></div>`;
+  return mini + `<div class="bh" data-toggle="1"><span class="cnt">${n}</span><span class="bt">Selecciones<button class="sl-clear" data-clear="1">Vaciar boleto</button></span>
       <span class="sl-bal"><small>Saldo</small>${eur(S.wallet.balance)}</span><button class="sl-close" data-toggle="1" aria-label="Cerrar boleto">✕</button></div>
     <div class="sl-body">${rows}${combo}
       <div class="sl-tot"><div><small>Total apostado</small><b>${eur(total)}</b></div><div><small>Ganancias potenciales</small><b>${eur(pot)}</b></div></div>
@@ -1460,6 +1598,10 @@ document.addEventListener("click", e => {
   else if (ds.showpw) S.showPw = !S.showPw;
   else if (ds.co) S.coConfirm = ds.co;
   else if (ds.btab) S.betTab = ds.btab;
+  else if (ds.hf) { S.hf = ds.hf; S.view = "home"; S.detail = null; }
+  else if (ds.preset != null && ds.preset !== "") { const mine = allMatches().find(m => sideOf(m) >= 0 && m.status !== "ft"), c = mine && presetCombos(mine)[+ds.preset];
+    if (c) { c.d.forEach(x => { if (!S.slip.some(y => y.key === x.key)) S.slip.push({ key: x.key, mid: x.mid, mk: x.mk, oc: x.oc, label: x.label, mname: x.mname, added: x.odds }); });
+      S.combo = S.combo || "10"; toast("Añadida al boleto: " + c.t); } }
   else if (ds.obet) S.openBet[ds.obet] = !S.openBet[ds.obet];
   else if (ds.coNo) S.coConfirm = null;
   else if (ds.coYes) { doCashout(ds.coYes); return; }
@@ -1482,6 +1624,7 @@ document.addEventListener("click", e => {
   else if (ds.share) { const b = S.wallet.bets.find(x => x.id === ds.share); if (b) { const txt = "Mi apuesta en AlmaBet: " + eur(b.stake) + " a " + fo(b.odds) + "\n" + b.legs.map(l => "· " + l.label + " (" + l.mname + ") " + l.match).join("\n") + "\n" + location.origin;
       if (navigator.share) navigator.share({ text: txt }).catch(() => {}); else navigator.clipboard && navigator.clipboard.writeText(txt).then(() => toast("Copiado para compartir")); } return; }
   else if (ds.toggle) S.slipOpen = !S.slipOpen;
+  else if (ds.setamt) { S.slipOpen = true; render(); const f = document.querySelector(S.slip.length > 1 ? "#slip input[data-combo]:not(:disabled)" : "#slip input[data-stake]:not(:disabled)"); if (f) f.focus(); return; }
   else if (ds.adm) { if (!S.admin) return; S.confirmReset = false;
     return adminAct(ds.mid, ds.adm, ds.adm === "dom" ? +ds.val : ds.adm === "setmin" ? S.form.min : undefined); }
   else if (ds.askReset) S.confirmReset = ds.askReset;
@@ -1492,6 +1635,7 @@ document.addEventListener("click", e => {
 });
 document.addEventListener("input", e => {
   const i = e.target;
+  if (i.dataset.search) { S.q = i.value; render(); return; }
   if (i.dataset.stake) S.stakes[i.dataset.stake] = i.value.replace(/[^\d.,]/g, "");
   else if (i.dataset.combo) S.combo = i.value.replace(/[^\d.,]/g, "");
   else if (i.dataset.form === "min") { S.form.min = i.value.replace(/\D/g, ""); return; }

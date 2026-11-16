@@ -145,6 +145,66 @@ th{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06
 .pwf{position:relative}.pwf input{width:100%;padding-right:78px!important}.eye{position:absolute;right:6px;top:50%;transform:translateY(-50%);padding:6px 10px;font-size:13px;font-weight:700;color:#145a41}
 .co{display:flex;gap:8px;align-items:center;justify-content:flex-end;padding-top:8px;flex-wrap:wrap}.co span{font-size:13px;font-weight:600}.cobtn{background:var(--yellow);color:var(--ink);font-weight:700;border-radius:4px;padding:8px 12px}.cobtn:disabled{background:var(--btn);color:var(--muted);cursor:default}.cobtn.yes{background:var(--up);color:#fff}
 .tag.cashout,.tag.void{background:var(--btn);color:var(--fg)}
+/* boleto */
+#slip .bh{display:grid;grid-template-columns:auto 1fr auto auto;align-items:center;gap:10px;padding:12px 14px;background:#eef1ef;color:#14201b;position:sticky;top:0;z-index:2;border-radius:8px 8px 0 0}
+#slip .bh .cnt{width:26px;height:26px;border-radius:50%;background:#1b6e50;color:#fff;display:grid;place-items:center;font-weight:800;font-size:14px}
+#slip .bh .bt{display:flex;flex-direction:column;font-size:18px;font-weight:800;line-height:1.15}
+.sl-clear{color:#1b6e50;font-size:13px;font-weight:600;text-align:left;padding:0}
+.sl-bal{display:flex;flex-direction:column;align-items:flex-end;font-weight:700;font-size:14px}.sl-bal small{font-weight:500;font-size:12px;color:#55615c}
+.sl-close{font-size:18px;color:#14201b;padding:4px}
+.sl-body{background:#fff;color:#14201b}
+.sl-row{display:grid;grid-template-columns:24px minmax(0,1fr) auto 104px;gap:4px 10px;align-items:start;padding:12px 14px;border-bottom:1px solid #e3e7e5}
+.sl-x{color:#55615c;font-size:15px;padding:2px 0}
+.sl-main{display:flex;flex-direction:column;min-width:0}
+.sl-pick{color:#145a41;font-size:16px;font-weight:800}
+.sl-mk{font-weight:700;font-size:14px}.sl-m{font-size:13px;color:#55615c}.sl-chg{font-size:12px;color:#b45309;font-weight:600}
+.sl-od{background:#f5d417;color:#14201b;font-weight:800;padding:2px 6px;border-radius:2px;font-variant-numeric:tabular-nums;align-self:start}
+.sl-in{width:100%;min-width:0;border:1px solid #9aa3a0;border-radius:3px;padding:9px 8px;font:inherit;font-size:16px;text-align:right;background:#fff;color:#14201b}
+.sl-in::placeholder{color:#8d9893}
+.dim .sl-pick,.dim .sl-mk,.dim .sl-m{opacity:.45}.dim .sl-od{opacity:.5}.dim .sl-in{opacity:.5}
+.sl-combo{display:grid;grid-template-columns:minmax(0,1fr) auto 104px;gap:6px 10px;align-items:center;padding:14px;border-bottom:1px solid #e3e7e5}
+.sl-combo b{color:#145a41;font-size:17px;font-weight:800}.sl-cod{font-weight:800;font-size:17px;font-variant-numeric:tabular-nums}
+.sl-note{grid-column:1/-1;font-size:12px;color:#55615c}
+.sl-tot{display:flex;justify-content:space-between;padding:12px 14px}.sl-tot div{display:flex;flex-direction:column}.sl-tot div+div{text-align:right}
+.sl-tot small{font-size:12px;color:#55615c}.sl-tot b{font-size:17px}
+.sl-body .msg{color:#c0392b;padding:0 14px 6px}
+.sl-body .place{margin:0 14px 14px;width:calc(100% - 28px)}
+.sl-ban{position:sticky;bottom:0;background:#0c3326;color:#fff;text-align:center;padding:10px 14px;font-weight:600;font-size:14px;display:flex;flex-direction:column;gap:2px}
+.sl-ban button{color:#f5d417;font-weight:800;font-size:18px}
+/* tarjeta de apuesta */
+.bc-date{color:var(--muted);font-size:13px;padding:14px 12px 6px}
+.bc{background:var(--panel2);border-radius:6px;margin:0 12px 6px;overflow:hidden}
+.bc-hd{display:flex;justify-content:space-between;align-items:center;padding:14px 14px 10px}.bc-hd b{color:#3ddc97;font-size:18px}
+.bc-btns{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:0 14px 10px}.bc-btns button{background:var(--btn);border-radius:4px;padding:9px 6px;font-weight:600;font-size:13px}
+.bc-leg{display:grid;grid-template-columns:22px minmax(0,1fr) auto;gap:8px;align-items:start;padding:6px 14px}
+.bc-ok,.bc-ko,.bc-pe{width:20px;height:20px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-weight:800;font-size:12px;margin-top:1px}
+.bc-ok{background:#2fbf7c;color:#06150e}.bc-ko{background:var(--down);color:#fff}.bc-pe{border:2px solid var(--muted)}
+.bc-sel{display:flex;gap:10px;align-items:baseline}.bc-sel b{font-size:16px}.bc-sel span{font-variant-numeric:tabular-nums}
+.bc-mk{font-size:13px;color:#cfd6d2}
+.bc-cnt{display:flex;align-items:center;gap:8px;align-self:end}.bc-cnt b{font-size:16px}
+.bc-bar{width:70px;height:5px;border-radius:3px;background:var(--btn);overflow:hidden}.bc-bar span{display:block;height:100%;background:#2fbf7c}
+.bc-game{padding:8px 14px 2px;display:grid;gap:6px}
+.bc-tm{display:grid;grid-template-columns:24px minmax(0,1fr) auto auto;gap:8px;align-items:center}.bc-tm b{font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tshirt{width:22px;height:22px}
+.bc-sc{background:var(--btn);min-width:26px;height:26px;display:grid;place-items:center;font-weight:800;border-radius:2px;grid-column:4}
+.bc-st{font-size:13px;color:var(--muted);grid-column:3}
+.bc-ft{display:flex;justify-content:space-between;padding:14px}.bc-ft div{display:flex;flex-direction:column}.bc-ft div+div{text-align:right}
+.bc-ft small{color:var(--muted);font-size:13px}.bc-ft b{font-size:20px}
+.bc-co{display:flex;justify-content:center;gap:12px;width:100%;background:#1b6e50;color:#fff;font-weight:700;font-size:16px;padding:14px}
+.bc-co:disabled{background:var(--btn);color:var(--muted)}
+.bc-co.conf{align-items:center}.bc-co.conf button{background:#fff;color:#14201b;border-radius:4px;padding:6px 14px;font-weight:700}
+#splash{position:fixed;inset:0;z-index:9999;background:linear-gradient(180deg,#14704f 0%,#136a4b 45%,#0d3d2c 80%,#0b2a20 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity .4s}
+#splash.out{opacity:0;pointer-events:none}
+.sp-c{position:relative;width:170px;height:170px;display:grid;place-items:center;margin-top:-18vh}
+.sp-arc{position:absolute;inset:0;width:100%;height:100%;animation:sp-rot 1.1s linear infinite}
+@keyframes sp-rot{to{transform:rotate(360deg)}}
+.sp-logo{display:flex;flex-direction:column;align-items:center;font-family:var(--f-cond);font-style:italic;font-weight:800;font-size:44px;line-height:.95;letter-spacing:-.5px}
+.sp-logo span:first-child{color:var(--yellow)}.sp-logo span+span{color:#fff}
+.sp-liga{position:absolute;bottom:calc(22vh + env(safe-area-inset-bottom,0px));width:42vw;max-width:190px;height:auto}
+.sp-dots{position:absolute;bottom:calc(6vh + env(safe-area-inset-bottom,0px));display:flex;gap:8px}
+.sp-dots i{width:6px;height:6px;border-radius:50%;background:#3ddc97;animation:sp-dot 1s ease-in-out infinite}.sp-dots i+i{animation-delay:.3s}
+@keyframes sp-dot{50%{opacity:.25}}
+@media (prefers-reduced-motion:reduce){.sp-arc,.sp-dots i{animation:none}}
 .ptbl{margin:0 -12px}
 .ptbl .pr{display:grid;grid-template-columns:minmax(0,1fr) repeat(var(--n),minmax(52px,64px));align-items:center;border-top:1px solid var(--line);min-height:56px}
 .ptbl .ph{min-height:44px}
@@ -271,9 +331,9 @@ th{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06
 .leagues-chips button.on{background:var(--yellow);color:var(--ink)}
 @media (max-width:760px){
   .grid{grid-template-columns:minmax(0,1fr);padding-bottom:80px}
-  .slip{position:fixed;left:0;right:0;bottom:0;top:auto;z-index:40;border-radius:8px 8px 0 0;max-height:75vh;overflow:auto;transform:translateY(calc(100% - 48px - env(safe-area-inset-bottom,0px)));transition:transform .25s;padding-bottom:env(safe-area-inset-bottom,0px);box-shadow:0 -6px 24px rgba(0,0,0,.5)}
+  .slip{position:fixed;left:0;right:0;bottom:0;top:auto;z-index:40;border-radius:8px 8px 0 0;max-height:75vh;overflow:auto;transform:translateY(calc(100% - 60px - env(safe-area-inset-bottom,0px)));transition:transform .25s;padding-bottom:env(safe-area-inset-bottom,0px);box-shadow:0 -6px 24px rgba(0,0,0,.5)}
   .slip.open{transform:none}
-  .slip .bh{cursor:pointer;min-height:48px}
+  .slip .bh{cursor:pointer;min-height:60px}
   .row{grid-template-columns:44px minmax(0,1fr);row-gap:6px}
   .row .odds3{grid-column:1/-1;grid-template-columns:repeat(3,minmax(0,1fr))}
   .row .more{display:none}
@@ -319,7 +379,11 @@ th{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06
 
 <header>
   <div class="top"><div class="wrap">
-    <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><clipPath id="shirtClip"><path d="M13 5 L5 10 L8 18 L11 16.5 L11 36 L29 36 L29 16.5 L32 18 L35 10 L27 5 Q20 10 13 5 Z"/></clipPath></defs></svg>
+    <div id="splash" aria-hidden="true"><div class="sp-c"><svg class="sp-arc" viewBox="0 0 100 100"><circle cx="50" cy="50" r="46" fill="none" stroke="rgba(255,255,255,.55)" stroke-width="1.2" stroke-linecap="round" stroke-dasharray="70 220"/></svg><div class="sp-logo"><span>Alma</span><span>Bet</span></div></div>
+  <img class="sp-liga" src="/splash-liga.png" alt="" onerror="this.remove()"><div class="sp-dots"><i></i><i></i></div></div>
+<script>(function(){var el=document.getElementById("splash"),seen=false;document.body.appendChild(el);try{seen=sessionStorage.getItem("ab-splash")==="1";sessionStorage.setItem("ab-splash","1")}catch(e){}
+if(seen||!window.matchMedia("(max-width:760px)").matches){el.remove();return}setTimeout(function(){el.classList.add("out");setTimeout(function(){el.remove()},450)},1600)})();</script>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><clipPath id="shirtClip"><path d="M13 5 L5 10 L8 18 L11 16.5 L11 36 L29 36 L29 16.5 L32 18 L35 10 L27 5 Q20 10 13 5 Z"/></clipPath></defs></svg>
     <div class="logo">Alma<span>Bet</span></div>
     <nav class="tabs" id="tabs">
       <button data-view="home">Deportes</button>
@@ -891,6 +955,44 @@ function doCashout(id) {
   saveWallet(); render();
 }
 
+/* ===================== TARJETA DE APUESTA ===================== */
+const teamShirt = nm => nm === DATA.miEquipo ? `<svg class="tshirt" viewBox="0 0 40 40" aria-hidden="true"><path d="${SHIRT_PATH}" fill="#111"/><g clip-path="url(#shirtClip)"><rect x="9" y="0" width="4.4" height="40" fill="#fff"/><rect x="17.8" y="0" width="4.4" height="40" fill="#fff"/><rect x="26.6" y="0" width="4.4" height="40" fill="#fff"/></g></svg>`
+  : `<svg class="tshirt" viewBox="0 0 40 40" aria-hidden="true"><path d="${SHIRT_PATH}" fill="#8d9893"/></svg>`;
+function legCount(l, m) {   // mercados de contar: valor actual y línea
+  const k = markets(m).list.find(x => x.key === l.mk); if (!k) return null;
+  const pl = /^p(st|sh)(\d)$/.exec(l.mk);
+  if (pl) { const st = m.ps[+l.oc]; return st ? { cur: pl[1] === "st" ? st.sot : st.sh, line: +pl[2] - 0.5 } : null; }
+  const g = k.group, line = k.line; if (line == null) return null;
+  const cur = g === "ou" ? m.hg + m.ag : g === "crn" ? m.corners[0] + m.corners[1] : g === "crd" ? m.cards[0] + m.cards[1] : g === "tgh" ? m.hg : g === "tga" ? m.ag : null;
+  return cur == null ? null : { cur, line };
+}
+function betCard(b, tagTxt) {
+  const when = new Date(b.at).toLocaleString("es-ES", { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+  const tipo = b.legs.length > 1 ? COMBO_NAME(b.legs.length) : "Sencilla";
+  const legs = b.legs.map(l => { const m = findMatch(l.mid), c = m && legCount(l, m);
+    const ic = l.status === "won" ? `<i class="bc-ok">✓</i>` : l.status === "lost" ? `<i class="bc-ko">✕</i>` : `<i class="bc-pe"></i>`;
+    const bar = c ? `<span class="bc-cnt"><b>${c.cur}</b><span class="bc-bar"><span style="width:${Math.min(100, c.cur / Math.ceil(c.line) * 100)}%"></span></span></span>` : "";
+    return `<div class="bc-leg">${ic}<div><div class="bc-sel"><b>${esc(l.label)}</b><span>${fo(l.odds)}</span></div><div class="bc-mk">${esc(l.mname)}</div></div>${bar}</div>`; }).join("");
+  const mids = [...new Set(b.legs.map(l => l.mid))];
+  const games = mids.map(id => { const m = findMatch(id); if (!m) return "";
+    const st = m.status === "pre" ? fmtDate(m.fecha) || "Sin empezar" : m.status === "ft" ? "Resultado final" : m.status === "ht" ? "Descanso" : minLabel(m);
+    const sc = v => m.status === "pre" ? "" : `<span class="bc-sc">${v}</span>`;
+    return `<div class="bc-game"><div class="bc-tm">${teamShirt(m.home.nombre)}<b>${esc(m.home.nombre)}</b>${sc(m.hg)}</div><div class="bc-tm">${teamShirt(m.away.nombre)}<b>${esc(m.away.nombre)}</b><span class="bc-st">${esc(st)}</span>${sc(m.ag)}</div></div>`; }).join("");
+  const win = b.status === "pending" ? b.stake * b.odds : (b.ret || 0);
+  const ci = cashoutInfo(b);
+  let co = "";
+  if (ci && ci.kind !== "closed") {
+    co = S.coConfirm === b.id ? `<div class="bc-co conf"><span>${ci.kind === "void" ? "¿Anular y recuperar " + eur(ci.amount) + "?" : "¿Cerrar por " + eur(ci.amount) + "?"}</span><button data-co-yes="${b.id}">Sí</button><button data-co-no="1">No</button></div>`
+      : `<button class="bc-co" data-co="${b.id}">${ci.kind === "void" ? "Anular apuesta" : "Cerrar apuesta"}<b>${eur(ci.amount)}</b></button>`;
+  } else if (ci) co = `<button class="bc-co" disabled>Cerrar apuesta no disponible</button>`;
+  return `<div class="bc-date">${esc(when)}</div><div class="bc">
+    <div class="bc-hd"><b>${eur(b.stake)} ${tipo}</b>${b.status !== "pending" ? `<span class="tag ${b.status}">${tagTxt[b.status]}</span>` : ""}</div>
+    <div class="bc-btns"><button data-reuse="${b.id}">↻ Reutilizar selecciones</button><button data-share="${b.id}">⇪ Compartir</button></div>
+    ${legs}${games}
+    <div class="bc-ft"><div><small>Imp:</small><b>${eur(b.stake)}</b></div><div><small>${b.status === "pending" ? "Ganancias" : "Retorno"}</small><b>${eur(win)}</b></div></div>
+    ${co}</div>`;
+}
+
 /* ===================== ADMIN: lo que pasa en el partido ===================== */
 function adminAct(id, act, arg) {
   const f = FIX.find(x => x.id === id); if (!f) return;
@@ -1116,8 +1218,7 @@ function tableView() {
   return DATA.ligas.map(lg => { const L = leagueStats(lg);
     const rows = lg.equipos.slice().sort((a, b) => (b.pts - a.pts) || ((b.gf - b.gc) - (a.gf - a.gc)) || (b.gf - a.gf)).map((e, i) => { const st = strength(e, L);
       return `<tr class="${e.nombre === DATA.miEquipo ? "me" : ""}"><td>${i + 1}. ${esc(e.nombre)}</td><td>${e.pj ?? "—"}</td><td><b>${e.pts ?? "—"}</b></td><td>${e.gf ?? "—"}</td><td>${e.gc ?? "—"}</td><td>${e.gf != null ? (e.gf - e.gc > 0 ? "+" : "") + (e.gf - e.gc) : "—"}</td><td>${esc(e.racha || "")}</td><td>${st ? st.att.toFixed(2) : "—"}</td><td>${st ? st.def.toFixed(2) : "—"}</td></tr>`; }).join("");
-    return `<div class="block"><div class="bh">${esc(lg.nombre)}</div><div class="model"><table class="stand"><thead><tr><th>Equipo</th><th>PJ</th><th>Pts</th><th>GF</th><th>GC</th><th>DG</th><th>Racha</th><th>Ataque</th><th>Defensa</th></tr></thead><tbody>${rows}</tbody></table></div>
-    <div class="note">Ataque y defensa: 1,00 es la media del grupo. Ataque 1,30 marca un 30 % más que la media. Defensa 0,70 encaja un 30 % menos (mejor).</div></div>`; }).join("");
+    return `<div class="block"><div class="bh">${esc(lg.nombre)}</div><div class="model"><table class="stand"><thead><tr><th>Equipo</th><th>PJ</th><th>Pts</th><th>GF</th><th>GC</th><th>DG</th><th>Racha</th><th>Ataque</th><th>Defensa</th></tr></thead><tbody>${rows}</tbody></table></div></div>`; }).join("");
 }
 function rankingView() {
   if (S.store !== "db" && S.store !== "sb") return `<div class="block empty">El ranking funciona en el enlace compartido de AlmaBet. Abierto como fichero en tu ordenador solo guarda tus apuestas.</div>`;
@@ -1134,7 +1235,8 @@ function betsView() {
   const won = settled.filter(b => b.status === "won").length;
   const pl = ret - staked, roi = staked ? pl / staked * 100 : 0;
   const tagTxt = { pending: "Pendiente", won: "Ganada", lost: "Perdida", void: "Anulada", cashout: "Cerrada" };
-  const card = b => `<div class="bet"><div class="hd"><b>${b.legs.length > 1 ? "Combinada (" + b.legs.length + ")" : "Sencilla"} · ${eur(b.stake)} a ${fo(b.odds)}</b><span class="tag ${b.status}">${tagTxt[b.status]}</span></div>
+  const card = b => betCard(b, tagTxt);
+  const cardOld = b => `<div class="bet"><div class="hd"><b>${b.legs.length > 1 ? "Combinada (" + b.legs.length + ")" : "Sencilla"} · ${eur(b.stake)} a ${fo(b.odds)}</b><span class="tag ${b.status}">${tagTxt[b.status]}</span></div>
     ${b.legs.map(l => `<div class="leg"><span>${esc(l.label)} · ${esc(l.mname)} · ${esc(l.match)}</span><span class="r-${l.status}">${fo(l.odds)}</span></div>`).join("")}
     <div class="leg"><span>${b.status === "pending" ? "Ganancia potencial" : "Retorno"}</span><span>${eur(b.status === "pending" ? b.stake * b.odds : (b.ret || 0))}</span></div>${coHTML(b)}</div>`;
   function coHTML(b) { const ci = cashoutInfo(b); if (!ci) return "";
@@ -1238,36 +1340,36 @@ function slipData() {
     return { ...s, m, odds: oc ? oc.odds : null, mname: mk ? mk.name : s.mname, susp: !m || m.suspended || !oc || oc.odds == null }; });
 }
 const num = v => Math.round((parseFloat(String(v || "").replace(",", ".")) || 0) * 100) / 100;
+const COMBO_NAME = n => ({ 2: "Doble", 3: "Triple", 4: "Cuádruple", 5: "Quíntuple", 6: "Séxtuple" })[n] || "Combinada de " + n;
 function slipHTML() {
   const d = slipData(), n = d.length;
-  const ci = S.mode === "combo" && n >= 2 && !d.some(x => x.susp) ? comboInfo(d) : { ok: false, why: n < 2 ? "Añade al menos 2 selecciones." : "Hay mercados suspendidos o cerrados." };
-  const canCombo = ci.ok;
-  let body = "";
-  if (!n) body = `<div class="empty">Pulsa una cuota para añadirla al boleto.</div>`;
-  else {
-    body += `<div class="stabs"><button data-mode="single" class="${S.mode === "single" ? "on" : ""}">Sencillas</button><button data-mode="combo" class="${S.mode === "combo" ? "on" : ""}">Combinada</button></div>`;
-    body += d.map(x => {
-      const ch = x.odds != null && x.odds !== x.added ? `<span class="chg">antes ${fo(x.added)}</span>` : "<span></span>";
-      const st = num(S.stakes[x.key]);
-      return `<div class="sel-it"><span class="t">${esc(x.label)}</span><span class="od">${x.susp ? LOCK : fo(x.odds)}</span>
-        <span class="s">${esc(x.mname)}</span>${ch}<span class="s">${x.m ? esc(x.m.home.nombre) + " v " + esc(x.m.away.nombre) : ""}</span><button class="x" data-rm="${x.key}" aria-label="Quitar">×</button>
-        ${S.mode === "single" ? `<div class="stake"><input id="st-${x.key.replace(/[^\w]/g, "_")}" data-stake="${x.key}" inputmode="decimal" placeholder="Importe €" aria-label="Importe"><span class="ret">${x.odds && st ? "Gana " + eur(st * x.odds) : ""}</span></div>` : ""}
-      </div>`; }).join("");
-    let total = 0, pot = 0, tot = 1;
-    if (S.mode === "single") d.forEach(x => { const st = num(S.stakes[x.key]); total += st; pot += x.odds ? st * x.odds : 0; });
-    else { tot = canCombo ? ci.odds : 0; total = num(S.combo); pot = total * tot; }
-    if (S.mode === "combo") body += `<div class="sel-it">${canCombo ? `<span class="t">Combinada de ${n}</span><span class="od">${fo(tot)}</span>
-      ${ci.parts.map(pt => `<span class="s" style="grid-column:1/-1">Crear apuesta: ${pt.n} del ${esc(pt.m.home.nombre)} v ${esc(pt.m.away.nombre)} a ${fo(pt.odds)}${pt.naive > pt.odds * 1.02 ? " (están relacionadas; por separado serían " + fo(Math.round(pt.naive * 100) / 100) + ")" : ""}</span>`).join("")}
-      <div class="stake"><input id="st-combo" data-combo="1" inputmode="decimal" placeholder="Importe €" aria-label="Importe combinada"></div>` :
-      `<span class="s" style="grid-column:1/-1">${esc(ci.why)}</span>`}</div>`;
-    body += `<div class="chips">${[5, 10, 25, 50].map(v => `<button data-quick="${v}">+${v} €</button>`).join("")}<button data-clear="1">Vaciar</button></div>`;
-    body += `<div class="tot"><div><span>Total apostado</span><span>${eur(total)}</span></div><div class="big"><span>Ganancia potencial</span><span>${eur(pot)}</span></div></div>`;
-    const anySusp = d.some(x => x.susp);
-    const ok = S.store !== "loading" && S.store !== "auth" && total > 0 && total <= S.wallet.balance + 1e-9 && !anySusp && (S.mode === "single" || canCombo);
-    body += `<div class="msg">${S.msg || (total > S.wallet.balance ? "Saldo insuficiente." : anySusp ? "Hay mercados suspendidos o cerrados." : "")}</div>`;
-    body += `<button class="place" data-place="1" ${ok ? "" : "disabled"}>Realizar apuesta</button>`;
+  const changed = d.filter(x => !x.susp && x.odds !== x.added), anySusp = d.some(x => x.susp);
+  if (!n) return `<div class="bh" data-toggle="1"><span class="cnt">0</span><span class="bt">Selecciones</span></div><div class="empty">Pulsa una cuota para añadirla al boleto.</div>`;
+  const ci = n >= 2 && !anySusp ? comboInfo(d) : { ok: false, why: n < 2 ? "" : "Hay selecciones suspendidas: quítalas para hacer la combinada." };
+  let total = 0, pot = 0;
+  const rows = d.map(x => { const st = num(S.stakes[x.key]); total += st; pot += x.odds ? st * x.odds : 0;
+    const dim = x.susp || x.odds !== x.added;
+    return `<div class="sl-row ${dim ? "dim" : ""}"><button class="sl-x" data-rm="${x.key}" aria-label="Quitar">✕</button>
+      <div class="sl-main"><b class="sl-pick">${esc(x.label)}</b><span class="sl-mk">${esc(x.mname)}</span><span class="sl-m">${x.m ? esc(x.m.home.nombre) + " v " + esc(x.m.away.nombre) : ""}</span>
+        ${x.odds != null && x.odds !== x.added ? `<span class="sl-chg">Antes ${fo(x.added)}</span>` : ""}</div>
+      <span class="sl-od">${x.susp ? LOCK : fo(x.odds)}</span>
+      <input class="sl-in" id="st-${x.key.replace(/[^\w]/g, "_")}" data-stake="${x.key}" inputmode="decimal" placeholder="Cantidad" aria-label="Cantidad" ${x.susp ? "disabled" : ""}></div>`; }).join("");
+  let combo = "";
+  if (n >= 2) {
+    const cst = num(S.combo); total += cst; if (ci.ok) pot += cst * ci.odds;
+    combo = `<div class="sl-combo ${ci.ok ? "" : "dim"}"><b>${COMBO_NAME(n)}</b><span class="sl-cod">${ci.ok ? fo(ci.odds) : LOCK}</span>
+      <input class="sl-in" id="st-combo" data-combo="1" inputmode="decimal" placeholder="Cantidad" aria-label="Cantidad combinada" ${ci.ok ? "" : "disabled"}>
+      ${ci.ok ? ci.parts.map(pt => `<span class="sl-note">Mismo partido: ${pt.n} selecciones del ${esc(pt.m.home.nombre)} v ${esc(pt.m.away.nombre)} van juntas a ${fo(pt.odds)}${pt.naive > pt.odds * 1.02 ? " (por separado serían " + fo(Math.round(pt.naive * 100) / 100) + ")" : ""}</span>`).join("") : `<span class="sl-note">${esc(ci.why)}</span>`}</div>`;
   }
-  return `<div class="bh" data-toggle="1"><span>Boleto de apuestas</span><span class="cnt">${n}</span><span class="sp"></span></div>${body}`;
+  const ok = S.store !== "loading" && S.store !== "auth" && total > 0 && total <= S.wallet.balance + 1e-9 && !changed.length && !(num(S.combo) > 0 && !ci.ok) && !d.some(x => x.susp && num(S.stakes[x.key]) > 0);
+  const msg = S.msg || (total > S.wallet.balance + 1e-9 ? "Saldo insuficiente." : "");
+  return `<div class="bh" data-toggle="1"><span class="cnt">${n}</span><span class="bt">Selecciones<button class="sl-clear" data-clear="1">Vaciar boleto</button></span>
+      <span class="sl-bal"><small>Saldo</small>${eur(S.wallet.balance)}</span><button class="sl-close" data-toggle="1" aria-label="Cerrar boleto">✕</button></div>
+    <div class="sl-body">${rows}${combo}
+      <div class="sl-tot"><div><small>Total apostado</small><b>${eur(total)}</b></div><div><small>Ganancias potenciales</small><b>${eur(pot)}</b></div></div>
+      ${msg ? `<div class="msg">${esc(msg)}</div>` : ""}
+      <button class="place" data-place="1" ${ok ? "" : "disabled"}>${total > 0 ? "Apostar " + eur(total) : "Apostar"}</button></div>
+    ${changed.length ? `<div class="sl-ban">Han cambiado las cuotas de ${changed.length > 1 ? changed.length + " selecciones" : "una selección"}<button data-accept="1">Aceptar cambios</button></div>` : ""}`;
 }
 
 /* DOM diff mínimo para no perder el foco ni los clics al refrescar */
@@ -1308,23 +1410,19 @@ function render() {
 function place() {
   const d = slipData(); S.msg = "";
   if (S.store === "sb" && S.admin) { S.msg = "La cuenta de administrador no apuesta. Entra con tu cuenta de jugador."; return render(); }
-  if (d.some(x => x.susp)) { S.msg = "Hay mercados suspendidos o cerrados."; return render(); }
+  if (d.some(x => !x.susp && x.odds !== x.added)) { S.msg = "Han cambiado las cuotas: acepta los cambios."; return render(); }
   const mk = legs => legs.map(x => ({ mid: x.mid, mk: x.mk, oc: x.oc, label: x.label, mname: x.mname, match: x.m.home.nombre + " v " + x.m.away.nombre, odds: x.odds, status: "pending" }));
-  const W = S.wallet;
-  if (S.mode === "single") {
-    const items = d.filter(x => num(S.stakes[x.key]) > 0);
-    const total = items.reduce((s, x) => s + num(S.stakes[x.key]), 0);
-    if (total > W.balance) { S.msg = "Saldo insuficiente."; return render(); }
-    items.forEach(x => { const st = num(S.stakes[x.key]); W.balance = +(W.balance - st).toFixed(2); W.bets.push({ id: Date.now() + "-" + Math.random().toString(36).slice(2, 7), stake: st, odds: x.odds, legs: mk([x]), status: "pending", at: Date.now() }); });
-    toast(items.length + (items.length > 1 ? " apuestas realizadas" : " apuesta realizada") + " · " + eur(total));
-  } else {
-    const st = num(S.combo); if (st > W.balance) { S.msg = "Saldo insuficiente."; return render(); }
-    const ci = comboInfo(d); if (!ci.ok) { S.msg = ci.why; return render(); }
-    const odds = ci.odds;
-    W.balance = +(W.balance - st).toFixed(2); W.bets.push({ id: Date.now() + "-c", stake: st, odds, legs: mk(d), status: "pending", at: Date.now() });
-    toast("Combinada realizada · " + eur(st) + " a " + fo(odds));
-  }
-  S.slip = []; S.stakes = {}; S.combo = ""; saveWallet(); settle(); render();
+  const W = S.wallet, items = d.filter(x => !x.susp && num(S.stakes[x.key]) > 0), cst = num(S.combo);
+  const ci = cst > 0 ? comboInfo(d) : null;
+  if (cst > 0 && (!ci || !ci.ok)) { S.msg = ci ? ci.why : "No se puede hacer la combinada."; return render(); }
+  const total = items.reduce((t, x) => t + num(S.stakes[x.key]), 0) + cst;
+  if (!total) { S.msg = "Escribe una cantidad."; return render(); }
+  if (total > W.balance + 1e-9) { S.msg = "Saldo insuficiente."; return render(); }
+  items.forEach(x => { const st = num(S.stakes[x.key]); W.balance = +(W.balance - st).toFixed(2); W.bets.push({ id: Date.now() + "-" + Math.random().toString(36).slice(2, 7), stake: st, odds: x.odds, legs: mk([x]), status: "pending", at: Date.now() }); });
+  if (cst > 0) { W.balance = +(W.balance - cst).toFixed(2); W.bets.push({ id: Date.now() + "-c" + Math.random().toString(36).slice(2, 5), stake: cst, odds: ci.odds, legs: mk(d), status: "pending", at: Date.now() }); }
+  const nb = items.length + (cst > 0 ? 1 : 0);
+  toast((nb > 1 ? nb + " apuestas realizadas" : "Apuesta realizada") + " · " + eur(total));
+  S.slip = []; S.stakes = {}; S.combo = ""; S.slipOpen = false; saveWallet(); settle(); render();
 }
 
 document.addEventListener("click", e => {
@@ -1337,7 +1435,7 @@ document.addEventListener("click", e => {
     const [mid, mk, oc] = ds.pick.split("|"); const i = S.slip.findIndex(s => s.key === ds.pick);
     if (i >= 0) S.slip.splice(i, 1);
     else { const m = findMatch(mid), k = markets(m).list.find(x => x.key === mk), o = k.outcomes.find(x => x.k === oc);
-      S.slip.push({ key: ds.pick, mid, mk, oc, label: o.label, mname: k.name, added: o.odds }); if (S.slip.length === 2) S.mode = "combo"; }
+      S.slip.push({ key: ds.pick, mid, mk, oc, label: o.label, mname: k.name, added: o.odds }); }
     S.msg = "";
   }
   else if (ds.rm) { S.slip = S.slip.filter(s => s.key !== ds.rm); delete S.stakes[ds.rm]; }
@@ -1360,6 +1458,13 @@ document.addEventListener("click", e => {
     if (S.mode === "combo") S.combo = add(S.combo); else S.slip.forEach(s => S.stakes[s.key] = add(S.stakes[s.key])); }
   else if (ds.clear) { S.slip = []; S.stakes = {}; S.combo = ""; S.msg = ""; }
   else if (ds.place) return place();
+  else if (ds.accept) { slipData().forEach(x => { const s0 = S.slip.find(y => y.key === x.key); if (s0 && x.odds != null) s0.added = x.odds; }); S.msg = ""; }
+  else if (ds.reuse) { const b = S.wallet.bets.find(x => x.id === ds.reuse); if (b) { b.legs.forEach(l => { const key = l.mid + "|" + l.mk + "|" + l.oc; if (S.slip.some(x => x.key === key)) return;
+      const m = findMatch(l.mid), k = m && markets(m).list.find(x => x.key === l.mk), o = k && k.outcomes.find(x => x.k === l.oc);
+      if (o && o.odds != null && m.status !== "ft") S.slip.push({ key, mid: l.mid, mk: l.mk, oc: l.oc, label: l.label, mname: k.name, added: o.odds }); });
+      S.slipOpen = true; toast(S.slip.length ? "Selecciones añadidas al boleto" : "Esos mercados ya están cerrados"); } }
+  else if (ds.share) { const b = S.wallet.bets.find(x => x.id === ds.share); if (b) { const txt = "Mi apuesta en AlmaBet: " + eur(b.stake) + " a " + fo(b.odds) + "\n" + b.legs.map(l => "· " + l.label + " (" + l.mname + ") " + l.match).join("\n") + "\n" + location.origin;
+      if (navigator.share) navigator.share({ text: txt }).catch(() => {}); else navigator.clipboard && navigator.clipboard.writeText(txt).then(() => toast("Copiado para compartir")); } return; }
   else if (ds.toggle) S.slipOpen = !S.slipOpen;
   else if (ds.adm) { if (!S.admin) return; S.confirmReset = false;
     return adminAct(ds.mid, ds.adm, ds.adm === "dom" ? +ds.val : ds.adm === "setmin" ? S.form.min : undefined); }

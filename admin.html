@@ -476,7 +476,7 @@ th{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06
   .back{display:none}
   .toast{bottom:calc(122px + env(safe-area-inset-bottom,0px))}
 }
-.bnav{display:none;position:fixed;left:0;right:0;bottom:0;z-index:45;background:#121715;border-top:1px solid var(--line);grid-template-columns:repeat(5,1fr);padding-bottom:env(safe-area-inset-bottom,0px);padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px)}
+.bnav{display:none;position:fixed;left:0;right:0;bottom:0;z-index:45;transform:translate3d(0,0,0);-webkit-transform:translate3d(0,0,0);will-change:transform;-webkit-backface-visibility:hidden;background:#121715;border-top:1px solid var(--line);grid-template-columns:repeat(5,1fr);padding-bottom:env(safe-area-inset-bottom,0px);padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px)}
 .bnav button{display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 2px 7px;font-size:11px;font-weight:600;color:#cfd8d4;position:relative}
 .bnav svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .bnav button.on{color:var(--yellow)}

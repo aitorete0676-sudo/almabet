@@ -113,6 +113,11 @@ module.exports = async (req, res) => {
       await setJ("wallet:" + me.name, w);
       return send(200, { ok: true });
     }
+    if (a === "playerBets") {
+      if (!admin) return send(403, { error: "Solo el administrador puede ver las apuestas de otros." });
+      const w = (await getJ("wallet:" + norm(b.user))) || { bets: [] };
+      return send(200, { bets: (w.bets || []).slice(-150) });
+    }
     if (a === "ranking") {
       const names = (await redis("SMEMBERS", "users")) || [];
       const adminU = norm(process.env.ADMIN_USER);

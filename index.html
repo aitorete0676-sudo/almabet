@@ -274,6 +274,12 @@ th{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06
 .hm-ban{flex:none;width:86%;max-width:420px;scroll-snap-align:start;position:relative;min-height:168px;border-radius:10px;padding:16px;text-align:left;display:flex;flex-direction:column;gap:4px;overflow:hidden;border:1px solid rgba(255,255,255,.08)}
 .hm-ban.b1{background:radial-gradient(circle at 85% 30%,rgba(245,212,23,.25),transparent 45%),linear-gradient(135deg,#14704f,#0c3326)}
 .hm-ban.b2{background:radial-gradient(circle at 80% 70%,rgba(61,220,151,.25),transparent 50%),linear-gradient(135deg,#1c2b25,#0c3326)}
+.hm-ban.b4{background:radial-gradient(circle at 85% 25%,rgba(245,212,23,.3),transparent 45%),linear-gradient(135deg,#3a2f0c,#0c3326)}
+.hm-ban.b4 .hm-big{font-size:18px}
+.fut-desc{color:var(--muted,#9fb3aa);font-size:13px;margin:2px 0 8px;white-space:normal;overflow-wrap:anywhere}
+.fut-team{display:flex;align-items:center;gap:8px;font-weight:700;font-size:13px;margin:2px 0 10px}.fut-team select,.fut-adm select{flex:1;min-width:0;padding:8px;border-radius:6px;border:1px solid var(--line);background:var(--panel);color:inherit}
+.fut-adm{border-top:1px dashed var(--line);margin-top:10px;padding-top:10px;display:grid;gap:8px}.fa-row{display:flex;gap:6px;flex-wrap:wrap;align-items:center}.fa-win{font-size:13px}.fa-ok{color:#3ddc97;font-weight:800}
+.pb-box{margin-bottom:12px}.pb-bet{border-top:1px solid var(--line);padding:8px 0;font-size:13px}.pb-bet b{font-size:14px}.pb-leg{color:var(--muted,#9fb3aa)}
 .hm-ban.b3{background:linear-gradient(135deg,#2a3330,#14704f)}
 .hm-ban small{color:#3ddc97;font-weight:800;text-transform:uppercase;font-size:12px;letter-spacing:.04em}
 .hm-ban b{font-family:var(--f-cond);font-style:italic;font-weight:800;font-size:19px;line-height:1.1;text-transform:uppercase;max-width:62%}
@@ -478,6 +484,7 @@ if(seen||!window.matchMedia("(max-width:760px)").matches){el.remove();return}set
       <button data-view="live">En directo</button>
       <button data-view="bets">Mis apuestas</button>
       <button data-view="rank">Ranking</button>
+      <button data-view="fut">Temporada</button>
       <button data-view="table">Clasificación</button>
       <button data-view="how">Cómo funcionan las cuotas</button>
     </nav>
@@ -524,21 +531,21 @@ const DATA = {
     { dorsal: 1, nombre: "Marc Conde", conv: 8, pj: 3, tit: 3, goles: 0, posicion: "POR" },
     { dorsal: 2, nombre: "Daniel Muñoz", conv: 8, pj: 8, tit: 7, goles: 0, amarillas: 1, posicion: "CEN" },
     { dorsal: 4, nombre: "Ariel Cabanes", conv: 8, pj: 8, tit: 8, goles: 0, posicion: "CEN" },
-    { dorsal: 7, nombre: "Alejandro Grigore", conv: 7, pj: 7, tit: 6, goles: 1, amarillas: 4, posicion: "EXT/DEL" },
-    { dorsal: 8, nombre: "Víctor de la Torre", conv: 6, pj: 6, tit: 5, goles: 1, posicion: "MED" },
+    { dorsal: 7, nombre: "Alejandro Grigore", conv: 7, pj: 7, tit: 6, goles: 1, asistencias: 1, amarillas: 4, posicion: "EXT/DEL" },
+    { dorsal: 8, nombre: "Víctor de la Torre", conv: 6, pj: 6, tit: 5, goles: 1, asistencias: 1, balonParado: true, posicion: "MED" },
     { dorsal: 9, nombre: "Carlos Moliner", conv: 6, pj: 6, tit: 6, goles: 5, posicion: "DEL" },
-    { dorsal: 10, nombre: "Aitor Jiménez", conv: 6, pj: 6, tit: 0, goles: 0, amarillas: 1, rojas: 1, posicion: "MED" },
-    { dorsal: 11, nombre: "Arnau Badal", conv: 7, pj: 7, tit: 5, goles: 0, amarillas: 1, posicion: "EXT" },
-    { dorsal: 12, nombre: "Sergi Catalá", conv: 8, pj: 8, tit: 3, goles: 0, amarillas: 1, posicion: "LAT" },
+    { dorsal: 10, nombre: "Aitor Jiménez", conv: 6, pj: 6, tit: 0, goles: 0, amarillas: 1, rojas: 1, balonParado: true, posicion: "MED" },
+    { dorsal: 11, nombre: "Arnau Badal", conv: 7, pj: 7, tit: 5, goles: 0, asistencias: 1, creador: true, amarillas: 1, posicion: "EXT" },
+    { dorsal: 12, nombre: "Sergi Catalá", conv: 8, pj: 8, tit: 3, goles: 0, asistencias: 1, amarillas: 1, posicion: "LAT" },
     { dorsal: 13, nombre: "Manel Llop", conv: 8, pj: 6, tit: 5, goles: 0, amarillas: 1, posicion: "POR" },
     { dorsal: 14, nombre: "Ramón Tercero", conv: 4, pj: 4, tit: 2, goles: 0, posicion: "DEL" },
-    { dorsal: 16, nombre: "Álex Fernández", conv: 8, pj: 8, tit: 4, goles: 0, posicion: "EXT" },
+    { dorsal: 16, nombre: "Álex Fernández", conv: 8, pj: 8, tit: 4, goles: 0, asistencias: 1, posicion: "EXT" },
     { dorsal: 17, nombre: "Alejandro Martínez", conv: 8, pj: 6, tit: 5, goles: 0, posicion: "LAT" },
     { dorsal: 18, nombre: "Iker Mediavilla", conv: 3, pj: 3, tit: 2, goles: 1, amarillas: 1, posicion: "LAT" },
     { dorsal: 19, nombre: "Ramón Herrando", conv: 3, pj: 3, tit: 3, goles: 1, amarillas: 1, posicion: "MED" },
     { dorsal: 20, nombre: "Marc Escobar", conv: 7, pj: 7, tit: 7, goles: 0, amarillas: 6, posicion: "MED" },
     { dorsal: 21, nombre: "Adriano", conv: 5, pj: 5, tit: 5, goles: 1, amarillas: 1, posicion: "MED" },
-    { dorsal: 22, nombre: "Juan Devesa", conv: 6, pj: 5, tit: 4, goles: 0, amarillas: 1, posicion: "MED" },
+    { dorsal: 22, nombre: "Juan Devesa", conv: 6, pj: 5, tit: 4, goles: 0, amarillas: 1, balonParado: true, posicion: "MED" },
     { dorsal: 23, nombre: "Gennie", conv: 5, pj: 5, tit: 1, goles: 1, posicion: "EXT" },
     { dorsal: 25, nombre: "Chechu", conv: 5, pj: 5, tit: 5, goles: 1, posicion: "CEN/LAT" },
     { dorsal: 27, nombre: "Tomás Balagué", conv: 6, pj: 5, tit: 2, goles: 1, amarillas: 1, posicion: "LAT" }
@@ -681,7 +688,8 @@ const SQUAD = RAW.map((p, i) => {
   const pw = posW(p.posicion);
   const rate = ((p.goles || 0) + 0.4 * pw.g) / (eq + 2);   // goles reales + un poco según la posición
   return { ...p, i, x, wg: p.posicion === "POR" ? 0 : x * rate,
-    wa: x * (pw.a || 1) * (1 + 0.8 * (p.asistencias || 0)),
+    // asistencias: pocas aún, así que cada una pesa con prudencia; lanzar el balón parado y ser extremo creador suman algo
+    wa: x * (pw.a || 1) * (1 + 0.5 * (p.asistencias || 0)) * (p.balonParado ? 1.35 : 1) * (p.creador ? 1.15 : 1),
     wy: x * ((p.amarillas || 0) + 1.5 * (p.rojas || 0) + 0.4 * pw.y) / (eq + 2) };   // tarjetas reales + un poco según la posición
 });
 const sideOf = m => m.home.nombre === DATA.miEquipo ? 0 : m.away.nombre === DATA.miEquipo ? 1 : -1;
@@ -1035,9 +1043,9 @@ function settle() {
   let changed = false;
   S.wallet.bets.forEach(b => {
     if (b.status !== "pending") return;
-    b.legs.forEach(l => { if (l.status === "pending") { const m = findMatch(l.mid); const r = m && legResult(l, m); if (r) { l.status = r; changed = true; } } });
+    b.legs.forEach(l => { if (l.status === "pending") { const m = l.mid === FUT ? null : findMatch(l.mid); const r = l.mid === FUT ? futLegResult(l) : m && legResult(l, m); if (r) { l.status = r; changed = true; } } });
     if (b.legs.some(l => l.status === "lost")) { b.status = "lost"; b.ret = 0; changed = true; }
-    else if (b.legs.every(l => l.status === "won")) { b.status = "won"; b.ret = +(b.stake * b.odds).toFixed(2); S.wallet.balance = +(S.wallet.balance + b.ret).toFixed(2); changed = true; toast("Apuesta ganada: +" + eur(b.ret)); }
+    else if (b.legs.every(l => l.status === "won")) { b.status = "won"; b.ret = +(b.stake * b.odds / b.legs.reduce((d, l) => d * (l.dh || 1), 1)).toFixed(2); S.wallet.balance = +(S.wallet.balance + b.ret).toFixed(2); changed = true; toast("Apuesta ganada: +" + eur(b.ret)); }
   });
   if (changed) saveWallet();
 }
@@ -1071,6 +1079,114 @@ function doCashout(id) {
   S.wallet.balance = +(S.wallet.balance + ci.amount).toFixed(2);
   toast(ci.kind === "void" ? "Apuesta anulada: te devolvemos " + eur(ci.amount) : "Apuesta cerrada: +" + eur(ci.amount));
   saveWallet(); render();
+}
+
+/* ===================== TEMPORADA: apuestas a largo plazo ===================== */
+// Se simula el resto de la liga FUT_SIMS veces con el mismo modelo de goles de los partidos.
+// Jornadas sin calendario cargado: emparejamientos al azar en cada simulación. Empates en goleadores: se reparte (dead heat).
+const FUT = "fut", LG0 = DATA.ligas[0], NT = LG0.equipos.length, SEASON_J = 2 * (NT - 1), WINTER_J = SEASON_J / 2, XMAS_J = 13;
+const FUT_SIMS = 3000, FUT_MARGIN = 0.18, FUT_MAX = 251;
+const futSt = () => S.states[FUT] || {};
+function rng(a) { return () => { a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+function rpoisR(l, R) { if (l <= 0) return 0; const L = Math.exp(-l); let k = 0, p = 1; do { k++; p *= R(); } while (p > L); return k - 1; }
+const FUT_TEAMS = LG0.equipos.map(e => e.nombre), FUT_IX = {}; FUT_TEAMS.forEach((n, i) => FUT_IX[n] = i);
+const MY_T = FUT_IX[DATA.miEquipo] ?? 0;
+const AGOL_LINE = Math.floor(((LG0.equipos[MY_T].gf || 0) / Math.max(1, LG0.equipos[MY_T].pj || 1)) * SEASON_J) + 0.5;   // fija toda la temporada
+let futCache = { key: "", sim: null };
+function futSim() {
+  const ms = allMatches(), fin = ms.filter(m => m.status === "ft");
+  const key = fin.map(m => m.id + ":" + m.hg + "-" + m.ag + ":" + m.st.events.length).join(",");
+  if (futCache.key === key && futCache.sim) return futCache.sim;
+  const R = rng(1234567 + fin.length * 7919);
+  const L = leagueStats(LG0), ST0 = LG0.equipos.map(e => strength(e, L) || { att: 1, def: 1 }), mu = L ? L.mu : 1.4;
+  const base = LG0.equipos.map(e => ({ pts: e.pts || 0, gf: e.gf || 0, gc: e.gc || 0, pj: e.pj || 0 }));
+  const pg0 = SQUAD.map(p => p.goles || 0);
+  fin.forEach(m => { const h = FUT_IX[m.home.nombre], a = FUT_IX[m.away.nombre]; if (h == null || a == null) return;
+    base[h].gf += m.hg; base[h].gc += m.ag; base[a].gf += m.ag; base[a].gc += m.hg; base[h].pj++; base[a].pj++;
+    base[h].pts += m.hg > m.ag ? 3 : m.hg === m.ag ? 1 : 0; base[a].pts += m.ag > m.hg ? 3 : m.hg === m.ag ? 1 : 0;
+    m.pidx.forEach(i => pg0[i] += (m.ps[i] && m.ps[i].g) || 0); });
+  // Calendario conocido (partidos de la app sin terminar) y jornada por la que se va
+  const known = {}; ms.filter(m => m.status !== "ft" && m.jornada).forEach(m => { const h = FUT_IX[m.home.nombre], a = FUT_IX[m.away.nombre]; if (h != null && a != null) (known[m.jornada] ??= []).push([h, a]); });
+  const kj = Object.keys(known).map(Number);
+  const startR = kj.length ? Math.min(...kj) : Math.max(...base.map(b => b.pj)) + 1;
+  // Goleadores de cada equipo: peso de cada jugador (ritmo goleador × lo que juega)
+  // En cada simulación los pesos varían (rachas, lesiones, cambios de once): así nadie tiene la temporada decidida en noviembre
+  const TW0 = FUT_TEAMS.map(t => SQUAD.filter(p => p.team === t).map(p => ({ i: p.i, w: Math.pow((p.wg || 0) + (p.posicion === "POR" ? 0.002 : 0.03), 0.75) })));
+  let TW = [];
+  const reweight = () => { TW = TW0.map(ps => { const ws = ps.map(p => p.w * (-Math.log(R() + 1e-12) - Math.log(R() + 1e-12)) / 2), tot = ws.reduce((s, w) => s + w, 0) || 1; let c = 0; return ps.map((p, j) => ({ i: p.i, c: (c += ws[j] / tot) })); }); };
+  const gauss = () => Math.sqrt(-2 * Math.log(R() + 1e-12)) * Math.cos(2 * Math.PI * R());
+  const scorer = (t, R) => { const a = TW[t]; if (!a.length) return -1; const r = R(); for (const p of a) if (r <= p.c) return p.i; return a[a.length - 1].i; };
+  const NP = SQUAD.length, acc = { champ: new Float64Array(NT), winter: new Float64Array(NT), last: new Float64Array(NT), top3: new Float64Array(NT),
+    apos: { a1: 0, a2: 0, a3: 0 }, agol: { O: 0, U: 0 }, pich: new Float64Array(NP), xmas: new Float64Array(NP), tsc: FUT_TEAMS.map(() => new Float64Array(NP)) };
+  const order = (pts, gd, gf) => { const tb = FUT_TEAMS.map(() => R()); return FUT_TEAMS.map((_, i) => i).sort((x, y) => pts[y] - pts[x] || gd[y] - gd[x] || gf[y] - gf[x] || tb[y] - tb[x]); };
+  const topShare = (pg, idx, out) => { let mx = 0; for (const i of idx) if (pg[i] > mx) mx = pg[i]; if (!mx) return; const w = idx.filter(i => pg[i] === mx); for (const i of w) out[i] += 1 / w.length; };
+  const ALL = SQUAD.map(p => p.i), BYT = FUT_TEAMS.map(t => SQUAD.filter(p => p.team === t).map(p => p.i));
+  for (let s = 0; s < FUT_SIMS; s++) {
+    const pts = base.map(b => b.pts), gf = base.map(b => b.gf), gd = base.map(b => b.gf - b.gc), pg = pg0.slice();
+    const ST = ST0.map(x => ({ att: x.att * Math.exp(0.22 * gauss()), def: x.def * Math.exp(0.22 * gauss()) })); reweight();
+    if (startR > WINTER_J) acc.winter[order(pts, gd, gf)[0]]++;
+    if (startR > XMAS_J) topShare(pg, ALL, acc.xmas);
+    for (let r = startR; r <= SEASON_J; r++) {
+      let pairs = known[r];
+      if (!pairs) { const t = FUT_TEAMS.map((_, i) => i); for (let i = t.length - 1; i > 0; i--) { const j = Math.floor(R() * (i + 1)); [t[i], t[j]] = [t[j], t[i]]; }
+        pairs = []; for (let i = 0; i + 1 < t.length; i += 2) pairs.push(R() < 0.5 ? [t[i], t[i + 1]] : [t[i + 1], t[i]]); }
+      for (const [h, a] of pairs) {
+        const gh = rpoisR(mu * HOME_ADV * ST[h].att * ST[a].def, R), ga = rpoisR(mu / HOME_ADV * ST[a].att * ST[h].def, R);
+        gf[h] += gh; gf[a] += ga; gd[h] += gh - ga; gd[a] += ga - gh;
+        if (gh > ga) pts[h] += 3; else if (gh < ga) pts[a] += 3; else { pts[h]++; pts[a]++; }
+        for (let g = 0; g < gh; g++) { const i = scorer(h, R); if (i >= 0) pg[i]++; }
+        for (let g = 0; g < ga; g++) { const i = scorer(a, R); if (i >= 0) pg[i]++; }
+      }
+      if (r === WINTER_J) acc.winter[order(pts, gd, gf)[0]]++;
+      if (r === XMAS_J) topShare(pg, ALL, acc.xmas);
+    }
+    const o = order(pts, gd, gf); acc.champ[o[0]]++; acc.last[o[NT - 1]]++; for (let k = 0; k < 3; k++) acc.top3[o[k]]++;
+    const pos = o.indexOf(MY_T) + 1; acc.apos[pos <= 8 ? "a1" : pos <= 12 ? "a2" : "a3"]++;
+    acc.agol[gf[MY_T] > AGOL_LINE ? "O" : "U"]++;
+    topShare(pg, ALL, acc.pich); BYT.forEach((idx, t) => topShare(pg, idx, acc.tsc[t]));
+  }
+  futCache = { key, sim: acc }; futMkCache = {}; return acc;
+}
+const futPrice = p => p >= 0.995 ? null : Math.min(FUT_MAX, Math.max(1.01, roundOdds(1 / (Math.max(p, 1 / 800) * (1 + FUT_MARGIN)))));
+let futMkCache = {};
+// Todos los mercados de temporada (cuotas cerradas si el administrador los cierra o los liquida)
+function futMarkets() {
+  const A = futSim(), st = futSt(), ck = JSON.stringify(st);
+  if (futMkCache.ck === ck && futMkCache.list) return futMkCache;
+  const N = FUT_SIMS, list = [];
+  const add = (key, name, desc, outs, kind) => { const off = !!((st.closed || {})[key] || (st.done || {})[key]);
+    outs = outs.map(o => ({ ...o, p: o.c / N, odds: off ? null : futPrice(o.c / N) })).sort((x, y) => y.p - x.p || String(x.label).localeCompare(y.label));
+    list.push({ key, name, desc, kind, outcomes: outs, closed: off, done: !!(st.done || {})[key], win: (st.win || {})[key] || [] }); };
+  const teams = arr => FUT_TEAMS.map((n, i) => ({ k: "t" + i, label: n, team: n, c: arr[i] }));
+  const pls = (arr, idx) => idx.map(i => ({ k: "p" + i, label: SQUAD[i].nombre, team: SQUAD[i].team, pi: i, c: arr[i] }));
+  const ALL = SQUAD.map(p => p.i);
+  add("champ", "Campeón de liga", "Primero al acabar la jornada " + SEASON_J + ".", teams(A.champ), "team");
+  add("winter", "Campeón de invierno", "Líder al acabar la primera vuelta (jornada " + WINTER_J + ").", teams(A.winter), "team");
+  add("pich", "Pichichi de la liga", "Máximo goleador al final de la liga. Cuentan los goles desde la jornada 1.", pls(A.pich, ALL), "player");
+  add("xmas", "Máximo goleador en Navidad", "El que más goles lleve al acabar la jornada " + XMAS_J + ".", pls(A.xmas, ALL), "player");
+  FUT_TEAMS.forEach((t, i) => add("tsc" + i, "Máximo goleador · " + t, "El que más goles marque con su equipo en toda la liga.", pls(A.tsc[i], SQUAD.filter(p => p.team === t).map(p => p.i)), "player"));
+  add("top3", "Acaba entre los 3 primeros", "Cada equipo, por separado.", teams(A.top3), "team");
+  add("apos", "Puesto final del " + DATA.miEquipo, "", [{ k: "a1", label: "Entre los 8 primeros", c: A.apos.a1 }, { k: "a2", label: "Del 9º al 12º", c: A.apos.a2 }, { k: "a3", label: "Del 13º al " + NT + "º", c: A.apos.a3 }], "opt");
+  add("agol", "Goles del " + DATA.miEquipo + " en la liga", "Goles a favor en las " + SEASON_J + " jornadas.", [{ k: "O", label: "Más de " + fmtL(AGOL_LINE), c: A.agol.O }, { k: "U", label: "Menos de " + fmtL(AGOL_LINE), c: A.agol.U }], "opt");
+  add("last", "Farolillo rojo", "El último al acabar la liga.", teams(A.last), "team");
+  futMkCache = { ck, list }; return futMkCache;
+}
+const futMarket = key => futMarkets().list.find(k => k.key === key);
+const futOutcome = (mk, oc) => { const k = futMarket(mk); return k && k.outcomes.find(o => o.k === oc); };
+function futLegResult(l) {
+  const st = futSt(); if (!(st.done || {})[l.mk]) return null;
+  const w = (st.win || {})[l.mk] || [];
+  if (w.includes(l.oc)) { l.dh = l.mk === "top3" ? 1 : w.length; return "won"; }
+  return "lost";
+}
+function futAdmin(act, key) {
+  const st = JSON.parse(JSON.stringify(futSt())); st.closed ??= {}; st.done ??= {}; st.win ??= {};
+  if (act === "close") st.closed[key] = !st.closed[key];
+  else if (act === "win") { const sel = document.querySelector(`select[data-fsel="${key}"]`), v = sel && sel.value; if (!v) { toast("Elige el ganador."); return; }
+    st.win[key] = [...new Set([...(st.win[key] || []), v])]; }
+  else if (act === "done") { if (!(st.win[key] || []).length) { toast("Primero añade el ganador."); return; } st.done[key] = 1; }
+  else if (act === "undo") { delete st.win[key]; delete st.done[key]; }
+  saveMatch(FUT, st); settle();
 }
 
 /* ===================== TARJETA DE APUESTA ===================== */
@@ -1282,6 +1398,8 @@ function homeTop() {
       <b>${esc(mine.home.nombre)}<br>v ${esc(mine.away.nombre)}</b><div class="hm-shirts">${teamShirt(mine.home.nombre)}${teamShirt(mine.away.nombre)}</div>
       <span class="hm-cta">${mine.status === "pre" ? (cd ? "⏱ " + cd : "Sin hora") : mine.status === "ft" ? mine.hg + " - " + mine.ag : mine.hg + " - " + mine.ag + " · " + minLabel(mine)}</span><span class="hm-go">Apostar</span></button>`);
   if (leader) banners.push(`<button class="hm-ban b2" data-view="rank"><small>Líder del ranking</small><b>${esc(leader.username || (S.names[leader.id] && S.names[leader.id].name) || "Jugador")}</b><span class="hm-big">${eur(leader.balance || 0)}</span><span class="hm-go">Ver ranking</span></button>`);
+  { const ch = futMarket("champ"), f0 = ch && ch.outcomes[0];
+    if (f0) banners.push(`<button class="hm-ban b4" data-view="fut"><small>Apuestas de temporada</small><b>Campeón, pichichi,<br>campeón de invierno…</b><span class="hm-big">${esc(f0.label)} ${fo(f0.odds)}</span><span class="hm-go">Ver todas</span></button>`); }
   banners.push(`<button class="hm-ban b3" data-hf="pre"><small>Tercera FFCV · Grupo 2</small><b>Jornada ${jor || ""}</b><span class="hm-big">${ms.filter(m => m.jornada === jor).length} partidos</span><span class="hm-go">${nLive ? nLive + " en directo" : "Ver partidos"}</span></button>`);
   const hf = S.hf || "all";
   return `<div class="hm">
@@ -1461,10 +1579,45 @@ function rankingView() {
       <div class="note">${rt === "j" ? "Cuenta lo ganado menos lo apostado en las apuestas ya resueltas de esta jornada. Cuando acabe, empieza la siguiente de cero." : "Cuenta lo ganado menos lo apostado en las apuestas resueltas este mes. Se reinicia el día 1. Ese día todos reciben " + eur(MONTHLY) + "."}</div></div>`;
   }
   const rows = S.ranking.map((r, i) => { const nm = (S.names[r.id] && S.names[r.id].name) || (r.id === S.uid ? "Tú" : "Jugador");
-    const adm = S.store === "sb" && S.admin ? `<tr class="adjr"><td colspan="3"><span class="adj"><input id="adj-${esc(r.id)}" inputmode="decimal" placeholder="€" aria-label="Cantidad para ${esc(nm)}"><button class="abtn" data-adj="${esc(r.id)}|1">+ Dar</button><button class="abtn red" data-adj="${esc(r.id)}|-1">− Quitar</button></span></td></tr>` : "";
+    const adm = S.store === "sb" && S.admin ? `<tr class="adjr"><td colspan="3"><span class="adj"><input id="adj-${esc(r.id)}" inputmode="decimal" placeholder="€" aria-label="Cantidad para ${esc(nm)}"><button class="abtn" data-adj="${esc(r.id)}|1">+ Dar</button><button class="abtn red" data-adj="${esc(r.id)}|-1">− Quitar</button><button class="abtn" data-pbets="${esc(r.id)}">Ver apuestas</button></span></td></tr>` : "";
     return `<tr class="${r.id === S.uid ? "me" : ""}"><td>${i + 1}. ${esc(nm)}</td><td>${eur(r.balance || 0)}</td><td class="${(r.profit || 0) >= 0 ? "pos" : "neg"}">${(r.profit >= 0 ? "+" : "") + eur(r.profit || 0)}</td></tr>${adm}`; }).join("");
-  return tabs + `<div class="block"><div class="bh">Ranking general</div><div class="model"><table class="stand"><thead><tr><th>Jugador</th><th>Saldo</th><th>Beneficio</th></tr></thead><tbody>${rows || `<tr><td colspan="3">Nadie ha apostado todavía.</td></tr>`}</tbody></table></div>
+  const tg = { pending: "Pendiente", won: "Ganada", lost: "Perdida", void: "Anulada", cashout: "Cerrada" };
+  const pb = S.pbets && S.admin ? `<div class="block pb-box"><div class="bh">Apuestas de ${esc(S.pbets.user)}<span class="sp"></span><button class="abtn" data-pbets="-">Cerrar</button></div><div class="model">${S.pbets.bets == null ? "Cargando…" : !S.pbets.bets.length ? "Todavía no ha apostado." :
+    S.pbets.bets.slice().reverse().map(b => `<div class="pb-bet"><b>${eur(b.stake)} · ${b.boost ? "SuperCuota" : b.legs.length > 1 ? COMBO_NAME(b.legs.length) : "Sencilla"} a ${fo(b.odds)}</b> · <span class="bc-tag ${b.status}">${tg[b.status] || b.status}</span>${b.status !== "pending" && b.ret != null ? " · Retorno " + eur(b.ret) : ""}
+      <div class="pb-leg">${new Date(b.at).toLocaleString("es-ES", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}</div>${b.legs.map(l => `<div class="pb-leg">${esc(l.label)} · ${esc(l.mname)} · ${esc(l.match || "")} (${fo(l.odds)})</div>`).join("")}</div>`).join("")}</div></div>` : "";
+  return tabs + pb + `<div class="block"><div class="bh">Ranking general</div><div class="model"><table class="stand"><thead><tr><th>Jugador</th><th>Saldo</th><th>Beneficio</th></tr></thead><tbody>${rows || `<tr><td colspan="3">Nadie ha apostado todavía.</td></tr>`}</tbody></table></div>
     <div class="note">Todos empiezan con ${eur(DATA.saldoInicial)} ficticios y reciben ${eur(MONTHLY)} el día 1 de cada mes. ${S.store === "sb" ? (S.admin ? "Como administrador puedes dar o quitar dinero: escribe la cantidad y pulsa Dar o Quitar. Le llega en unos segundos." : "") : "Apareces aquí al hacer tu primera apuesta."}</div></div>`;
+}
+function futBtn(k, o) {
+  const key = FUT + "|" + k.key + "|" + o.k, sel = S.slip.some(s => s.key === key), closed = o.odds == null;
+  const won = k.done && k.win.includes(o.k);
+  return `<button class="o ${sel ? "sel" : ""}" data-fpick="${key}" ${closed ? "disabled" : ""} aria-label="${esc(o.label)} ${fo(o.odds)}"><span class="v">${sel ? CHECK : won ? "✓" : closed ? LOCK : fo(o.odds)}</span></button>`;
+}
+function futView() {
+  const M = futMarkets().list, by = k => M.find(x => x.key === k);
+  if (S.futTeam == null) S.futTeam = MY_T;
+  const body = k => {
+    const show = k.outcomes.filter(o => o.p > 0 || k.win.includes(o.k) || S.slip.some(s => s.key === FUT + "|" + k.key + "|" + o.k));
+    const all = S.more["f" + k.key], lim = k.kind === "opt" ? 9 : 8, rows = all ? show.slice(0, 60) : show.slice(0, lim);
+    const r = rows.map(o => { const ic = k.kind === "player" ? pshirt(SQUAD[o.pi]) : k.kind === "team" ? teamShirt(o.team) : "";
+      const sub = k.kind === "player" ? (k.key.startsWith("tsc") ? "" : esc(o.team)) : "";
+      return `<div class="pr">${ic ? `<div class="pn">${ic}<div class="pnt"><b>${esc(k.kind === "player" ? shortName(o.label) : o.label)}</b>${sub ? `<span>${sub}</span>` : ""}</div></div>` : `<div class="pn"><div class="pnt"><b>${esc(o.label)}</b></div></div>`}${futBtn(k, o)}</div>`; }).join("");
+    const adm = S.admin ? `<div class="fut-adm"><div class="fa-row"><select data-fsel="${k.key}"><option value="">Ganador…</option>${k.outcomes.slice().sort((x, y) => String(x.label).localeCompare(y.label)).map(o => `<option value="${o.k}">${esc(o.label)}${k.kind === "player" && !k.key.startsWith("tsc") ? " · " + esc(o.team) : ""}</option>`).join("")}</select><button class="abtn" data-fadm="win|${k.key}">Añadir</button></div>
+      ${k.win.length ? `<div class="fa-win">Ganador${k.win.length > 1 ? "es (se reparte)" : ""}: <b>${k.win.map(w => esc((k.outcomes.find(o => o.k === w) || { label: w }).label)).join(", ")}</b></div>` : ""}
+      <div class="fa-row">${k.done ? `<span class="fa-ok">Liquidado</span>` : `<button class="abtn" data-fadm="close|${k.key}">${(futSt().closed || {})[k.key] ? "Reabrir apuestas" : "Cerrar apuestas"}</button><button class="abtn" data-fadm="done|${k.key}">Liquidar</button>`}${k.win.length || k.done ? `<button class="abtn red" data-fadm="undo|${k.key}">Deshacer</button>` : ""}</div></div>` : "";
+    return `${k.desc ? `<div class="fut-desc">${esc(k.desc)}${k.closed && !k.done ? " · Apuestas cerradas" : ""}${k.done ? " · Resuelto" : ""}</div>` : ""}
+      <div class="ptbl" style="--n:1"><div class="pr ph"><span>${k.kind === "player" ? "Jugador" : k.kind === "team" ? "Equipo" : ""}</span><span>Cuota</span></div>${r || `<div class="pr"><div class="pn"><div class="pnt"><span>Sin opciones</span></div></div></div>`}
+      ${show.length > lim ? `<button class="vermas" data-more="f${k.key}">${all ? "Ver menos" : "Ver más"}<i class="chev ${all ? "up" : ""}"></i></button>` : ""}</div>${adm}`;
+  };
+  const acc = (k, extra) => { const id = "f-" + k.key, open = S.openG[id] ?? (k.key === "champ" || k.key === "pich");
+    return `<div class="acc ${open ? "open" : ""}"><button class="acch" data-acc="${id}" aria-expanded="${open}"><span>${esc(k.name)}</span><i class="chev"></i></button>${open ? `<div class="accb">${extra || ""}${body(k)}</div>` : ""}</div>`; };
+  const tsel = `<label class="fut-team">Equipo <select data-fteam="1">${FUT_TEAMS.map((t, i) => `<option value="${i}" ${i === S.futTeam ? "selected" : ""}>${esc(t)}</option>`).join("")}</select></label>`;
+  const tk = by("tsc" + S.futTeam);
+  const tacc = (() => { const id = "f-tsc", open = S.openG[id] ?? false;
+    return `<div class="acc ${open ? "open" : ""}"><button class="acch" data-acc="${id}" aria-expanded="${open}"><span>Máximo goleador del equipo</span><i class="chev"></i></button>${open ? `<div class="accb">${tsel}${body(tk)}</div>` : ""}</div>`; })();
+  return `<h2 style="margin:4px 0 0;font-family:var(--f-cond);font-size:22px">Temporada</h2>
+    <div class="block"><div class="note">Apuestas que se resuelven a final de temporada (o en Navidad y en la primera vuelta). Van solo como sencilla y no se pueden cerrar antes. Si dos goleadores empatan, el pago se reparte entre ellos.</div></div>
+    <div class="block">${["champ", "winter", "pich", "xmas"].map(k => acc(by(k))).join("")}${tacc}${["top3", "apos", "agol", "last"].map(k => acc(by(k))).join("")}</div>`;
 }
 function betsView() {
   const bets = S.wallet.bets;
@@ -1584,6 +1737,7 @@ function condOdds(m, mkt, oc) {
 function comboInfo(d) {
   if (d.length < 2) return { ok: false, why: "Añade al menos 2 selecciones." };
   if (d.some(x => x.boost)) return { ok: false, why: "Las SuperCuotas solo van como sencilla." };
+  if (d.some(x => x.fut)) return { ok: false, why: "Las apuestas de temporada solo van como sencilla." };
   if (new Set(d.map(x => x.key)).size < d.length) return { ok: false, why: "Hay selecciones repetidas." };
   const groups = {}; d.forEach(x => (groups[x.mid] ??= []).push(x));
   let odds = 1; const parts = [];
@@ -1597,7 +1751,9 @@ function comboInfo(d) {
   return { ok: odds > 0, odds: Math.round(odds * 100) / 100, parts };
 }
 function slipData() {
-  return S.slip.map(s => { const m = findMatch(s.mid);
+  return S.slip.map(s => { if (s.mid === FUT) { const k = futMarket(s.mk), o = k && k.outcomes.find(x => x.k === s.oc);
+      return { ...s, m: null, fut: 1, odds: o ? o.odds : null, mname: k ? k.name : s.mname, susp: !o || o.odds == null }; }
+    const m = findMatch(s.mid);
     if (s.boost) { const base = m && m.status !== "ft" ? boostLegsNow(m, s.legs) : null, legs = base ? s.legs.map(l => legOf(m, l.mk, l.oc)) : null;
       return { ...s, m, legs, was: base, odds: base ? boostOf(base) : null, susp: !m || m.suspended || !base }; } const mk = m && markets(m).list.find(k => k.key === s.mk);
     const oc = mk && mk.outcomes.find(o => o.k === s.oc);
@@ -1614,7 +1770,7 @@ function slipHTML() {
   const rows = d.map(x => { const st = num(S.stakes[x.key]); total += st; pot += x.odds ? st * x.odds : 0;
     const dim = x.susp || x.odds !== x.added;
     return `<div class="sl-row ${dim ? "dim" : ""}"><button class="sl-x" data-rm="${x.key}" aria-label="Quitar">✕</button>
-      <div class="sl-main"><b class="sl-pick">${esc(x.label)}</b><span class="sl-mk">${esc(x.mname)}</span><span class="sl-m">${x.m ? esc(x.m.home.nombre) + " v " + esc(x.m.away.nombre) : ""}</span>
+      <div class="sl-main"><b class="sl-pick">${esc(x.label)}</b><span class="sl-mk">${esc(x.mname)}</span><span class="sl-m">${x.m ? esc(x.m.home.nombre) + " v " + esc(x.m.away.nombre) : x.fut ? "Temporada · " + esc(LIGA) : ""}</span>
         ${x.boost && x.legs ? `<span class="sl-m">${x.legs.map(l => esc(l.label + " - " + l.mname.replace(/^Jugador - /, ""))).join(" · ")}</span><span class="sl-chg">SuperCuota (antes ${fo(x.was)}) · máx. ${BOOST_MAX} €</span>` : ""}
         ${x.mk === "1x2" && x.oc !== "X" && x.m && x.m.status === "pre" ? `<span class="sl-ea">Pagada si gana por 2 goles</span>` : ""}
         ${x.odds != null && x.odds !== x.added ? `<span class="sl-chg">Antes ${fo(x.added)}</span>` : ""}</div>
@@ -1671,7 +1827,7 @@ function render() {
   document.querySelectorAll("#tabs button").forEach(b => b.classList.toggle("on", b.dataset.view === S.view || (S.view === "detail" && b.dataset.view === "home")));
   patch(document.getElementById("side"), sideHTML());
   const v = S.view;
-  patch(document.getElementById("main"), S.store === "auth" ? authView() : v === "detail" ? detailView() : v === "bets" ? betsView() : v === "table" ? tableView() : v === "rank" ? rankingView() : v === "how" ? howView() : listView(v === "live"));
+  patch(document.getElementById("main"), S.store === "auth" ? authView() : v === "detail" ? detailView() : v === "bets" ? betsView() : v === "table" ? tableView() : v === "rank" ? rankingView() : v === "fut" ? futView() : v === "how" ? howView() : listView(v === "live"));
   const slip = document.getElementById("slip");
   patch(slip, slipHTML());
   slip.classList.toggle("open", S.slipOpen && S.slip.length > 0);
@@ -1686,8 +1842,8 @@ function place() {
   const d = slipData(); S.msg = "";
   if (S.store === "sb" && S.admin) { S.msg = "La cuenta de administrador no apuesta. Entra con tu cuenta de jugador."; return render(); }
   if (d.some(x => !x.susp && x.odds !== x.added)) { S.msg = "Han cambiado las cuotas: acepta los cambios."; return render(); }
-  const mk = legs => legs.map(x => ({ mid: x.mid, mk: x.mk, oc: x.oc, label: x.label, mname: x.mname, match: x.m.home.nombre + " v " + x.m.away.nombre, odds: x.odds, status: "pending",
-    ...(x.mk === "1x2" && x.oc !== "X" && x.m.status === "pre" ? { ea: 1 } : {}) }));
+  const mk = legs => legs.map(x => ({ mid: x.mid, mk: x.mk, oc: x.oc, label: x.label, mname: x.mname, match: x.fut ? "Temporada · " + LIGA : x.m.home.nombre + " v " + x.m.away.nombre, odds: x.odds, status: "pending",
+    ...(x.m && x.mk === "1x2" && x.oc !== "X" && x.m.status === "pre" ? { ea: 1 } : {}) }));
   if (d.some(x => x.boost) && d.length > 1) { S.msg = "La SuperCuota va sola: no se puede combinar."; return render(); }
   if (d.some(x => x.boost && boostUsed(x.mid, x.label))) { S.msg = "Ya has apostado esta SuperCuota. Solo se puede una vez."; return render(); }
   if (d.some(x => x.boost && num(S.stakes[x.key]) > BOOST_MAX)) { S.msg = "En una SuperCuota el máximo son " + BOOST_MAX + " €."; return render(); }
@@ -1697,8 +1853,8 @@ function place() {
   const total = items.reduce((t, x) => t + num(S.stakes[x.key]), 0) + cst;
   if (!total) { S.msg = "Escribe una cantidad."; return render(); }
   if (total > W.balance + 1e-9) { S.msg = "Saldo insuficiente."; return render(); }
-  items.forEach(x => { const st = num(S.stakes[x.key]); W.balance = +(W.balance - st).toFixed(2); W.bets.push({ id: Date.now() + "-" + Math.random().toString(36).slice(2, 7), stake: st, odds: x.odds, legs: x.boost ? mk(x.legs) : mk([x]), status: "pending", at: Date.now(), j: x.m.jornada || 0, ...(x.boost ? { boost: x.label, was: x.was } : {}) }); });
-  if (cst > 0) { W.balance = +(W.balance - cst).toFixed(2); W.bets.push({ id: Date.now() + "-c" + Math.random().toString(36).slice(2, 5), stake: cst, odds: ci.odds, legs: mk(d), status: "pending", at: Date.now(), j: Math.max(...d.map(x => x.m.jornada || 0)) }); }
+  items.forEach(x => { const st = num(S.stakes[x.key]); W.balance = +(W.balance - st).toFixed(2); W.bets.push({ id: Date.now() + "-" + Math.random().toString(36).slice(2, 7), stake: st, odds: x.odds, legs: x.boost ? mk(x.legs) : mk([x]), status: "pending", at: Date.now(), j: (x.m && x.m.jornada) || 0, ...(x.boost ? { boost: x.label, was: x.was } : {}) }); });
+  if (cst > 0) { W.balance = +(W.balance - cst).toFixed(2); W.bets.push({ id: Date.now() + "-c" + Math.random().toString(36).slice(2, 5), stake: cst, odds: ci.odds, legs: mk(d), status: "pending", at: Date.now(), j: Math.max(...d.map(x => (x.m && x.m.jornada) || 0)) }); }
   const nb = items.length + (cst > 0 ? 1 : 0);
   toast((nb > 1 ? nb + " apuestas realizadas" : "Apuesta realizada") + " · " + eur(total));
   S.slip = []; S.stakes = {}; S.combo = ""; S.slipOpen = false; saveWallet(); settle(); render();
@@ -1710,6 +1866,14 @@ document.addEventListener("click", e => {
   if (ds.view) { S.view = ds.view; S.detail = null; window.scrollTo(0, 0); }
   else if (ds.open) { S.view = "detail"; S.detail = ds.open; S.form = { side: String(Math.max(0, sideOf(findMatch(ds.open)))), pl: "", as: "", min: "" }; window.scrollTo(0, 0); }
   else if (ds.league !== undefined) { S.league = ds.league || null; S.view = "home"; }
+  else if (ds.fpick) { const [, mk, oc] = ds.fpick.split("|"), i = S.slip.findIndex(s => s.key === ds.fpick);
+    if (i >= 0) S.slip.splice(i, 1);
+    else { const k = futMarket(mk), o = k && k.outcomes.find(x => x.k === oc);
+      if (o && o.odds != null) (S.slip = S.slip.filter(x => !x.boost)).push({ key: ds.fpick, mid: FUT, mk, oc, label: o.label, mname: k.name, added: o.odds, fut: 1 }); }
+    S.msg = ""; }
+  else if (ds.fadm) { if (!S.admin) return; const [a, k] = ds.fadm.split("|"); futAdmin(a, k); return; }
+  else if (ds.pbets) { if (!S.admin) return; if (ds.pbets === "-") S.pbets = null; else { S.pbets = { user: ds.pbets, bets: null };
+      api("playerBets", { user: ds.pbets }).then(j => { if (S.pbets && S.pbets.user === ds.pbets) { S.pbets.bets = j.bets || []; render(); } }, e => { toast(e.message); S.pbets = null; render(); }); } }
   else if (ds.pick) {
     const [mid, mk, oc] = ds.pick.split("|"); const i = S.slip.findIndex(s => s.key === ds.pick);
     if (i >= 0) S.slip.splice(i, 1);
@@ -1781,6 +1945,7 @@ document.addEventListener("submit", e => { if (e.target.id === "auform") { e.pre
 document.addEventListener("change", e => {
   const i = e.target;
   if (i.dataset.form && i.tagName === "SELECT") { S.form[i.dataset.form] = i.value; if (i.dataset.form === "side") { S.form.pl = ""; S.form.as = ""; } render(); }
+  else if (i.dataset.fteam) { S.futTeam = +i.value; render(); }
   else if (i.dataset.admFecha && S.admin) adminAct(i.dataset.admFecha, "fecha", i.value);
 });
 

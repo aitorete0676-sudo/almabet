@@ -643,7 +643,7 @@ const ACTA_ONLY = k => /^crn/.test(k) || /^pst|^psh/.test(k) || k === "pas" || k
 
 /* ===================== MODELO DE CUOTAS ===================== */
 const MARGIN = { "1x2": 0.07, dc: 0.05, ou25: 0.06, btts: 0.06, next: 0.07 };
-const fact = [1]; for (let i = 1; i < 20; i++) fact[i] = fact[i - 1] * i;
+const fact = [1]; for (let i = 1; i < 40; i++) fact[i] = fact[i - 1] * i;
 const pois = (k, l) => Math.exp(-l) * Math.pow(l, k) / fact[k];
 const poisArr = (l, n = 12) => Array.from({ length: n }, (_, k) => pois(k, l));
 

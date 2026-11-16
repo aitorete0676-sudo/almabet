@@ -1,7 +1,7 @@
 {
-  "name": "AlmaBet",
-  "short_name": "AlmaBet",
-  "description": "Apuestas con dinero ficticio de la Tercera FFCV Grupo 2",
+  "name": "FFCVBet",
+  "short_name": "FFCVBet",
+  "description": "Apuestas con dinero ficticio entre amigos en el fútbol de la FFCV",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

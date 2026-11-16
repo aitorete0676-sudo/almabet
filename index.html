@@ -7,20 +7,20 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="AlmaBet">
+<meta name="apple-mobile-web-app-title" content="FFCVBet">
 <link rel="manifest" href="/manifest.json">
 <link rel="icon" href="/icon-192.png">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-<script>if (/^\/admin/.test(location.pathname)) { document.querySelector('link[rel=manifest]').href = "/manifest-admin.json"; document.querySelector('link[rel=apple-touch-icon]').href = "/apple-touch-admin.png"; document.querySelector('meta[name=apple-mobile-web-app-title]').content = "AB Admin"; }</script>
+<script>if (/^\/admin/.test(location.pathname)) { document.querySelector('link[rel=manifest]').href = "/manifest-admin.json"; document.querySelector('link[rel=apple-touch-icon]').href = "/apple-touch-admin.png"; document.querySelector('meta[name=apple-mobile-web-app-title]').content = "FFCVBet Admin"; }</script>
 <style>:root{padding-top:env(safe-area-inset-top,0px)}body{margin:0;font-size:14px}img{max-width:100%}[hidden]{display:none!important}</style>
 <script src="/config.js"></script>
 </head>
 <body>
-<title>AlmaBet</title>
+<title>FFCVBet</title>
 <meta name="description" content="Apuestas entre amigos con dinero ficticio en el fútbol de la FFCV.">
 <meta property="og:type" content="website">
-<meta property="og:site_name" content="AlmaBet">
-<meta property="og:title" content="AlmaBet">
+<meta property="og:site_name" content="FFCVBet">
+<meta property="og:title" content="FFCVBet">
 <meta property="og:description" content="Únete a la liga y apuesta con dinero ficticio en el fútbol de la FFCV.">
 <meta property="og:image" content="https://almabet.vercel.app/og.png">
 <meta property="og:image:width" content="1200">
@@ -518,12 +518,12 @@ th{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06
 
 <header>
   <div class="top"><div class="wrap">
-    <div id="splash" aria-hidden="true"><div class="sp-c"><svg class="sp-arc" viewBox="0 0 100 100"><circle cx="50" cy="50" r="46" fill="none" stroke="rgba(255,255,255,.55)" stroke-width="1.2" stroke-linecap="round" stroke-dasharray="70 220"/></svg><div class="sp-logo"><span>Alma</span><span>Bet</span></div></div>
+    <div id="splash" aria-hidden="true"><div class="sp-c"><svg class="sp-arc" viewBox="0 0 100 100"><circle cx="50" cy="50" r="46" fill="none" stroke="rgba(255,255,255,.55)" stroke-width="1.2" stroke-linecap="round" stroke-dasharray="70 220"/></svg><div class="sp-logo"><span>FFCV</span><span>Bet</span></div></div>
   <img class="sp-liga" src="/splash-liga.png" alt="" onerror="this.remove()"><div class="sp-dots"><i></i><i></i></div></div>
 <script>(function(){var el=document.getElementById("splash"),seen=false;document.body.appendChild(el);try{seen=sessionStorage.getItem("ab-splash")==="1";sessionStorage.setItem("ab-splash","1")}catch(e){}
 if(seen||!window.matchMedia("(max-width:760px)").matches){el.remove();return}setTimeout(function(){el.classList.add("out");setTimeout(function(){el.remove()},450)},1600)})();</script>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><clipPath id="shirtClip"><path d="M13 5 L5 10 L8 18 L11 16.5 L11 36 L29 36 L29 16.5 L32 18 L35 10 L27 5 Q20 10 13 5 Z"/></clipPath></defs></svg>
-    <div class="logo">Alma<span>Bet</span></div>
+    <div class="logo">FFCV<span>Bet</span></div>
     <nav class="tabs" id="tabs">
       <button data-view="home">Deportes</button>
       <button data-view="live">En directo</button>
@@ -1055,7 +1055,7 @@ async function sbAuth(mode) {
   } catch (e) { S.authMsg = e.message; render(); }
 }
 function authView() {
-  return `<div class="block authb"><div class="logo" style="font-size:40px">Alma<span>Bet</span></div>
+  return `<div class="block authb"><div class="logo" style="font-size:40px">FFCV<span>Bet</span></div>
     <p>Apuestas con dinero ficticio entre los del equipo. Empiezas con ${eur(DATA.saldoInicial)}.</p>
     <div class="stabs"><button data-auth-tab="in" class="${S.authTab !== "up" ? "on" : ""}">Entrar</button><button data-auth-tab="up" class="${S.authTab === "up" ? "on" : ""}">Crear cuenta</button></div>
     <form id="auform" class="authf"><label for="au-user">Usuario</label><input id="au-user" autocomplete="username" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="Nombre de usuario">
@@ -1770,7 +1770,7 @@ function tableView() {
     return `<div class="block"><div class="bh">${esc(lg.nombre)}</div><div class="model"><table class="stand"><thead><tr><th>Equipo</th><th>PJ</th><th>Pts</th><th>GF</th><th>GC</th><th>DG</th><th>Racha</th><th>Ataque</th><th>Defensa</th></tr></thead><tbody>${rows}</tbody></table></div></div>`; }).join("");
 }
 function rankingView() {
-  if (S.store !== "db" && S.store !== "sb") return `<div class="block empty">El ranking funciona en el enlace compartido de AlmaBet. Abierto como fichero en tu ordenador solo guarda tus apuestas.</div>`;
+  if (S.store !== "db" && S.store !== "sb") return `<div class="block empty">El ranking funciona en el enlace compartido de FFCVBet. Abierto como fichero en tu ordenador solo guarda tus apuestas.</div>`;
   const MES = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
   const ms = allMatches(), curJ = (ms.filter(m => m.status !== "ft").map(m => m.jornada || 0).sort((a, b) => a - b)[0]) || Math.max(0, ...ms.map(m => m.jornada || 0));
   const rt = S.rankTab || "j", mon = MES[+ymNow().slice(5) - 1];
@@ -1850,7 +1850,7 @@ function ligasView() {
     <div class="block"><div class="bh">Unirse con código</div><div class="lg-form"><input id="lg-code" placeholder="Código de 6 letras" autocapitalize="characters" autocomplete="off" maxlength="8"><button class="abtn pri" data-lgjoin="1">Unirme</button></div></div>
     <div class="block"><div class="bh">Crear una liga con tus amigos</div><div class="lg-form col">
       <label for="lg-name">Nombre de la liga</label><input id="lg-name" maxlength="40" placeholder="Ej.: Los del vestuario" autocomplete="off"><button class="abtn pri" data-lgcreate="1" ${cr.busy ? "disabled" : ""}>Crear liga</button>
-      <div class="note">Cada liga tiene su saldo y su ranking. Se apuesta en todas las competiciones de AlmaBet.</div>
+      <div class="note">Cada liga tiene su saldo y su ranking. Se apuesta en todas las competiciones de FFCVBet.</div>
     </div></div>
     ${C.length ? `<div class="block"><div class="bh">Competiciones</div>${comps}</div>` : ""}
     ${sup ? `<div class="block"><div class="bh">Añadir competición</div><div class="lg-form col">
@@ -1900,7 +1900,7 @@ function betsView() {
 }
 function howView() {
   return `<div class="block how">
-  <h3>1. Partidos reales</h3><p>AlmaBet no se inventa nada. El administrador mete lo que pasa en el campo: inicio, goles con goleador y asistente, tarjetas, descanso y final. Con cada dato las cuotas se recalculan al momento para todos.</p>
+  <h3>1. Partidos reales</h3><p>FFCVBet no se inventa nada. El administrador mete lo que pasa en el campo: inicio, goles con goleador y asistente, tarjetas, descanso y final. Con cada dato las cuotas se recalculan al momento para todos.</p>
   <h3>2. Goles esperados desde la clasificación</h3><p>Primero se saca la media de goles del grupo por equipo y partido. Cada equipo tiene un <b>ataque</b> (sus goles a favor por partido entre la media) y una <b>defensa</b> (sus goles en contra por partido entre la media). Los puntos (65 % temporada, 35 % racha de los últimos 5) corrigen un poco. Con pocos partidos jugados, los valores se acercan a la media.</p>
   <p>Goles esperados del local = <code>media × ${HOME_ADV} × ataque local × defensa visitante</code>. Los del visitante = <code>media / ${HOME_ADV} × ataque visitante × defensa local</code>.</p>
   <h3>3. Distribución de Poisson</h3><p>Los goles que faltan siguen una Poisson con media <code>goles esperados × minutos restantes / 90</code>. Con el marcador real salen las probabilidades de 1, X y 2, más de 2,5, ambos marcan y siguiente gol.</p>
@@ -2129,8 +2129,8 @@ document.addEventListener("click", e => {
     api("addComp", { group: cr.url, team }).then(() => location.reload(), e => { S.lgCreate = { ...cr, busy: "" }; toast(e.message); render(); }); return; }
   else if (ds.lgcreate) { const name = (document.getElementById("lg-name") || {}).value || "";
     api("createLeague", { name }).then(j => { try { sessionStorage.setItem("ab-view", "ligas"); } catch (e) {} switchLg(j.id); }, e => toast(e.message)); return; }
-  else if (ds.lgshare) { const url = location.origin + "/?unirse=" + ds.lgshare, txt = "Únete a mi liga de AlmaBet: " + url + " (código " + ds.lgshare + ")";
-    if (navigator.share) navigator.share({ title: "AlmaBet", text: "Únete a mi liga de AlmaBet (código " + ds.lgshare + ")", url }).catch(() => {}); else if (navigator.clipboard) navigator.clipboard.writeText(txt).then(() => toast("Enlace copiado")); return; }
+  else if (ds.lgshare) { const url = location.origin + "/?unirse=" + ds.lgshare, txt = "Únete a mi liga de FFCVBet: " + url + " (código " + ds.lgshare + ")";
+    if (navigator.share) navigator.share({ title: "FFCVBet", text: "Únete a mi liga de FFCVBet (código " + ds.lgshare + ")", url }).catch(() => {}); else if (navigator.clipboard) navigator.clipboard.writeText(txt).then(() => toast("Enlace copiado")); return; }
   else if (ds.lgdel) S.lgDel = ds.lgdel;
   else if (ds.lgdelno) S.lgDel = null;
   else if (ds.lgdelyes) { const id = ds.lgdelyes; S.lgDel = null;
@@ -2186,7 +2186,7 @@ document.addEventListener("click", e => {
       const m = findMatch(l.mid), k = m && markets(m).list.find(x => x.key === l.mk), o = k && k.outcomes.find(x => x.k === l.oc);
       if (o && o.odds != null && m.status !== "ft") (S.slip = S.slip.filter(x => !x.boost)).push({ key, mid: l.mid, mk: l.mk, oc: l.oc, label: l.label, mname: k.name, added: o.odds }); });
       S.slipOpen = true; toast(S.slip.length ? "Selecciones añadidas al boleto" : "Esos mercados ya están cerrados"); } }
-  else if (ds.share) { const b = S.wallet.bets.find(x => x.id === ds.share); if (b) { const txt = "Mi apuesta en AlmaBet: " + eur(b.stake) + " a " + fo(b.odds) + "\n" + b.legs.map(l => "· " + l.label + " (" + l.mname + ") " + l.match).join("\n") + "\n" + location.origin;
+  else if (ds.share) { const b = S.wallet.bets.find(x => x.id === ds.share); if (b) { const txt = "Mi apuesta en FFCVBet: " + eur(b.stake) + " a " + fo(b.odds) + "\n" + b.legs.map(l => "· " + l.label + " (" + l.mname + ") " + l.match).join("\n") + "\n" + location.origin;
       if (navigator.share) navigator.share({ text: txt }).catch(() => {}); else navigator.clipboard && navigator.clipboard.writeText(txt).then(() => toast("Copiado para compartir")); } return; }
   else if (ds.toggle) S.slipOpen = !S.slipOpen;
   else if (ds.boost) { const i = ds.boost.indexOf("|"), mid = ds.boost.slice(0, i), t = ds.boost.slice(i + 1), key = "boost|" + mid + "|" + t, j = S.slip.findIndex(x => x.key === key);

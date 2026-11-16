@@ -1,7 +1,7 @@
 {
-  "name": "AlmaBet Admin",
-  "short_name": "AB Admin",
-  "description": "Apuestas con dinero ficticio de la Tercera FFCV Grupo 2",
+  "name": "FFCVBet Admin",
+  "short_name": "FFCVBet Admin",
+  "description": "Apuestas con dinero ficticio entre amigos en el fútbol de la FFCV",
   "start_url": "/admin",
   "scope": "/admin",
   "display": "standalone",

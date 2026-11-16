@@ -205,6 +205,18 @@ th{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06
 .sp-dots i{width:6px;height:6px;border-radius:50%;background:#3ddc97;animation:sp-dot 1s ease-in-out infinite}.sp-dots i+i{animation-delay:.3s}
 @keyframes sp-dot{50%{opacity:.25}}
 @media (prefers-reduced-motion:reduce){.sp-arc,.sp-dots i{animation:none}}
+.mb-hd{display:flex;justify-content:space-between;align-items:center;padding:16px 12px 8px}.mb-hd h1{margin:0;font-size:28px;font-weight:800}
+.mb-bal{border:2px solid #2fbf7c;border-radius:22px;padding:7px 16px;font-weight:700;background:#0f2a20}
+.mb-tabs{display:flex;gap:2px;padding:4px 8px 12px;overflow-x:auto}.mb-tabs button{padding:8px 14px;border-radius:22px;font-size:15px;color:var(--fg);flex:none}.mb-tabs button.on{background:#fff;color:#111;font-weight:700}
+.mb-empty{text-align:center;font-weight:700;font-size:16px;line-height:1.6;padding:12px 16px 40px}
+.mb-sum{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-size:12px;color:var(--muted);padding:12px 14px}
+.bc-mini{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:center;width:calc(100% - 24px);margin:0 12px 8px;background:var(--panel2);border-radius:6px;padding:16px 14px;text-align:left}
+.bc-mini b{color:#3ddc97;font-size:17px;white-space:nowrap}.bc-mini span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px;color:#cfd6d2}
+.bc-tag{background:var(--btn);color:var(--fg)!important;border-radius:18px;padding:6px 14px;font-weight:700;font-size:13px}.bc-tag.won{background:#2fbf7c;color:#06150e!important}.bc-tag.lost{background:#4b5550}
+.bc-hd[data-obet]{cursor:pointer}
+.bc-legs.multi{position:relative}.bc-legs.multi::before{content:"";position:absolute;left:24px;top:20px;bottom:20px;width:2px;background:#56615c}
+.bc-legs .bc-ok,.bc-legs .bc-ko,.bc-legs .bc-pe{position:relative;z-index:1}.bc-pe{background:var(--panel2)}
+.bc-prog{display:flex;align-items:center;gap:0;margin-top:8px}.bc-prog .bc-bar{flex:1;width:auto;height:4px}.bc-prog b{background:#3ddc97;color:#06150e;border-radius:6px;min-width:34px;text-align:center;padding:1px 8px;font-size:15px;margin-left:-2px}
 .ptbl{margin:0 -12px}
 .ptbl .pr{display:grid;grid-template-columns:minmax(0,1fr) repeat(var(--n),minmax(52px,64px));align-items:center;border-top:1px solid var(--line);min-height:56px}
 .ptbl .ph{min-height:44px}
@@ -732,7 +744,7 @@ const FIX = DATA.partidos.map((f, i) => {
 const blankState = () => ({ phase: "pre", k1: 0, k2: 0, events: [], dom: 0, susp: false, suspUntil: 0, fecha: "" });
 
 const S = { view: "home", league: null, detail: null, slip: [], mode: "single", stakes: {}, combo: "", prev: {}, flash: {}, slipOpen: false, msg: "",
-  states: {}, wallet: { balance: DATA.saldoInicial, bets: [] }, store: "loading", admin: false, uid: null, ranking: [], names: {}, form: { side: "0", pl: "", as: "", min: "" }, confirmReset: false, openG: {}, cat: "all", ptab: {}, more: {} };
+  states: {}, wallet: { balance: DATA.saldoInicial, bets: [] }, store: "loading", admin: false, uid: null, ranking: [], names: {}, form: { side: "0", pl: "", as: "", min: "" }, confirmReset: false, openG: {}, cat: "all", ptab: {}, more: {}, betTab: "pend", openBet: {} };
 
 // Construye el partido "vivo" a partir del estado guardado
 function build(f) {
@@ -971,8 +983,8 @@ function betCard(b, tagTxt) {
   const tipo = b.legs.length > 1 ? COMBO_NAME(b.legs.length) : "Sencilla";
   const legs = b.legs.map(l => { const m = findMatch(l.mid), c = m && legCount(l, m);
     const ic = l.status === "won" ? `<i class="bc-ok">✓</i>` : l.status === "lost" ? `<i class="bc-ko">✕</i>` : `<i class="bc-pe"></i>`;
-    const bar = c ? `<span class="bc-cnt"><b>${c.cur}</b><span class="bc-bar"><span style="width:${Math.min(100, c.cur / Math.ceil(c.line) * 100)}%"></span></span></span>` : "";
-    return `<div class="bc-leg">${ic}<div><div class="bc-sel"><b>${esc(l.label)}</b><span>${fo(l.odds)}</span></div><div class="bc-mk">${esc(l.mname)}</div></div>${bar}</div>`; }).join("");
+    const bar = c ? `<div class="bc-prog"><span class="bc-bar"><span style="width:${Math.min(100, c.cur / Math.ceil(c.line) * 100)}%"></span></span><b>${c.cur}</b></div>` : "";
+    return `<div class="bc-leg">${ic}<div><div class="bc-sel"><b>${esc(l.label)}</b><span>${fo(l.odds)}</span></div><div class="bc-mk">${esc(l.mname)}</div>${bar}</div></div>`; }).join("");
   const mids = [...new Set(b.legs.map(l => l.mid))];
   const games = mids.map(id => { const m = findMatch(id); if (!m) return "";
     const st = m.status === "pre" ? fmtDate(m.fecha) || "Sin empezar" : m.status === "ft" ? "Resultado final" : m.status === "ht" ? "Descanso" : minLabel(m);
@@ -986,9 +998,9 @@ function betCard(b, tagTxt) {
       : `<button class="bc-co" data-co="${b.id}">${ci.kind === "void" ? "Anular apuesta" : "Cerrar apuesta"}<b>${eur(ci.amount)}</b></button>`;
   } else if (ci) co = `<button class="bc-co" disabled>Cerrar apuesta no disponible</button>`;
   return `<div class="bc-date">${esc(when)}</div><div class="bc">
-    <div class="bc-hd"><b>${eur(b.stake)} ${tipo}</b>${b.status !== "pending" ? `<span class="tag ${b.status}">${tagTxt[b.status]}</span>` : ""}</div>
+    <div class="bc-hd" ${b.status !== "pending" ? `data-obet="${b.id}"` : ""}><b>${eur(b.stake)} ${tipo}</b>${b.status !== "pending" ? `<span class="bc-tag ${b.status}">${tagTxt[b.status]}</span>` : ""}</div>
     <div class="bc-btns"><button data-reuse="${b.id}">↻ Reutilizar selecciones</button><button data-share="${b.id}">⇪ Compartir</button></div>
-    ${legs}${games}
+    <div class="bc-legs ${b.legs.length > 1 ? "multi" : ""}">${legs}</div>${games}
     <div class="bc-ft"><div><small>Imp:</small><b>${eur(b.stake)}</b></div><div><small>${b.status === "pending" ? "Ganancias" : "Retorno"}</small><b>${eur(win)}</b></div></div>
     ${co}</div>`;
 }
@@ -1245,15 +1257,17 @@ function betsView() {
     if (S.coConfirm === b.id) return `<div class="co"><span>${ci.kind === "void" ? "¿Anular y recuperar " + eur(ci.amount) + "?" : "¿Cerrar por " + eur(ci.amount) + "?"}</span><button class="cobtn yes" data-co-yes="${b.id}">Sí</button><button class="cobtn" data-co-no="1">No</button></div>`;
     return `<div class="co"><button class="cobtn" data-co="${b.id}">${txt}</button></div>`; }
   const pend = bets.filter(b => b.status === "pending"), done = bets.filter(b => b.status !== "pending");
-  return `<div class="block"><div class="kpis">
-      <div><small>Apostado</small><b>${eur(staked)}</b></div>
-      <div><small>Beneficio</small><b class="${pl >= 0 ? "pos" : "neg"}">${(pl >= 0 ? "+" : "") + eur(pl)}</b></div>
-      <div><small>ROI</small><b class="${roi >= 0 ? "pos" : "neg"}">${roi.toFixed(1)} %</b></div>
-      <div><small>Acierto</small><b>${settled.length ? Math.round(won / settled.length * 100) : 0} %</b></div></div></div>
+  const isLive = b => b.legs.some(l => { const m = findMatch(l.mid); return m && (m.status === "live" || m.status === "ht"); });
+  const tab = S.betTab || "pend", list = (tab === "pend" ? pend : tab === "live" ? pend.filter(isLive) : done).slice().reverse();
+  const mini = b => `<button class="bc-mini" data-obet="${b.id}"><b>${eur(b.stake)} ${b.legs.length > 1 ? COMBO_NAME(b.legs.length) : "Sencilla"}</b><span>${esc(b.legs[0].match)}</span><span class="bc-tag ${b.status}">${tagTxt[b.status]}</span></button>`;
+  const body = list.length ? list.map(b => tab === "done" && !S.openBet[b.id] ? mini(b) : betCard(b, tagTxt)).join("")
+    : `<div class="mb-empty">No hay apuestas que mostrar en estos momentos<br>${tab === "pend" ? "Las apuestas pendientes" : tab === "live" ? "Las apuestas de partidos en juego" : "Las apuestas terminadas"} se mostrarán aquí</div>`;
+  return `<div class="mb-hd"><h1>Mis apuestas</h1><span class="mb-bal">${eur(S.wallet.balance)}</span></div>
+    <div class="mb-tabs">${[["pend", "Pendientes"], ["live", "Directo"], ["done", "Determinadas"]].map(([k, t]) => `<button data-btab="${k}" class="${tab === k ? "on" : ""}">${t}</button>`).join("")}</div>
+    ${body}
+    <div class="mb-sum"><span>Apostado ${eur(staked)}</span><span class="${pl >= 0 ? "pos" : "neg"}">Beneficio ${(pl >= 0 ? "+" : "") + eur(pl)}</span><span>Acierto ${settled.length ? Math.round(won / settled.length * 100) : 0} %</span></div>
     ${(S.wallet.moves || []).length ? `<div class="block"><div class="bh">Del administrador</div>${S.wallet.moves.map(x => `<div class="leg"><span>${new Date(x.at).toLocaleDateString("es-ES", { day: "numeric", month: "short" })}${x.note ? " · " + esc(x.note) : ""}</span><span class="${x.amount >= 0 ? "pos" : "neg"}">${(x.amount >= 0 ? "+" : "") + eur(x.amount)}</span></div>`).join("")}</div>` : ""}
-    <div class="block"><div class="bh">Pendientes (${pend.length})</div>${pend.slice().reverse().map(card).join("") || `<div class="empty">No tienes apuestas abiertas.</div>`}</div>
-    <div class="block"><div class="bh">Liquidadas (${done.length})</div>${done.slice().reverse().map(card).join("") || `<div class="empty">Aún no se ha liquidado ninguna apuesta.</div>`}
-    <div class="note">${S.confirmReset === "wallet" ? `<span class="confirm">¿Volver a ${eur(DATA.saldoInicial)} y borrar tu historial? <button class="abtn red" data-wallet-reset="1">Sí</button><button class="abtn" data-cancel-reset="1">No</button></span>` : `${S.store === "sb" ? `<button class="abtn" data-logout="1">Cerrar sesión (${esc(S.me || "")})</button>` : `<button class="abtn" data-ask-reset="wallet">Reiniciar mi saldo</button>`}`}</div></div>`;
+    <div class="block" style="background:none">    <div class="note">${S.confirmReset === "wallet" ? `<span class="confirm">¿Volver a ${eur(DATA.saldoInicial)} y borrar tu historial? <button class="abtn red" data-wallet-reset="1">Sí</button><button class="abtn" data-cancel-reset="1">No</button></span>` : `${S.store === "sb" ? `<button class="abtn" data-logout="1">Cerrar sesión (${esc(S.me || "")})</button>` : `<button class="abtn" data-ask-reset="wallet">Reiniciar mi saldo</button>`}`}</div></div>`;
 }
 function howView() {
   return `<div class="block how">
@@ -1426,7 +1440,7 @@ function place() {
 }
 
 document.addEventListener("click", e => {
-  const t = e.target.closest("button,[data-open],[data-toggle]"); if (!t || t.disabled) return;
+  const t = e.target.closest("button,[data-open],[data-toggle],[data-obet]"); if (!t || t.disabled) return;
   const ds = t.dataset;
   if (ds.view) { S.view = ds.view; S.detail = null; window.scrollTo(0, 0); }
   else if (ds.open) { S.view = "detail"; S.detail = ds.open; S.form = { side: String(Math.max(0, sideOf(findMatch(ds.open)))), pl: "", as: "", min: "" }; window.scrollTo(0, 0); }
@@ -1445,6 +1459,8 @@ document.addEventListener("click", e => {
     api("adjust", { user: u, amount: v * +sg }).then(() => { toast((+sg > 0 ? "Dados " : "Quitados ") + eur(v) + (+sg > 0 ? " a " : " a ") + u); if (inp) inp.value = ""; setTimeout(sbRanking, 500); }, e => toast(e.message)); return; }
   else if (ds.showpw) S.showPw = !S.showPw;
   else if (ds.co) S.coConfirm = ds.co;
+  else if (ds.btab) S.betTab = ds.btab;
+  else if (ds.obet) S.openBet[ds.obet] = !S.openBet[ds.obet];
   else if (ds.coNo) S.coConfirm = null;
   else if (ds.coYes) { doCashout(ds.coYes); return; }
   else if (ds.authTab) { S.authTab = ds.authTab; S.authMsg = ""; }

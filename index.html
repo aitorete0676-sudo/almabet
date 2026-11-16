@@ -141,6 +141,7 @@ th{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06
 .ptab th{text-align:center} .ptab th:first-child{text-align:left}
 .stand tr.me td{color:var(--yellow);font-weight:700}
 .adjr td{padding-top:0!important}.adj{display:flex;gap:6px;align-items:center}.adj input{width:90px;padding:6px 8px;border-radius:4px;border:1px solid var(--line);background:var(--bg);color:var(--fg)}
+.pwf{position:relative}.pwf input{width:100%;padding-right:78px!important}.eye{position:absolute;right:6px;top:50%;transform:translateY(-50%);padding:6px 10px;font-size:13px;font-weight:700;color:#145a41}
 .ptbl{margin:0 -12px}
 .ptbl .pr{display:grid;grid-template-columns:minmax(0,1fr) repeat(var(--n),minmax(52px,64px));align-items:center;border-top:1px solid var(--line);min-height:56px}
 .ptbl .ph{min-height:44px}
@@ -768,6 +769,7 @@ async function connectSB() {
 async function sbAuth(mode) {
   const u = (document.getElementById("au-user").value || "").trim(), pw = document.getElementById("au-pass").value || "";
   if (u.length < 2 || pw.length < 6) { S.authMsg = "El usuario necesita 2 letras o más y la contraseña 6 caracteres o más."; return render(); }
+  if (mode === "up" && pw !== (document.getElementById("au-pass2").value || "")) { S.authMsg = "Las contraseñas no coinciden."; return render(); }
   S.authMsg = mode === "up" ? "Creando cuenta…" : "Entrando…"; render();
   try { const { token } = await api(mode === "up" ? "register" : "login", { username: u, password: pw });
     try { localStorage.setItem(TK, token); } catch (e) {}
@@ -778,8 +780,9 @@ function authView() {
   return `<div class="block authb"><div class="logo" style="font-size:40px">Alma<span>Bet</span></div>
     <p>Apuestas con dinero ficticio entre los del equipo. Empiezas con ${eur(DATA.saldoInicial)}.</p>
     <div class="stabs"><button data-auth-tab="in" class="${S.authTab !== "up" ? "on" : ""}">Entrar</button><button data-auth-tab="up" class="${S.authTab === "up" ? "on" : ""}">Crear cuenta</button></div>
-    <form id="auform" class="authf"><label for="au-user">Usuario</label><input id="au-user" autocomplete="username" autocapitalize="off" placeholder="p. ej. moliner9">
-      <label for="au-pass">Contraseña</label><input id="au-pass" type="password" autocomplete="${S.authTab === "up" ? "new-password" : "current-password"}" placeholder="Mínimo 6 caracteres">
+    <form id="auform" class="authf"><label for="au-user">Usuario</label><input id="au-user" autocomplete="username" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="Nombre de usuario">
+      <label for="au-pass">Contraseña</label><div class="pwf"><input id="au-pass" type="${S.showPw ? "text" : "password"}" autocomplete="${S.authTab === "up" ? "new-password" : "current-password"}" placeholder="Mínimo 6 caracteres"><button type="button" class="eye" data-showpw="1" aria-label="${S.showPw ? "Ocultar" : "Ver"} contraseña">${S.showPw ? "Ocultar" : "Ver"}</button></div>
+      ${S.authTab === "up" ? `<label for="au-pass2">Repetir contraseña</label><div class="pwf"><input id="au-pass2" type="${S.showPw ? "text" : "password"}" autocomplete="new-password" placeholder="Escríbela otra vez"></div>` : ""}
       <button class="place" type="submit">${S.authTab === "up" ? "Crear cuenta" : "Entrar"}</button></form>
     <div class="msg">${esc(S.authMsg || "")}</div></div>`;
 }
@@ -1301,6 +1304,7 @@ document.addEventListener("click", e => {
   else if (ds.adj) { const [u, sg] = ds.adj.split("|"), inp = document.getElementById("adj-" + u), v = num(inp && inp.value);
     if (!v) { toast("Escribe una cantidad."); return; }
     api("adjust", { user: u, amount: v * +sg }).then(() => { toast((+sg > 0 ? "Dados " : "Quitados ") + eur(v) + (+sg > 0 ? " a " : " a ") + u); if (inp) inp.value = ""; setTimeout(sbRanking, 500); }, e => toast(e.message)); return; }
+  else if (ds.showpw) S.showPw = !S.showPw;
   else if (ds.authTab) { S.authTab = ds.authTab; S.authMsg = ""; }
   else if (ds.logout) { api("logout").catch(() => {}).then(() => { try { localStorage.removeItem(TK); } catch (e) {} location.reload(); }); return; }
   else if (ds.acc === "adm") S.openG.adm = !(S.openG.adm ?? true);

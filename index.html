@@ -12,7 +12,7 @@
 <link rel="icon" href="/icon-192.png">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <script>if (/^\/admin/.test(location.pathname)) { document.querySelector('link[rel=manifest]').href = "/manifest-admin.json"; document.querySelector('link[rel=apple-touch-icon]').href = "/apple-touch-admin.png"; document.querySelector('meta[name=apple-mobile-web-app-title]').content = "AB Admin"; }</script>
-<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font-size:14px}img{max-width:100%}[hidden]{display:none!important}</style>
+<style>:root{padding-top:env(safe-area-inset-top,0px)}body{margin:0;font-size:14px}img{max-width:100%}[hidden]{display:none!important}</style>
 <script src="/config.js"></script>
 </head>
 <body>
@@ -32,6 +32,7 @@
 }
 *{box-sizing:border-box}
 html,body{background:var(--bg);color:var(--fg)}
+@media (max-width:760px){html{background:#121715}body{min-height:100vh;min-height:100dvh}}
 html,body,button,a,input,select,label{touch-action:manipulation}
 html{-webkit-text-size-adjust:100%}
 @media (max-width:760px){input,select,textarea{font-size:16px!important}}

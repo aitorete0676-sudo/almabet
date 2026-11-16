@@ -106,13 +106,15 @@ module.exports = async (req, res) => {
     const superAdmin = me.admin || norm(process.env.ADMIN_USER) === me.name;
     const lg = String(b.lg || MAIN).replace(/[^a-z0-9]/gi, "").slice(0, 20) || MAIN, KK = K(lg);
     const L = await getJ("lg:" + lg);
-    const member = !!L && !!(await redis("SISMEMBER", KK.members, me.name));
-    const admin = member && (lg === MAIN ? superAdmin : L.owner === me.name);
+    if (L && lg !== MAIN && a === "me") await redis("SADD", "lgall", lg);   // ligas creadas antes de existir la lista
+    const realMember = !!L && !!(await redis("SISMEMBER", KK.members, me.name));
+    const member = realMember || (!!L && superAdmin);   // el admin de la liga original gestiona todas las ligas
+    const admin = member && (superAdmin || L.owner === me.name);
     async function myLeagues() {
-      const ids = (await redis("SMEMBERS", "ul:" + me.name)) || [];
+      const ids = superAdmin ? ((await redis("SMEMBERS", "lgall")) || []) : ((await redis("SMEMBERS", "ul:" + me.name)) || []);
       if (await redis("SISMEMBER", "lgm:" + MAIN, me.name)) ids.unshift(MAIN);
       const out = [];
-      for (const id of [...new Set(ids)]) { const l = await getJ("lg:" + id); if (l) out.push({ id, name: l.name, code: l.code, team: l.team, groupId: l.groupId, admin: id === MAIN ? superAdmin : l.owner === me.name }); }
+      for (const id of [...new Set(ids)]) { const l = await getJ("lg:" + id); if (l) out.push({ id, name: l.name, code: l.code, team: l.team, groupId: l.groupId, admin: superAdmin || l.owner === me.name }); }
       return out;
     }
     // --- Ligas: crear, unirse, ver las mías, datos del grupo ---
@@ -130,7 +132,7 @@ module.exports = async (req, res) => {
       const id = crypto.randomBytes(5).toString("hex"), code = await newCode(id);
       const name = String(b.name || "").trim().slice(0, 40) || team + " · " + liga;
       await setJ("lg:" + id, { id, name, code, groupId: gid, team, owner: me.name, created: Date.now() });
-      await redis("SADD", "lgm:" + id, me.name); await redis("SADD", "ul:" + me.name, id);
+      await redis("SADD", "lgm:" + id, me.name); await redis("SADD", "ul:" + me.name, id); await redis("SADD", "lgall", id);
       await setJ(K(id).wallet(me.name), { balance: START, bets: [] });
       return send(200, { id, code, leagues: await myLeagues() });
     }
@@ -157,7 +159,7 @@ module.exports = async (req, res) => {
 
     if (a === "me") {
       const w = (await getJ(KK.wallet(me.name))) || { balance: START, bets: [] };
-      return send(200, { username: me.name, admin, wallet: w, matches: await allMatches(lg), leagues: await myLeagues(), league: { id: lg, name: L.name, code: L.code, team: L.team } });
+      return send(200, { username: me.name, admin, super: superAdmin && !realMember, wallet: w, matches: await allMatches(lg), leagues: await myLeagues(), league: { id: lg, name: L.name, code: L.code, team: L.team } });
     }
     if (a === "matches") {
       const bonus = ((await redis("LRANGE", KK.bonus(me.name), 0, -1)) || []).map(x => JSON.parse(x));
@@ -176,13 +178,14 @@ module.exports = async (req, res) => {
       return send(200, { ok: true });
     }
     if (a === "wallet") {
+      if (!realMember) return send(403, { error: "Gestionas esta liga, pero no juegas en ella." });
       const w = { balance: +b.balance, bets: Array.isArray(b.bets) ? b.bets : [], bonusIds: Array.isArray(b.bonusIds) ? b.bonusIds.slice(-200) : [], moves: Array.isArray(b.moves) ? b.moves.slice(0, 50) : [], lastPay: String(b.lastPay || "").slice(0, 7) };
       if (!isFinite(w.balance)) return send(400, { error: "Saldo no válido." });
       await setJ(KK.wallet(me.name), w);
       return send(200, { ok: true });
     }
     if (a === "playerBets") {
-      if (!admin || lg !== MAIN) return send(403, { error: "Solo el administrador de la liga original puede ver las apuestas de otros." });
+      if (!admin || (lg !== MAIN && !superAdmin)) return send(403, { error: "Solo el administrador de la liga original puede ver las apuestas de otros." });
       if (!(await redis("SISMEMBER", KK.members, norm(b.user)))) return send(404, { error: "Ese jugador no está en la liga." });
       const w = (await getJ(KK.wallet(norm(b.user)))) || { bets: [] };
       return send(200, { bets: (w.bets || []).slice(-150) });

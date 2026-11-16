@@ -140,6 +140,7 @@ th{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06
 .ptab td.pc .o{min-height:34px}
 .ptab th{text-align:center} .ptab th:first-child{text-align:left}
 .stand tr.me td{color:var(--yellow);font-weight:700}
+.adjr td{padding-top:0!important}.adj{display:flex;gap:6px;align-items:center}.adj input{width:90px;padding:6px 8px;border-radius:4px;border:1px solid var(--line);background:var(--bg);color:var(--fg)}
 .ptbl{margin:0 -12px}
 .ptbl .pr{display:grid;grid-template-columns:minmax(0,1fr) repeat(var(--n),minmax(52px,64px));align-items:center;border-top:1px solid var(--line);min-height:56px}
 .ptbl .ph{min-height:44px}
@@ -737,17 +738,28 @@ async function api(action, body) {
 }
 async function sbSaveWallet() {
   if (sbBusy) { sbDirty = true; return; } sbBusy = true;
-  try { await api("wallet", { balance: S.wallet.balance, bets: S.wallet.bets }); } catch (e) { toast("No se ha podido guardar. Revisa la conexión."); }
+  try { await api("wallet", { balance: S.wallet.balance, bets: S.wallet.bets, bonusIds: S.wallet.bonusIds, moves: S.wallet.moves }); } catch (e) { toast("No se ha podido guardar. Revisa la conexión."); }
   sbBusy = false; if (sbDirty) { sbDirty = false; sbSaveWallet(); } else sbRanking();
 }
 async function sbRanking() { try { const { ranking } = await api("ranking"); S.ranking = ranking; ranking.forEach(r => S.names[r.id] = { name: r.username }); render(); } catch (e) {} }
-async function sbPoll() { try { const { matches } = await api("matches"); S.states = matches; settle(); render(); } catch (e) {} }
+async function sbPoll() { try { const { matches, bonus } = await api("matches"); S.states = matches; applyBonus(bonus || []); settle(); render(); } catch (e) {} }
+async function applyBonus(list) {
+  const done = new Set(S.wallet.bonusIds || []), fresh = list.filter(x => !done.has(x.id));
+  if (fresh.length) {
+    fresh.forEach(x => { S.wallet.balance = Math.max(0, +(S.wallet.balance + x.amount).toFixed(2));
+      (S.wallet.moves = S.wallet.moves || []).unshift({ amount: x.amount, note: x.note, at: x.at });
+      toast(x.amount > 0 ? "El administrador te ha dado " + eur(x.amount) : "El administrador te ha quitado " + eur(-x.amount)); });
+    S.wallet.bonusIds = (S.wallet.bonusIds || []).concat(fresh.map(x => x.id)).slice(-200);
+    await sbSaveWallet();
+  }
+  if (list.length) api("ackBonus", { ids: list.map(x => x.id) }).catch(() => {});
+}
 async function sbStart() {
   const d = await api("me");
   S.uid = d.username; S.me = d.username; S.admin = !!d.admin;
-  S.wallet = { balance: +d.wallet.balance, bets: d.wallet.bets || [] }; S.states = d.matches || {};
+  S.wallet = { balance: +d.wallet.balance, bets: d.wallet.bets || [], bonusIds: d.wallet.bonusIds || [], moves: d.wallet.moves || [] }; S.states = d.matches || {};
   S.store = "sb"; if (S.view === "login") S.view = "home";
-  setInterval(sbPoll, 4000); sbRanking(); setInterval(sbRanking, 30000); settle(); render();
+  setInterval(sbPoll, 4000); sbPoll(); sbRanking(); setInterval(sbRanking, 30000); settle(); render();
 }
 async function connectSB() {
   if (!tok()) { S.store = "auth"; return render(); }
@@ -1071,9 +1083,10 @@ function tableView() {
 function rankingView() {
   if (S.store !== "db" && S.store !== "sb") return `<div class="block empty">El ranking funciona en el enlace compartido de AlmaBet. Abierto como fichero en tu ordenador solo guarda tus apuestas.</div>`;
   const rows = S.ranking.map((r, i) => { const nm = (S.names[r.id] && S.names[r.id].name) || (r.id === S.uid ? "Tú" : "Jugador");
-    return `<tr class="${r.id === S.uid ? "me" : ""}"><td>${i + 1}. ${esc(nm)}</td><td>${eur(r.balance || 0)}</td><td class="${(r.profit || 0) >= 0 ? "pos" : "neg"}">${(r.profit >= 0 ? "+" : "") + eur(r.profit || 0)}</td><td>${r.bets || 0}</td></tr>`; }).join("");
+    const adm = S.store === "sb" && S.admin ? `<tr class="adjr"><td colspan="4"><span class="adj"><input id="adj-${esc(r.id)}" inputmode="decimal" placeholder="€" aria-label="Cantidad para ${esc(nm)}"><button class="abtn" data-adj="${esc(r.id)}|1">+ Dar</button><button class="abtn red" data-adj="${esc(r.id)}|-1">− Quitar</button></span></td></tr>` : "";
+    return `<tr class="${r.id === S.uid ? "me" : ""}"><td>${i + 1}. ${esc(nm)}</td><td>${eur(r.balance || 0)}</td><td class="${(r.profit || 0) >= 0 ? "pos" : "neg"}">${(r.profit >= 0 ? "+" : "") + eur(r.profit || 0)}</td><td>${r.bets || 0}</td></tr>${adm}`; }).join("");
   return `<div class="block"><div class="bh">Ranking de saldo</div><div class="model"><table class="stand"><thead><tr><th>Jugador</th><th>Saldo</th><th>Beneficio</th><th>Apuestas</th></tr></thead><tbody>${rows || `<tr><td colspan="4">Nadie ha apostado todavía.</td></tr>`}</tbody></table></div>
-    <div class="note">Todos empiezan con ${eur(DATA.saldoInicial)} ficticios. ${S.store === "sb" ? "" : "Apareces aquí al hacer tu primera apuesta."}</div></div>`;
+    <div class="note">Todos empiezan con ${eur(DATA.saldoInicial)} ficticios. ${S.store === "sb" ? (S.admin ? "Como administrador puedes dar o quitar dinero: escribe la cantidad y pulsa Dar o Quitar. Le llega en unos segundos." : "") : "Apareces aquí al hacer tu primera apuesta."}</div></div>`;
 }
 function betsView() {
   const bets = S.wallet.bets;
@@ -1091,6 +1104,7 @@ function betsView() {
       <div><small>Beneficio</small><b class="${pl >= 0 ? "pos" : "neg"}">${(pl >= 0 ? "+" : "") + eur(pl)}</b></div>
       <div><small>ROI</small><b class="${roi >= 0 ? "pos" : "neg"}">${roi.toFixed(1)} %</b></div>
       <div><small>Acierto</small><b>${settled.length ? Math.round(won / settled.length * 100) : 0} %</b></div></div></div>
+    ${(S.wallet.moves || []).length ? `<div class="block"><div class="bh">Del administrador</div>${S.wallet.moves.map(x => `<div class="leg"><span>${new Date(x.at).toLocaleDateString("es-ES", { day: "numeric", month: "short" })}${x.note ? " · " + esc(x.note) : ""}</span><span class="${x.amount >= 0 ? "pos" : "neg"}">${(x.amount >= 0 ? "+" : "") + eur(x.amount)}</span></div>`).join("")}</div>` : ""}
     <div class="block"><div class="bh">Pendientes (${pend.length})</div>${pend.slice().reverse().map(card).join("") || `<div class="empty">No tienes apuestas abiertas.</div>`}</div>
     <div class="block"><div class="bh">Liquidadas (${done.length})</div>${done.slice().reverse().map(card).join("") || `<div class="empty">Aún no se ha liquidado ninguna apuesta.</div>`}
     <div class="note">${S.confirmReset === "wallet" ? `<span class="confirm">¿Volver a ${eur(DATA.saldoInicial)} y borrar tu historial? <button class="abtn red" data-wallet-reset="1">Sí</button><button class="abtn" data-cancel-reset="1">No</button></span>` : `${S.store === "sb" ? `<button class="abtn" data-logout="1">Cerrar sesión (${esc(S.me || "")})</button>` : `<button class="abtn" data-ask-reset="wallet">Reiniciar mi saldo</button>`}`}</div></div>`;
@@ -1284,6 +1298,9 @@ document.addEventListener("click", e => {
   }
   else if (ds.rm) { S.slip = S.slip.filter(s => s.key !== ds.rm); delete S.stakes[ds.rm]; }
   else if (ds.mode) S.mode = ds.mode;
+  else if (ds.adj) { const [u, sg] = ds.adj.split("|"), inp = document.getElementById("adj-" + u), v = num(inp && inp.value);
+    if (!v) { toast("Escribe una cantidad."); return; }
+    api("adjust", { user: u, amount: v * +sg }).then(() => { toast((+sg > 0 ? "Dados " : "Quitados ") + eur(v) + (+sg > 0 ? " a " : " a ") + u); if (inp) inp.value = ""; setTimeout(sbRanking, 500); }, e => toast(e.message)); return; }
   else if (ds.authTab) { S.authTab = ds.authTab; S.authMsg = ""; }
   else if (ds.logout) { api("logout").catch(() => {}).then(() => { try { localStorage.removeItem(TK); } catch (e) {} location.reload(); }); return; }
   else if (ds.acc === "adm") S.openG.adm = !(S.openG.adm ?? true);

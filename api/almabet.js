@@ -80,9 +80,24 @@ module.exports = async (req, res) => {
       const w = (await getJ("wallet:" + me.name)) || { balance: START, bets: [] };
       return send(200, { username: me.name, admin, wallet: w, matches: await allMatches() });
     }
-    if (a === "matches") return send(200, { matches: await allMatches() });
+    if (a === "matches") {
+      const bonus = ((await redis("LRANGE", "bonus:" + me.name, 0, -1)) || []).map(x => JSON.parse(x));
+      return send(200, { matches: await allMatches(), bonus });
+    }
+    if (a === "ackBonus") { const ids = new Set(b.ids || []);
+      const list = (await redis("LRANGE", "bonus:" + me.name, 0, -1)) || [];
+      for (const x of list) if (ids.has(JSON.parse(x).id)) await redis("LREM", "bonus:" + me.name, 1, x);
+      return send(200, { ok: true }); }
+    if (a === "adjust") {
+      if (!admin) return send(403, { error: "Solo el administrador puede dar o quitar dinero." });
+      const to = norm(b.user), amt = Math.round(+b.amount * 100) / 100;
+      if (!to || !(await getJ("user:" + to))) return send(404, { error: "Ese jugador no existe." });
+      if (!isFinite(amt) || !amt || Math.abs(amt) > 1e6) return send(400, { error: "Cantidad no válida." });
+      await redis("RPUSH", "bonus:" + to, JSON.stringify({ id: crypto.randomBytes(8).toString("hex"), amount: amt, note: String(b.note || "").slice(0, 60), at: Date.now() }));
+      return send(200, { ok: true });
+    }
     if (a === "wallet") {
-      const w = { balance: +b.balance, bets: Array.isArray(b.bets) ? b.bets : [] };
+      const w = { balance: +b.balance, bets: Array.isArray(b.bets) ? b.bets : [], bonusIds: Array.isArray(b.bonusIds) ? b.bonusIds.slice(-200) : [], moves: Array.isArray(b.moves) ? b.moves.slice(0, 50) : [] };
       if (!isFinite(w.balance)) return send(400, { error: "Saldo no válido." });
       await setJ("wallet:" + me.name, w);
       return send(200, { ok: true });
@@ -93,7 +108,8 @@ module.exports = async (req, res) => {
       const players = [];
       for (const n of names) { const u = await getJ("user:" + n); if (u && !u.admin && n !== adminU) players.push(n); }
       const rows = await Promise.all(players.map(async n => { const w = (await getJ("wallet:" + n)) || { balance: START, bets: [] };
-        return { id: n, username: n, balance: +w.balance, profit: await profit(w), bets: (w.bets || []).length }; }));
+        const pend = ((await redis("LRANGE", "bonus:" + n, 0, -1)) || []).reduce((t, x) => t + JSON.parse(x).amount, 0);
+        return { id: n, username: n, balance: Math.max(0, +w.balance + pend), profit: await profit(w), bets: (w.bets || []).length }; }));
       rows.sort((x, y) => y.balance - x.balance);
       return send(200, { ranking: rows });
     }

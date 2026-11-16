@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#0c3326">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -32,6 +32,9 @@
 }
 *{box-sizing:border-box}
 html,body{background:var(--bg);color:var(--fg)}
+html,body,button,a,input,select,label{touch-action:manipulation}
+html{-webkit-text-size-adjust:100%}
+@media (max-width:760px){input,select,textarea{font-size:16px!important}}
 body{font-family:var(--f-body);font-size:14px;line-height:1.35}
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--top)}
 button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}

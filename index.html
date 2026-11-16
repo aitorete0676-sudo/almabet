@@ -43,8 +43,9 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--yellow);outline
 header{position:sticky;top:env(safe-area-inset-top,0px);z-index:20}
 .top{background:var(--top)}
 .top .wrap{display:flex;align-items:center;gap:20px;min-height:54px;flex-wrap:wrap;padding-block:6px}
-.logo{font-family:var(--f-cond);font-style:italic;font-weight:800;font-size:28px;letter-spacing:-.5px;color:var(--yellow);line-height:1}
-.logo span{color:var(--fg)}
+.logo{font-family:var(--f-cond);font-style:italic;font-weight:800;font-size:28px;letter-spacing:-.5px;color:#fff;line-height:1}
+.logo span{color:var(--yellow);position:relative;display:inline-block}
+.logo span::after{content:"";position:absolute;left:8%;right:4%;bottom:-.14em;height:.11em;border-radius:.06em;background:var(--yellow)}
 .tabs{display:flex;gap:4px;flex:1;overflow-x:auto;scrollbar-width:none}
 .tabs button{padding:8px 12px;font-weight:600;color:#cfe0d8;border-radius:3px;white-space:nowrap}
 .tabs button:hover{color:#fff;background:rgba(255,255,255,.06)}
@@ -153,7 +154,7 @@ th{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06
 .ptbl .pnt{display:flex;flex-direction:column;min-width:0}
 .ptbl .pnt b{font-weight:700;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ptbl .pnt span{font-size:12px;color:var(--yellow);font-weight:600}
-.shirt{width:30px;height:30px;flex:none}
+.shirt{width:38px;height:38px;flex:none;margin-left:-4px}
 .ptbl .o{background:none;border-radius:0;height:56px;justify-content:center}
 .ptbl .o .v{color:#3ddc97;font-size:15px;font-weight:600}
 .ptbl .o.sel{background:var(--yellow)}.ptbl .o.sel .v{color:var(--ink)}
@@ -318,6 +319,7 @@ th{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06
 
 <header>
   <div class="top"><div class="wrap">
+    <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><clipPath id="shirtClip"><path d="M13 5 L5 10 L8 18 L11 16.5 L11 36 L29 36 L29 16.5 L32 18 L35 10 L27 5 Q20 10 13 5 Z"/></clipPath></defs></svg>
     <div class="logo">Alma<span>Bet</span></div>
     <nav class="tabs" id="tabs">
       <button data-view="home">Deportes</button>
@@ -1042,7 +1044,8 @@ function detailView() {
 }
 /* ===================== MERCADOS EN DESPLEGABLES ===================== */
 const shortName = n => { const w = n.trim().split(/\s+/); return w.length > 1 ? w[0][0] + ". " + w.slice(1).join(" ") : n; };
-const shirt = n => `<svg class="shirt" viewBox="0 0 40 40" aria-hidden="true"><path d="M13 5 L5 10 L8 18 L11 16.5 L11 36 L29 36 L29 16.5 L32 18 L35 10 L27 5 Q20 10 13 5 Z" fill="#fff" stroke="#c9cfcc" stroke-width="1"/><text x="20" y="27.5" text-anchor="middle" font-size="${n != null && String(n).length > 1 ? 12 : 14}" font-weight="800" fill="#111" font-family="-apple-system,Inter,Arial,sans-serif">${n ?? ""}</text></svg>`;
+const SHIRT_PATH = "M13 5 L5 10 L8 18 L11 16.5 L11 36 L29 36 L29 16.5 L32 18 L35 10 L27 5 Q20 10 13 5 Z";
+const shirt = n => `<svg class="shirt" viewBox="0 0 40 40" aria-hidden="true"><path d="${SHIRT_PATH}" fill="#111"/><g clip-path="url(#shirtClip)"><rect x="9" y="0" width="4.4" height="40" fill="#fff"/><rect x="17.8" y="0" width="4.4" height="40" fill="#fff"/><rect x="26.6" y="0" width="4.4" height="40" fill="#fff"/></g><path d="${SHIRT_PATH}" fill="none" stroke="#9aa3a0" stroke-width=".8"/><rect x="12.5" y="16" width="15" height="13" rx="1.5" fill="#fff"/><text x="20" y="26.3" text-anchor="middle" font-size="${n != null && String(n).length > 1 ? 10.5 : 12}" font-weight="800" fill="#d71920" font-family="-apple-system,Inter,Arial,sans-serif">${n ?? ""}</text></svg>`;
 const CATS = [["all", "Todos"], ["jug", "Jugador"], ["pop", "Populares"], ["gol", "Goles"], ["mit", "Mitades"], ["crn", "Córners"], ["crd", "Tarjetas"], ["esp", "Especiales"]];
 function marketGroups(m) {
   const G = [], pl = sideOf(m) >= 0;

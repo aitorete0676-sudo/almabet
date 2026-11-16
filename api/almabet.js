@@ -54,7 +54,22 @@ async function profit(w) {
 // Ligas: "main" es la liga original (sus claves no cambian). Las demás guardan todo con su id.
 const MAIN = "main";
 const K = lg => ({ wallet: u => lg === MAIN ? "wallet:" + u : "w:" + lg + ":" + u, bonus: u => lg === MAIN ? "bonus:" + u : "bn:" + lg + ":" + u,
-  matches: lg === MAIN ? "matches" : "m:" + lg, members: "lgm:" + lg });
+  members: "lgm:" + lg });
+// Competiciones (grupos de fútbol): "main" = Tercera FFCV G2 (datos dentro de la app). Todas las ligas de amigos apuestan en todas.
+const MAIN_GROUP = "905431622";
+const CM = c => c === MAIN ? "matches" : "mc:" + c;
+async function listComps() {
+  if (await redis("SET", "compmig", "1", "NX")) {   // ligas creadas antes con un grupo: su grupo pasa a ser competición
+    for (const id of ((await redis("SMEMBERS", "lgall")) || [])) { const l = await getJ("lg:" + id);
+      if (l && l.groupId && l.groupId !== MAIN_GROUP && !(await getJ("comp:" + l.groupId))) { await setJ("comp:" + l.groupId, { id: l.groupId, name: l.name, team: l.team, full: [] }); await redis("SADD", "comps", l.groupId); } }
+  }
+  if (await redis("SET", "compseed1", "1", "NX")) {   // Segona FFCV G1 (Almazora B): mercados completos solo para el Almazora B
+    await setJ("comp:905431612", { id: "905431612", name: "Segona FFCV · Grupo 1", team: "C.D. Almazora 'B'", full: ["C.D. Almazora 'B'"], created: Date.now() }); await redis("SADD", "comps", "905431612");
+  }
+  const out = [{ id: MAIN, name: "Tercera FFCV · Grupo 2", team: "C.D. Almazora 'C'" }];
+  for (const id of ((await redis("SMEMBERS", "comps")) || []).sort()) { const c = await getJ("comp:" + id); if (c) out.push({ id, name: c.name, team: c.team, full: c.full || [] }); }
+  return out;
+}
 const CODE_CH = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 async function newCode(id) { for (let n = 0; n < 20; n++) { let c = ""; for (let i = 0; i < 6; i++) c += CODE_CH[crypto.randomInt(CODE_CH.length)];
   if (await redis("SET", "lgcode:" + c, id, "NX")) return c; } throw new Error("No se ha podido crear el código."); }
@@ -67,8 +82,8 @@ async function ensureMain() {
   const code = await newCode(MAIN);
   await setJ("lg:" + MAIN, { id: MAIN, name: "Almazora C · Tercera FFCV G2", code, groupId: "905431622", team: "C.D. Almazora 'C'", owner: null, created: Date.now() });
 }
-async function allMatches(lg = MAIN) {
-  const h = await redis("HGETALL", K(lg).matches) || [];
+async function allMatches(comp = MAIN) {
+  const h = await redis("HGETALL", CM(comp)) || [];
   const o = {}; for (let i = 0; i < h.length; i += 2) o[h[i]] = JSON.parse(h[i + 1]);
   return o;
 }
@@ -106,6 +121,8 @@ module.exports = async (req, res) => {
     const superAdmin = me.admin || norm(process.env.ADMIN_USER) === me.name;
     const lg = String(b.lg || MAIN).replace(/[^a-z0-9]/gi, "").slice(0, 20) || MAIN, KK = K(lg);
     const L = await getJ("lg:" + lg);
+    let comp = String(b.comp || MAIN).replace(/[^a-z0-9]/gi, "").slice(0, 20) || MAIN;
+    if (comp !== MAIN && !(await redis("SISMEMBER", "comps", comp))) comp = MAIN;
     if (L && lg !== MAIN && a === "me") await redis("SADD", "lgall", lg);   // ligas creadas antes de existir la lista
     const realMember = !!L && !!(await redis("SISMEMBER", KK.members, me.name));
     const member = realMember || (!!L && superAdmin);   // el admin de la liga original gestiona todas las ligas
@@ -114,24 +131,41 @@ module.exports = async (req, res) => {
       const ids = superAdmin ? ((await redis("SMEMBERS", "lgall")) || []) : ((await redis("SMEMBERS", "ul:" + me.name)) || []);
       if (await redis("SISMEMBER", "lgm:" + MAIN, me.name)) ids.unshift(MAIN);
       const out = [];
-      for (const id of [...new Set(ids)]) { const l = await getJ("lg:" + id); if (l) out.push({ id, name: l.name, code: l.code, team: l.team, groupId: l.groupId, admin: superAdmin }); }
+      for (const id of [...new Set(ids)]) { const l = await getJ("lg:" + id); if (l) out.push({ id, name: l.name, code: l.code, admin: superAdmin }); }
       return out;
     }
     // --- Ligas: crear, unirse, ver las mías, datos del grupo ---
     if (a === "leagues") return send(200, { leagues: await myLeagues() });
-    if (a === "groupTeams" || a === "createLeague") {
+    if (a === "comps") return send(200, { comps: await listComps() });
+    if (a === "groupTeams" || a === "addComp") {   // solo el admin de AlmaBet añade competiciones (él mete los resultados)
+      if (!superAdmin) return send(403, { error: "Solo el administrador de AlmaBet puede añadir competiciones." });
       const gid = (String(b.group || "").match(/grupo\/(\d+)/) || String(b.group || "").match(/^\s*(\d{5,})\s*$/) || [])[1];
       if (!gid) return send(400, { error: "Pega el enlace del grupo de El Balón de la Comunitat (el que acaba en /grupo/número)." });
+      if (gid === MAIN_GROUP) return send(400, { error: "Esa competición ya está." });
       let st; try { st = await getJSON("/api/ffcv/standings?idGroup=" + gid + "&round=99"); } catch (e) { return send(502, { error: "No se ha podido leer ese grupo. Revisa el enlace." }); }
       const teams = (st.clasificacion || []).map(e => String(e.nombre).replace(/&#x27;/g, "'"));
       if (!teams.length) return send(404, { error: "Ese grupo no tiene clasificación todavía." });
-      const liga = (st.competicion || "Liga") + (st.grupo ? " · " + String(st.grupo).replace(/^Grup\s*-\s*/i, "Grupo ") : "");
+      const liga = (String(st.competicion || "").trim() || "Liga") + (st.grupo ? " · " + String(st.grupo).replace(/^Grup\s*-\s*/i, "Grupo ") : "");
       if (a === "groupTeams") return send(200, { groupId: gid, liga, teams });
-      const team = teams.find(t => t === b.team); if (!team) return send(400, { error: "Elige tu equipo de la lista." });
+      const team = teams.find(t => t === b.team) || teams[0];
+      const full = (Array.isArray(b.full) ? b.full : [team]).filter(t => teams.includes(t));
+      await setJ("comp:" + gid, { id: gid, name: String(b.name || "").trim().slice(0, 40) || liga, team, full, created: Date.now() });
+      await redis("SADD", "comps", gid);
+      return send(200, { id: gid, comps: await listComps() });
+    }
+    if (a === "compData") {   // datos de una competición (clasificación, plantillas de las actas, partidos)
+      if (comp === MAIN) return send(200, { main: true });
+      const C = await getJ("comp:" + comp), ck = "lgdata:" + comp; let d = await getJ(ck);
+      const stale = !d || Date.now() - d.updated > 6 * 3600e3 || d.pendingActas > 0 || (b.refresh && superAdmin);
+      if (stale) { try { d = await buildGroup({ groupId: comp, getJ, setJ, maxActas: 12 }); await setJ(ck, d); } catch (e) { if (!d) return send(502, { error: "No se han podido leer los datos del grupo: " + e.message }); } }
+      return send(200, { data: d, comp: { id: comp, name: C.name, team: C.team, full: C.full || [] } });
+    }
+    if (a === "createLeague") {   // liga de amigos: solo nombre; se apuesta en todas las competiciones
+      const name = String(b.name || "").trim().slice(0, 40);
+      if (name.length < 2) return send(400, { error: "Ponle un nombre a la liga." });
       const mine = (await redis("INCR", "lgcount:" + me.name)); if (mine > 5 && !superAdmin) return send(429, { error: "Ya has creado 5 ligas." });
       const id = crypto.randomBytes(5).toString("hex"), code = await newCode(id);
-      const name = String(b.name || "").trim().slice(0, 40) || team + " · " + liga;
-      await setJ("lg:" + id, { id, name, code, groupId: gid, team, owner: me.name, created: Date.now() });
+      await setJ("lg:" + id, { id, name, code, owner: me.name, created: Date.now() });
       await redis("SADD", "lgall", id);
       if (!superAdmin) { await redis("SADD", "lgm:" + id, me.name); await redis("SADD", "ul:" + me.name, id); await setJ(K(id).wallet(me.name), { balance: START, bets: [] }); }
       return send(200, { id, code, leagues: await myLeagues() });
@@ -140,30 +174,24 @@ module.exports = async (req, res) => {
       const code = String(b.code || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
       const id = code && await redis("GET", "lgcode:" + code);
       if (!id) return send(404, { error: "Ese código no existe. Revísalo." });
+      if (await redis("SISMEMBER", "lgban:" + id, me.name)) return send(403, { error: "Te han sacado de esta liga." });
       const already = await redis("SISMEMBER", "lgm:" + id, me.name);
       await redis("SADD", "lgm:" + id, me.name); if (id !== MAIN) await redis("SADD", "ul:" + me.name, id);
       if (!already && !(await getJ(K(id).wallet(me.name)))) await setJ(K(id).wallet(me.name), { balance: START, bets: [] });
       return send(200, { id, leagues: await myLeagues() });
     }
     if (!member) {
-      if (a === "me") return send(200, { username: me.name, admin: false, noLeague: true, leagues: await myLeagues() });
+      if (a === "me") return send(200, { username: me.name, admin: false, noLeague: true, leagues: await myLeagues(), comps: await listComps() });
       return send(403, { error: "No estás en esta liga." });
-    }
-    if (a === "leagueData") {
-      if (lg === MAIN) return send(200, { main: true });
-      const ck = "lgdata:" + L.groupId; let d = await getJ(ck);
-      const stale = !d || Date.now() - d.updated > 6 * 3600e3 || d.pendingActas > 0 || (b.refresh && admin);
-      if (stale) { try { d = await buildGroup({ groupId: L.groupId, getJ, setJ, maxActas: 12 }); await setJ(ck, d); } catch (e) { if (!d) return send(502, { error: "No se han podido leer los datos del grupo: " + e.message }); } }
-      return send(200, { data: d, league: { id: lg, name: L.name, team: L.team, code: L.code } });
     }
 
     if (a === "me") {
       const w = (await getJ(KK.wallet(me.name))) || { balance: START, bets: [] };
-      return send(200, { username: me.name, admin, super: superAdmin && !realMember, wallet: w, matches: await allMatches(lg), leagues: await myLeagues(), league: { id: lg, name: L.name, code: L.code, team: L.team } });
+      return send(200, { username: me.name, admin, super: superAdmin && !realMember, owner: lg !== MAIN && L.owner === me.name, wallet: w, matches: await allMatches(comp), leagues: await myLeagues(), comps: await listComps(), comp, league: { id: lg, name: L.name, code: L.code } });
     }
     if (a === "matches") {
       const bonus = ((await redis("LRANGE", KK.bonus(me.name), 0, -1)) || []).map(x => JSON.parse(x));
-      return send(200, { matches: await allMatches(lg), bonus });
+      return send(200, { matches: await allMatches(comp), bonus });
     }
     if (a === "ackBonus") { const ids = new Set(b.ids || []);
       const list = (await redis("LRANGE", KK.bonus(me.name), 0, -1)) || [];
@@ -204,8 +232,14 @@ module.exports = async (req, res) => {
     if (a === "saveMatch" || a === "deleteMatch") {
       if (!admin) return send(403, { error: "Solo el administrador puede cambiar los partidos." });
       if (!b.id) return send(400, { error: "Falta el partido." });
-      if (a === "saveMatch") await redis("HSET", KK.matches, String(b.id), JSON.stringify(b.state));
-      else await redis("HDEL", KK.matches, String(b.id));
+      if (a === "saveMatch") await redis("HSET", CM(comp), String(b.id), JSON.stringify(b.state));
+      else await redis("HDEL", CM(comp), String(b.id));
+      return send(200, { ok: true });
+    }
+    if (a === "kickMember") {   // el creador de la liga (o el admin de AlmaBet) puede sacar a gente
+      if (!(superAdmin || (lg !== MAIN && L.owner === me.name))) return send(403, { error: "Solo el creador de la liga puede sacar a gente." });
+      const u = norm(b.user); if (!u || u === me.name) return send(400, { error: "No puedes sacarte a ti mismo." });
+      await redis("SREM", KK.members, u); await redis("SREM", "ul:" + u, lg); await redis("SADD", "lgban:" + lg, u);
       return send(200, { ok: true });
     }
     if (a === "logout") { await redis("DEL", "sess:" + (req.headers.authorization || "").replace(/^Bearer\s+/i, "")); return send(200, { ok: true }); }

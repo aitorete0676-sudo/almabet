@@ -498,6 +498,7 @@ th{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06
 .fut-desc{display:block;width:100%;box-sizing:border-box;padding-right:12px;word-break:break-word}
 .lg-btn{margin-left:auto;background:rgba(255,255,255,.1);border-radius:14px;padding:4px 10px;font-weight:700;font-size:12px;max-width:55%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .lg-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px;border-top:1px solid var(--line)}.lg-row div{display:flex;flex-direction:column;min-width:0}.lg-row small{color:var(--muted)}.lg-row.on b{color:#3ddc97}.lg-cur{color:#3ddc97;font-weight:700;font-size:13px}
+.cmp-row{display:flex;gap:6px;overflow-x:auto;padding:2px 0 4px;scrollbar-width:none}.cmp-row::-webkit-scrollbar{display:none}.cmp-row button{flex:none;border:1px solid var(--line);border-radius:16px;padding:6px 12px;font-weight:700;font-size:12.5px;background:rgba(255,255,255,.07);color:#fff;white-space:nowrap}.cmp-row button.on{background:#3ddc97;color:#06281a;border-color:transparent}
 .lg-code{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px}.lg-code b{font-family:var(--f-cond);font-size:30px;letter-spacing:.12em;color:var(--yellow)}
 .lg-form{display:flex;gap:8px;padding:12px}.lg-form.col{flex-direction:column}.lg-form label{font-size:13px;color:var(--muted);font-weight:600}
 .lg-form input,.lg-form select{flex:1;min-width:0;background:var(--panel2);color:var(--fg);border:1px solid var(--line);border-radius:4px;padding:10px;font:inherit;font-size:16px}
@@ -621,12 +622,16 @@ const DATA_MAIN = {
   saldoInicial: 1000
 };
 // Otras ligas: datos que manda el servidor (clasificación, plantillas sacadas de las actas y partidos de la jornada)
-const LGX = window.__LGDATA || null, IS_MAIN = !LGX;
+const LGX = window.__LGDATA || null, IS_MAIN = !LGX, COMP = LGX ? LGX.comp.id : "main";
 const shortTeam = n => String(n || "").replace(/\b(C\.?\s?F\.?|C\.?\s?D\.?|F\.?\s?C\.?|U\.?\s?D\.?|C\.?\s?E\.?|S\.?\s?A\.?\s?D\.?|A\.?\s?D\.?|Club|Deportivo|Fútbol|Futbol)(?=\s|$)/gi, "").replace(/'/g, "").replace(/\s+/g, " ").trim() || n;
-const DATA = LGX ? { miEquipo: LGX.league.team, plantilla: [], plantillas: LGX.data.plantillas || {}, saldoInicial: 1000,
+const DATA = LGX ? { miEquipo: LGX.comp.team || ((LGX.data.equipos || [])[0] || {}).nombre || "", plantilla: [], plantillas: LGX.data.plantillas || {}, saldoInicial: 1000,
     ligas: [{ nombre: LGX.data.liga, equipos: LGX.data.equipos }], partidos: (LGX.data.partidos || []).map(p => ({ ...p, liga: LGX.data.liga })) } : DATA_MAIN;
 DATA.corto = IS_MAIN ? "Almazora C" : shortTeam(DATA.miEquipo);
 const LIGA = DATA.ligas[0].nombre;
+// Mercados completos (córners, remates, asistencias) solo en partidos de los equipos que se siguen en directo; el resto, solo lo que sale en las actas
+const FULL_T = new Set(IS_MAIN ? [DATA.miEquipo] : (LGX.comp.full || [DATA.miEquipo]));
+const fullMatch = m => FULL_T.has(m.home.nombre) || FULL_T.has(m.away.nombre);
+const ACTA_ONLY = k => /^crn/.test(k) || /^pst|^psh/.test(k) || k === "pas" || k === "pga";
 
 /* ===================== MODELO DE CUOTAS ===================== */
 const MARGIN = { "1x2": 0.07, dc: 0.05, ou25: 0.06, btts: 0.06, next: 0.07 };
@@ -834,7 +839,8 @@ function markets(m) {
   L.push(mk("bcrd", "Ambos equipos recibirán tarjetas", 0.06, [["Y", "Sí", pkH * pkA], ["N", "No", 1 - pkH * pkA]]));
   const kc = cmp3(sidePois(m.cards[0], kH * rem), sidePois(m.cards[1], kA * rem));
   L.push(mk("crdw", "Equipo - Mayor número de tarjetas", 0.07, [["1", H, kc[0]], ["X", "Empate", kc[1]], ["2", A, kc[2]]], { group: "most" }));
-  return { lh: E.lh, la: E.la, list: L.concat(playerMarkets(m, E.lh, E.la, rem)) };
+  const all = L.concat(playerMarkets(m, E.lh, E.la, rem));
+  return { lh: E.lh, la: E.la, list: fullMatch(m) ? all : all.filter(k => !ACTA_ONLY(k.key)) };
 }
 const SOT_CONV = 0.33, SHOT_CONV = 0.12;   // en categorías amateur, ~1 de cada 3 remates a puerta es gol y ~1 de cada 8 remates
 function playerMarkets(m, lh, la, rem) {
@@ -960,8 +966,11 @@ const LGK = "almabet-lg" + (/^\/admin/.test(location.pathname) ? "-admin" : "");
 let CUR_LG = window.__LG || "";
 const setLg = id => { try { localStorage.setItem(LGK, id); } catch (e) {} };
 const switchLg = id => { setLg(id); location.reload(); };
+const CMK = "almabet-comp" + (/^\/admin/.test(location.pathname) ? "-admin" : "");
+const switchComp = id => { try { localStorage.setItem(CMK, id); } catch (e) {} location.reload(); };
+const compChips = () => (S.comps || []).length > 1 ? `<div class="cmp-row">${S.comps.map(c => `<button class="${c.id === COMP ? "on" : ""}" data-compo="${esc(c.id)}">${esc(c.name)}</button>`).join("")}</div>` : "";
 async function api(action, body) {
-  const r = await fetch(CFG.api, { method: "POST", headers: { "Content-Type": "application/json", Authorization: "Bearer " + tok() }, body: JSON.stringify({ action, lg: CUR_LG || undefined, ...(body || {}) }) });
+  const r = await fetch(CFG.api, { method: "POST", headers: { "Content-Type": "application/json", Authorization: "Bearer " + tok() }, body: JSON.stringify({ action, lg: CUR_LG || undefined, comp: COMP, ...(body || {}) }) });
   let j = {}; try { j = await r.json(); } catch (e) {}
   if (!r.ok) { const err = new Error(j.error || "Error de conexión"); err.status = r.status; throw err; }
   return j;
@@ -986,19 +995,25 @@ async function applyBonus(list) {
 }
 const MONTHLY = 150;
 const ymNow = () => { const d = new Date(new Date().toLocaleString("en-US", { timeZone: "Europe/Madrid" })); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0"); };
+// Enlace de invitación: ?unirse=CODIGO (se guarda hasta que entres con tu cuenta)
+{ const m = /[?&]unirse=([A-Za-z0-9]{4,10})/.exec(location.search); if (m) { try { sessionStorage.setItem("ab-join", m[1].toUpperCase()); } catch (e) {} history.replaceState(null, "", location.pathname); } }
+try { S.pendingJoin = sessionStorage.getItem("ab-join") || null; sessionStorage.removeItem("ab-join"); if (sessionStorage.getItem("ab-view") === "ligas") { S.view = "ligas"; sessionStorage.removeItem("ab-view"); } } catch (e) {}
 async function sbStart() {
   if (window.__LGERR) { S.lgErr = window.__LGERR; }
   const d = await api("me");
-  S.leagues = d.leagues || []; S.me = d.username;
+  S.leagues = d.leagues || []; S.me = d.username; S.comps = d.comps || [];
+  if (COMP !== "main" && !S.comps.some(c => c.id === COMP)) return switchComp("main");
+  if (d.noLeague && S.pendingJoin) { const c = S.pendingJoin; S.pendingJoin = null; try { const j = await api("joinLeague", { code: c }); return switchLg(j.id); } catch (e) { S.lgErr = e.message; } }
   if (d.noLeague) {   // no está en la liga elegida (o en ninguna)
     const other = S.leagues[0];
     if (other && other.id !== CUR_LG) return switchLg(other.id);
     S.uid = d.username; S.store = "noleague"; S.view = "ligas"; render(); return;
   }
-  if (!CUR_LG || (d.league && d.league.id !== CUR_LG)) { CUR_LG = d.league ? d.league.id : "main"; setLg(CUR_LG); if (!IS_MAIN && CUR_LG === "main") return location.reload(); }
-  S.league_ = d.league || null; S.super = !!d.super;
+  if (!CUR_LG || (d.league && d.league.id !== CUR_LG)) { CUR_LG = d.league ? d.league.id : "main"; setLg(CUR_LG); }
+  S.league_ = d.league || null; S.super = !!d.super; S.owner = !!d.owner;
+  if (S.pendingJoin) { const c = S.pendingJoin; S.pendingJoin = null; try { const j = await api("joinLeague", { code: c }); if (j.id !== CUR_LG) return switchLg(j.id); toast("Ya estás en esta liga"); } catch (e) { toast(e.message); } }
   if (LGX && LGX.data.pendingActas > 0) { S.pendActas = LGX.data.pendingActas;
-    const t = setInterval(async () => { try { const j = await api("leagueData"); S.pendActas = j.data ? j.data.pendingActas : 0; render();
+    const t = setInterval(async () => { try { const j = await api("compData"); S.pendActas = j.data ? j.data.pendingActas : 0; render();
       if (!S.pendActas) { clearInterval(t); toast("Actas del grupo leídas: actualizando cuotas…"); setTimeout(() => { if (!S.slip.length) location.reload(); }, 1500); } } catch (e) {} }, 15000); }
   S.uid = d.username; S.me = d.username; S.admin = !!d.admin;
   S.wallet = { balance: +d.wallet.balance, bets: d.wallet.bets || [], bonusIds: d.wallet.bonusIds || [], moves: d.wallet.moves || [], lastPay: d.wallet.lastPay || "" }; S.states = d.matches || {};
@@ -1140,7 +1155,7 @@ function doCashout(id) {
 /* ===================== TEMPORADA: apuestas a largo plazo ===================== */
 // Se simula el resto de la liga FUT_SIMS veces con el mismo modelo de goles de los partidos.
 // Jornadas sin calendario cargado: emparejamientos al azar en cada simulación. Empates en goleadores: se reparte (dead heat).
-const FUT = "fut", LG0 = DATA.ligas[0], NT = LG0.equipos.length, SEASON_J = 2 * (NT - 1), WINTER_J = SEASON_J / 2, XMAS_J = 13;
+const FUT = IS_MAIN ? "fut" : "fut-" + COMP, LG0 = DATA.ligas[0], NT = LG0.equipos.length, SEASON_J = 2 * (NT - 1), WINTER_J = SEASON_J / 2, XMAS_J = 13;
 const FUT_SIMS = 3000, FUT_MARGIN = 0.18, FUT_MAX = 251;
 const futSt = () => S.states[FUT] || {};
 function rng(a) { return () => { a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
@@ -1507,7 +1522,7 @@ function listView(liveOnly) {
   const live = ms.filter(m => m.status === "live" || m.status === "ht"), pre = ms.filter(m => m.status === "pre"), ft = ms.filter(m => m.status === "ft");
   const block = (arr, title, dot) => arr.length ? `<div class="block"><div class="bh">${dot ? `<span class="livepill"><i class="dot"></i></span>` : ""}<span>${esc(title)}</span><span class="sp"></span><div class="cols"><span>1</span><span>X</span><span>2</span></div></div>${arr.map(rowHTML).join("")}</div>` : "";
   const h2 = t => `<h2 style="margin:4px 0 0;font-family:var(--f-cond);font-size:22px">${t}</h2>`;
-  let h = liveOnly ? "" : homeTop();
+  let h = compChips() + (liveOnly ? "" : homeTop());
   const hf = liveOnly ? "all" : (S.hf || "all");
   if (hf === "mine") return h + (my.length ? h2("Tu equipo: " + esc(DATA.miEquipo)) + `<div class="block mine">${my.map(rowHTML).join("")}</div>` : `<div class="block empty">No hay partidos de ${esc(DATA.corto)} pendientes.</div>`);
   if (hf === "live") return h + (block(live, leagues[0], true) || `<div class="block empty">Ahora no se está jugando ningún partido.</div>`);
@@ -1670,8 +1685,10 @@ function rankingView() {
       <div class="note">${rt === "j" ? "Cuenta lo ganado menos lo apostado en las apuestas ya resueltas de esta jornada. Cuando acabe, empieza la siguiente de cero." : "Cuenta lo ganado menos lo apostado en las apuestas resueltas este mes. Se reinicia el día 1. Ese día todos reciben " + eur(MONTHLY) + "."}</div></div>`;
   }
   const rows = S.ranking.map((r, i) => { const nm = (S.names[r.id] && S.names[r.id].name) || (r.id === S.uid ? "Tú" : "Jugador");
-    const adm = S.store === "sb" && S.admin ? `<tr class="adjr"><td colspan="3"><span class="adj"><input id="adj-${esc(r.id)}" inputmode="decimal" placeholder="€" aria-label="Cantidad para ${esc(nm)}"><button class="abtn" data-adj="${esc(r.id)}|1">+ Dar</button><button class="abtn red" data-adj="${esc(r.id)}|-1">− Quitar</button>${IS_MAIN || S.super ? `<button class="abtn" data-pbets="${esc(r.id)}">Ver apuestas</button>` : ""}</span></td></tr>` : "";
-    return `<tr class="${r.id === S.uid ? "me" : ""}"><td>${i + 1}. ${esc(nm)}</td><td>${eur(r.balance || 0)}</td><td class="${(r.profit || 0) >= 0 ? "pos" : "neg"}">${(r.profit >= 0 ? "+" : "") + eur(r.profit || 0)}</td></tr>${adm}`; }).join("");
+    const kick = S.store === "sb" && (S.owner || S.admin) && r.id !== S.me ? (S.kickConfirm === r.id ? `<tr class="adjr"><td colspan="3"><span class="adj">¿Sacar a ${esc(nm)} de la liga? <button class="abtn red" data-kickyes="${esc(r.id)}">Sí, sacar</button><button class="abtn" data-kickno="1">No</button></span></td></tr>`
+      : `<tr class="adjr"><td colspan="3"><button class="abtn" data-kick="${esc(r.id)}">Sacar de la liga</button></td></tr>`) : "";
+    const adm = S.store === "sb" && S.admin ? `<tr class="adjr"><td colspan="3"><span class="adj"><input id="adj-${esc(r.id)}" inputmode="decimal" placeholder="€" aria-label="Cantidad para ${esc(nm)}"><button class="abtn" data-adj="${esc(r.id)}|1">+ Dar</button><button class="abtn red" data-adj="${esc(r.id)}|-1">− Quitar</button>${CUR_LG === "main" || S.super ? `<button class="abtn" data-pbets="${esc(r.id)}">Ver apuestas</button>` : ""}</span></td></tr>` : "";
+    return `<tr class="${r.id === S.uid ? "me" : ""}"><td>${i + 1}. ${esc(nm)}</td><td>${eur(r.balance || 0)}</td><td class="${(r.profit || 0) >= 0 ? "pos" : "neg"}">${(r.profit >= 0 ? "+" : "") + eur(r.profit || 0)}</td></tr>${adm}${kick}`; }).join("");
   const tg = { pending: "Pendiente", won: "Ganada", lost: "Perdida", void: "Anulada", cashout: "Cerrada" };
   const pb = S.pbets && S.admin ? `<div class="block pb-box"><div class="bh">Apuestas de ${esc(S.pbets.user)}<span class="sp"></span><button class="abtn" data-pbets="-">Cerrar</button></div><div class="model">${S.pbets.bets == null ? "Cargando…" : !S.pbets.bets.length ? "Todavía no ha apostado." :
     S.pbets.bets.slice().reverse().map(b => `<div class="pb-bet"><b>${eur(b.stake)} · ${b.boost ? "SuperCuota" : b.legs.length > 1 ? COMBO_NAME(b.legs.length) : "Sencilla"} a ${fo(b.odds)}</b> · <span class="bc-tag ${b.status}">${tg[b.status] || b.status}</span>${b.status !== "pending" && b.ret != null ? " · Retorno " + eur(b.ret) : ""}
@@ -1719,20 +1736,27 @@ function futView() {
 }
 // Ligas: las mías, invitar, unirse con código y crear una nueva
 function ligasView() {
-  const L = S.leagues || [], cur = CUR_LG, curL = L.find(l => l.id === cur), cr = S.lgCreate || {};
-  const list = L.map(l => `<div class="lg-row ${l.id === cur ? "on" : ""}"><div><b>${esc(l.name)}</b><small>${esc(l.team)}${l.admin ? " · Administras" : ""}</small></div>${l.id === cur && S.store === "sb" ? `<span class="lg-cur">Abierta</span>` : `<button class="abtn pri" data-lgo="${esc(l.id)}">Abrir</button>`}</div>`).join("");
+  const L = S.leagues || [], cur = CUR_LG, curL = L.find(l => l.id === cur), cr = S.lgCreate || {}, C = S.comps || [];
+  const list = L.map(l => `<div class="lg-row ${l.id === cur ? "on" : ""}"><div><b>${esc(l.name)}</b>${l.admin ? `<small>Administras</small>` : ""}</div>${l.id === cur && S.store === "sb" ? `<span class="lg-cur">Abierta</span>` : `<button class="abtn pri" data-lgo="${esc(l.id)}">Abrir</button>`}</div>`).join("");
+  const comps = C.map(c => `<div class="lg-row ${c.id === COMP ? "on" : ""}"><div><b>${esc(c.name)}</b></div>${c.id === COMP ? `<span class="lg-cur">Viendo</span>` : `<button class="abtn" data-compo="${esc(c.id)}">Ver</button>`}</div>`).join("");
+  const sup = S.super || (S.admin && CUR_LG === "main");
   return `<h2 style="margin:4px 0 0;font-family:var(--f-cond);font-size:22px">Ligas</h2>
     ${S.lgErr ? `<div class="block empty">${esc(S.lgErr)}</div>` : ""}
-    ${L.length ? `<div class="block"><div class="bh">Mis ligas</div>${list}</div>` : `<div class="block"><div class="note">Todavía no estás en ninguna liga. Únete con el código que te pasen o crea la tuya.</div></div>`}
-    ${curL && S.store === "sb" ? `<div class="block"><div class="bh">Invitar a esta liga</div><div class="lg-code"><b>${esc(curL.code)}</b><button class="abtn" data-lgshare="${esc(curL.code)}">Compartir código</button></div><div class="note">Quien tenga el código entra con su cuenta de AlmaBet. Los que ya están dentro no tienen que volver a ponerlo.</div></div>` : ""}
+    ${L.length ? `<div class="block"><div class="bh">Mis ligas</div>${list}</div>` : `<div class="block"><div class="note">Todavía no estás en ninguna liga. Únete con el código que te pasen o crea la tuya con tus amigos.</div></div>`}
+    ${curL && S.store === "sb" ? `<div class="block"><div class="bh">Invitar a esta liga</div><div class="lg-code"><b>${esc(curL.code)}</b><button class="abtn pri" data-lgshare="${esc(curL.code)}">Compartir enlace</button></div><div class="note">Con el enlace entran directamente a la liga (si no tienen cuenta, la crean y entran). También pueden meter el código a mano. Los que ya están dentro no tienen que volver a ponerlo.</div></div>` : ""}
     <div class="block"><div class="bh">Unirse con código</div><div class="lg-form"><input id="lg-code" placeholder="Código de 6 letras" autocapitalize="characters" autocomplete="off" maxlength="8"><button class="abtn pri" data-lgjoin="1">Unirme</button></div></div>
-    <div class="block"><div class="bh">Crear una liga</div><div class="lg-form col">
-      <label for="lg-url">Enlace del grupo en El Balón de la Comunitat</label><input id="lg-url" placeholder="https://www.elbalondelacomunitat.es/competicion/…/grupo/…" autocomplete="off" value="${esc(cr.url || "")}">
-      ${cr.teams ? `<label for="lg-team">${esc(cr.liga)} · Tu equipo</label><select id="lg-team">${cr.teams.map(t => `<option>${esc(t)}</option>`).join("")}</select>
-        <label for="lg-name">Nombre de la liga (opcional)</label><input id="lg-name" maxlength="40" placeholder="Ej.: Los del vestuario" autocomplete="off"><button class="abtn pri" data-lgcreate="1" ${cr.busy ? "disabled" : ""}>Crear liga</button>`
-        : `<button class="abtn" data-lgfind="1" ${cr.busy ? "disabled" : ""}>Buscar grupo</button>`}
-      ${cr.busy ? `<div class="note">${esc(cr.busy)}</div>` : ""}<div class="note">Los datos del grupo (clasificación, plantillas y partidos) se cargan y se actualizan solos desde las actas. Los resultados y el saldo los gestiona el administrador de AlmaBet.</div>
+    <div class="block"><div class="bh">Crear una liga con tus amigos</div><div class="lg-form col">
+      <label for="lg-name">Nombre de la liga</label><input id="lg-name" maxlength="40" placeholder="Ej.: Los del vestuario" autocomplete="off"><button class="abtn pri" data-lgcreate="1" ${cr.busy ? "disabled" : ""}>Crear liga</button>
+      <div class="note">Cada liga tiene su saldo y su ranking. Se apuesta en todas las competiciones de AlmaBet.</div>
     </div></div>
+    ${C.length ? `<div class="block"><div class="bh">Competiciones</div>${comps}</div>` : ""}
+    ${sup ? `<div class="block"><div class="bh">Añadir competición</div><div class="lg-form col">
+      <label for="cp-url">Enlace del grupo en El Balón de la Comunitat</label><input id="cp-url" placeholder="https://www.elbalondelacomunitat.es/competicion/…/grupo/…" autocomplete="off" value="${esc(cr.url || "")}">
+      ${cr.teams ? `<label for="cp-team">${esc(cr.liga)} · Equipo que sigues en directo (mercados completos)</label><select id="cp-team">${cr.teams.map(t => `<option>${esc(t)}</option>`).join("")}</select>
+        <button class="abtn pri" data-compadd="1" ${cr.busy ? "disabled" : ""}>Añadir competición</button>`
+        : `<button class="abtn" data-compfind="1" ${cr.busy ? "disabled" : ""}>Buscar grupo</button>`}
+      ${cr.busy ? `<div class="note">${esc(cr.busy)}</div>` : ""}
+    </div></div>` : ""}
     ${S.store === "noleague" ? `<button class="abtn" data-logout="1">Cerrar sesión (${esc(S.me || "")})</button>` : ""}`;
 }
 function betsView() {
@@ -1964,7 +1988,7 @@ function render() {
 
 function place() {
   const d = slipData(); S.msg = "";
-  if (S.store === "sb" && S.admin && (IS_MAIN || S.super)) { S.msg = "La cuenta de administrador no apuesta. Entra con tu cuenta de jugador."; return render(); }
+  if (S.store === "sb" && S.admin && (CUR_LG === "main" || S.super)) { S.msg = "La cuenta de administrador no apuesta. Entra con tu cuenta de jugador."; return render(); }
   if (d.some(x => !x.susp && x.odds !== x.added)) { S.msg = "Han cambiado las cuotas: acepta los cambios."; return render(); }
   const mk = legs => legs.map(x => ({ mid: x.mid, mk: x.mk, oc: x.oc, label: x.label, mname: x.mname, match: x.fut ? "Temporada · " + LIGA : x.m.home.nombre + " v " + x.m.away.nombre, odds: x.odds, status: "pending",
     ...(x.m && x.mk === "1x2" && x.oc !== "X" && x.m.status === "pre" ? { ea: 1 } : {}) }));
@@ -1995,13 +2019,19 @@ document.addEventListener("click", e => {
   else if (ds.lgo) return switchLg(ds.lgo);
   else if (ds.lgjoin) { const c = (document.getElementById("lg-code") || {}).value || "";
     api("joinLeague", { code: c }).then(j => switchLg(j.id), e => toast(e.message)); return; }
-  else if (ds.lgfind) { const u = (document.getElementById("lg-url") || {}).value || ""; S.lgCreate = { url: u, busy: "Buscando el grupo…" }; render();
+  else if (ds.compo) return switchComp(ds.compo);
+  else if (ds.compfind) { const u = (document.getElementById("cp-url") || {}).value || ""; S.lgCreate = { url: u, busy: "Buscando el grupo…" }; render();
     api("groupTeams", { group: u }).then(j => { S.lgCreate = { url: u, teams: j.teams, liga: j.liga }; render(); }, e => { S.lgCreate = { url: u }; toast(e.message); render(); }); return; }
-  else if (ds.lgcreate) { const cr = S.lgCreate || {}, team = (document.getElementById("lg-team") || {}).value, name = (document.getElementById("lg-name") || {}).value || "";
-    S.lgCreate = { ...cr, busy: "Creando la liga y leyendo las actas del grupo. Puede tardar un poco…" }; render();
-    api("createLeague", { group: cr.url, team, name }).then(j => switchLg(j.id), e => { S.lgCreate = { ...cr, busy: "" }; toast(e.message); render(); }); return; }
-  else if (ds.lgshare) { const txt = "Únete a mi liga de AlmaBet con el código " + ds.lgshare + " en " + location.origin;
-    if (navigator.share) navigator.share({ text: txt }).catch(() => {}); else if (navigator.clipboard) navigator.clipboard.writeText(txt).then(() => toast("Copiado")); return; }
+  else if (ds.compadd) { const cr = S.lgCreate || {}, team = (document.getElementById("cp-team") || {}).value;
+    S.lgCreate = { ...cr, busy: "Añadiendo…" }; render();
+    api("addComp", { group: cr.url, team }).then(j => switchComp(j.id), e => { S.lgCreate = { ...cr, busy: "" }; toast(e.message); render(); }); return; }
+  else if (ds.lgcreate) { const name = (document.getElementById("lg-name") || {}).value || "";
+    api("createLeague", { name }).then(j => { try { sessionStorage.setItem("ab-view", "ligas"); } catch (e) {} switchLg(j.id); }, e => toast(e.message)); return; }
+  else if (ds.lgshare) { const url = location.origin + "/?unirse=" + ds.lgshare, txt = "Únete a mi liga de AlmaBet: " + url + " (código " + ds.lgshare + ")";
+    if (navigator.share) navigator.share({ title: "AlmaBet", text: "Únete a mi liga de AlmaBet (código " + ds.lgshare + ")", url }).catch(() => {}); else if (navigator.clipboard) navigator.clipboard.writeText(txt).then(() => toast("Enlace copiado")); return; }
+  else if (ds.kick) S.kickConfirm = ds.kick;
+  else if (ds.kickno) S.kickConfirm = null;
+  else if (ds.kickyes) { const u = ds.kickyes; S.kickConfirm = null; api("kickMember", { user: u }).then(() => { toast(u + " ya no está en la liga"); sbRanking(); }, e => toast(e.message)); return; }
   else if (ds.fpick) { const [, mk, oc] = ds.fpick.split("|"), i = S.slip.findIndex(s => s.key === ds.fpick);
     if (i >= 0) S.slip.splice(i, 1);
     else { const k = futMarket(mk), o = k && k.outcomes.find(x => x.k === oc);
@@ -2092,13 +2122,13 @@ setInterval(() => { settle(); render(); }, 1000);
 // Carga la liga elegida antes de arrancar la app (tu liga original va dentro del propio código)
 (function () {
   var CFG = window.ALMABET_CONFIG || {}, adm = /^\/admin/.test(location.pathname), get = function (k) { try { return localStorage.getItem(k) || ""; } catch (e) { return ""; } };
-  var tok = get("almabet-token" + (adm ? "-admin" : "")), lg = get("almabet-lg" + (adm ? "-admin" : ""));
+  var tok = get("almabet-token" + (adm ? "-admin" : "")), lg = get("almabet-lg" + (adm ? "-admin" : "")), comp = get("almabet-comp" + (adm ? "-admin" : ""));
   window.__LG = lg;
   function run() { var s = document.createElement("script"); s.textContent = document.getElementById("app-src").textContent; document.body.appendChild(s); }
-  if (!CFG.api || !tok || !lg || lg === "main") return run();
-  fetch(CFG.api, { method: "POST", headers: { "Content-Type": "application/json", Authorization: "Bearer " + tok }, body: JSON.stringify({ action: "leagueData", lg: lg }) })
+  if (!CFG.api || !tok || !comp || comp === "main") return run();
+  fetch(CFG.api, { method: "POST", headers: { "Content-Type": "application/json", Authorization: "Bearer " + tok }, body: JSON.stringify({ action: "compData", lg: lg, comp: comp }) })
     .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
-    .then(function (x) { if (x.ok && x.j.data) window.__LGDATA = x.j; else window.__LGERR = (x.j && x.j.error) || "No se ha podido cargar la liga."; run(); })
+    .then(function (x) { if (x.ok && x.j.data) window.__LGDATA = x.j; else { window.__LGERR = (x.j && x.j.error) || "No se ha podido cargar la competición."; try { localStorage.removeItem("almabet-comp" + (adm ? "-admin" : "")); } catch (e) {} } run(); })
     .catch(function () { window.__LGERR = "Sin conexión."; run(); });
 })();
 </script>

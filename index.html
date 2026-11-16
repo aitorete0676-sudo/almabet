@@ -500,6 +500,7 @@ th{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06
 .lg-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px;border-top:1px solid var(--line)}.lg-row div{display:flex;flex-direction:column;min-width:0}.lg-row small{color:var(--muted)}.lg-row.on b{color:#3ddc97}.lg-cur{color:#3ddc97;font-weight:700;font-size:13px}
 .cmp-row{display:flex;gap:6px;overflow-x:auto;padding:2px 0 4px;scrollbar-width:none}.cmp-row::-webkit-scrollbar{display:none}.cmp-row button{flex:none;border:1px solid var(--line);border-radius:16px;padding:6px 12px;font-weight:700;font-size:12.5px;background:rgba(255,255,255,.07);color:#fff;white-space:nowrap}.cmp-row button.on{background:#3ddc97;color:#06281a;border-color:transparent}
 .day-h{margin:14px 2px 6px;font-family:var(--f-cond);font-size:17px;font-weight:700;color:#3ddc97}
+.hm-cm{font-size:11.5px;color:var(--muted);margin:-2px 0 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .lg-code{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px}.lg-code b{font-family:var(--f-cond);font-size:30px;letter-spacing:.12em;color:var(--yellow)}
 .lg-form{display:flex;gap:8px;padding:12px}.lg-form.col{flex-direction:column}.lg-form label{font-size:13px;color:var(--muted);font-weight:600}
 .lg-form input,.lg-form select{flex:1;min-width:0;background:var(--panel2);color:var(--fg);border:1px solid var(--line);border-radius:4px;padding:10px;font:inherit;font-size:16px}
@@ -1481,12 +1482,28 @@ function presetCombos(m) {
 // SuperCuotas: cuotas mejoradas un 25 % sobre apuestas ya montadas del partido del Almazora. Máximo 20 € por apuesta.
 const BOOST = 1.25, BOOST_MAX = 20;
 const boostOf = o => Math.max(Math.round((o + 0.1) * 100) / 100, roundOdds(o * BOOST));
+// En cualquier partido: entre 3 y 6 SuperCuotas. Si no juega un Almazora, se monta sobre el favorito.
+const favSide = m => { const k = markets(m).list.find(x => x.key === "1x2"); return k && (k.outcomes[2].odds ?? 99) < (k.outcomes[0].odds ?? 99) ? 1 : 0; };
 function boosts(m) {
-  if (!m || sideOf(m) < 0 || m.status === "ft") return [];
-  const pc = presetCombos(m), k = markets(m).list.find(x => x.key === "pg1");
-  const top = k && k.outcomes.filter(o => o.odds != null).sort((a, b) => a.odds - b.odds)[0];
-  const out = pc.map(c => ({ t: c.t, d: c.d, odds: c.odds }));
-  if (top) { const l = legOf(m, "pg1", top.k); if (l) out.unshift({ t: shortName(top.label) + " marca", d: [l], odds: l.odds }); }
+  if (!m || m.status === "ft") return [];
+  const mk = markets(m).list, side = sideOf(m), f = side >= 0 ? side : favSide(m), win = f ? "2" : "1", dc = f ? "X2" : "1X", fs = f ? "a" : "h";
+  const best = (key, n, sd) => { const k = mk.find(x => x.key === key); return k ? k.outcomes.filter(o => o.odds != null && (sd == null || o.side === sd)).sort((a, b) => a.odds - b.odds).slice(0, n) : []; };
+  const sc = best("pg1", 2, f), scAny = best("pg1", 1), yl = best("pye", 2), ga = best("pga", 2), st = best("pst1", 1);
+  const raw = [];
+  if (scAny[0]) raw.push([shortName(scAny[0].label) + " marca", [["pg1", scAny[0].k]]]);
+  if (side >= 0) raw.push(["El goleador", [["pg1", sc[0] && sc[0].k], ["1x2", win], ["ou1.5", "O"]]], ["Ataque a tope", [["pga", ga[1] && ga[1].k], ["pst1", st[0] && st[0].k], ["btts", "Y"]]]);
+  else raw.push(["El goleador", [["pg1", sc[0] && sc[0].k], ["1x2", win]]]);
+  raw.push(["Partido caliente", [["pye", yl[0] && yl[0].k], ["pye", yl[1] && yl[1].k], ["dc", dc]]],
+    ["Doblete de goles", [["pg1", sc[0] && sc[0].k], ["pg1", sc[1] && sc[1].k], ["ou2.5", "O"]]],
+    ["Gana y marcan los dos", [["1x2", win], ["btts", "Y"]]],
+    ["Goles en las dos partes", [["sbh", fs], ["ou2.5", "O"]]],
+    ["Tarjetas para todos", [["bcrd", "Y"], ["crd3.5", "O"]]]);
+  const out = [];
+  for (const [t, legs] of raw) { if (out.length >= 6) break;
+    const d = legs.map(([k, o]) => o != null ? legOf(m, k, o) : null);
+    if (d.some(x => !x) || new Set(d.map(x => x.key)).size < d.length) continue;
+    const odds = d.length === 1 ? d[0].odds : (ci => ci.ok ? ci.odds : null)(comboInfo(d));
+    if (odds && odds >= 1.2) out.push({ t, d, odds }); }
   return out.map(b => ({ ...b, boosted: boostOf(b.odds) }));
 }
 function boostLegsNow(m, legs) {
@@ -1494,17 +1511,29 @@ function boostLegsNow(m, legs) {
   if (d.length === 1) return d[0].odds; const ci = comboInfo(d); return ci.ok ? ci.odds : null;
 }
 const boostUsed = (mid, t) => ((S.wallet && S.wallet.bets) || []).some(b => b.boost === t && b.legs && b.legs[0] && b.legs[0].mid === mid && b.status !== "void");
+function boostCard(m, b, showMatch) {
+  const key = "boost|" + m.id + "|" + b.t, sel = S.slip.some(s => s.key === key), used = boostUsed(m.id, b.t);
+  const legIc = x => { if (/^p/.test(x.mk)) return pshirt(SQUAD[+x.oc]); const t = x.label === m.away.nombre || /^X2$|^2$/.test(x.oc) || x.oc === "a" ? m.away.nombre : m.home.nombre; return teamShirt(t); };
+  return `<div class="hm-card"><div class="hm-ct">${esc(b.t)}<span>${teamShirt(m.home.nombre)}${teamShirt(m.away.nombre)}</span></div>
+    ${showMatch ? `<div class="hm-cm">${esc(shortTeam(m.home.nombre))} v ${esc(shortTeam(m.away.nombre))}</div>` : ""}
+    ${b.d.map(x => { const pi = /^p/.test(x.mk) ? SQUAD[+x.oc] : null; return `<div class="hm-leg">${legIc(x)}<span>${esc(pi ? shortName(pi.nombre) + " - " + x.mname.replace(/^Jugador - /, "") : x.label + " - " + x.mname)}</span></div>`; }).join("")}
+    <div class="hm-cf"><span>CREAR APUESTA</span><em class="bst-mini">Máx. ${BOOST_MAX} €</em></div>
+    ${used ? `<button class="hm-odds used" disabled><b><s>${fo(b.odds)}</s> ${fo(b.boosted)}</b><small>Ya la has apostado</small></button>` : `<button class="hm-odds ${sel ? "sel" : ""}" data-boost="${esc(m.id + "|" + b.t)}">${sel ? CHECK : `<b><s>${fo(b.odds)}</s> ${fo(b.boosted)}</b>`}<small>10 €: ganancias de ${eur(10 * b.boosted)}</small></button>`}</div>`;
+}
 function boostCards(m) {
   const bs = boosts(m); if (!bs.length) return "";
   return `<div class="hm-sec"><span><span class="bst-tag">SuperCuotas</span> ${esc(m.home.nombre)} v ${esc(m.away.nombre)}</span></div>
-    <div class="hm-cards">${bs.map(b => { const key = "boost|" + m.id + "|" + b.t, sel = S.slip.some(s => s.key === key), used = boostUsed(m.id, b.t);
-      return `<div class="hm-card"><div class="hm-ct">${esc(b.t)}<span>${teamShirt(m.home.nombre)}${teamShirt(m.away.nombre)}</span></div>
-        ${b.d.map(x => { const pi = /^p/.test(x.mk) ? SQUAD[+x.oc] : null; return `<div class="hm-leg">${pi ? pshirt(pi) : teamShirt(DATA.miEquipo)}<span>${esc(pi ? shortName(pi.nombre) + " - " + x.mname.replace(/^Jugador - /, "") : x.label + " - " + x.mname)}</span></div>`; }).join("")}
-        <div class="hm-cf"><span>CREAR APUESTA</span><em class="bst-mini">Máx. ${BOOST_MAX} €</em></div>
-        ${used ? `<button class="hm-odds used" disabled><b><s>${fo(b.odds)}</s> ${fo(b.boosted)}</b><small>Ya la has apostado</small></button>` : `<button class="hm-odds ${sel ? "sel" : ""}" data-boost="${esc(m.id + "|" + b.t)}">${sel ? CHECK : `<b><s>${fo(b.odds)}</s> ${fo(b.boosted)}</b>`}<small>10 €: ganancias de ${eur(10 * b.boosted)}</small></button>`}</div>`; }).join("")}</div>`;
+    <div class="hm-cards">${bs.map(b => boostCard(m, b, false)).join("")}</div>`;
 }
+// Ligas de amigos: SuperCuotas de varios partidos y equipos (las dos mejores de cada uno de los próximos 6 partidos)
+function multiBoostCards(ms) {
+  const cards = ms.slice(0, 6).flatMap(m => boosts(m).slice(0, 2).map(b => boostCard(m, b, true)));
+  return cards.length ? `<div class="hm-sec"><span><span class="bst-tag">SuperCuotas</span> Próximos partidos</span></div><div class="hm-cards">${cards.join("")}</div>` : "";
+}
+const myLg = () => (CUR_LG || "main") === "main";   // solo en la liga original el equipo de referencia es el Almazora C
 function homeTop() {
-  const ms = allMatches(), mine = ms.find(m => sideOf(m) >= 0 && m.status !== "ft") || ms.find(m => sideOf(m) >= 0);
+  const ms = allMatches(), soon = ms.filter(m => m.status !== "ft").sort((a, b) => (a.status === "pre") - (b.status === "pre") || String(a.fecha).localeCompare(String(b.fecha)));
+  const mine = myLg() ? (ms.find(m => sideOf(m) >= 0 && m.league === LIGA && m.status !== "ft") || ms.find(m => sideOf(m) >= 0 && m.league === LIGA)) : soon[0];
   const nLive = ms.filter(m => m.status === "live" || m.status === "ht").length, jor = (ms.find(m => m.status !== "ft") || ms[0] || {}).jornada;
   const q = (S.q || "").trim().toLowerCase();
   let res = "";
@@ -1513,7 +1542,7 @@ function homeTop() {
     res = `<div class="hm-res">${pl.map(p => { const pm_ = ms.find(m => m.status !== "ft" && (m.home.nombre === p.team || m.away.nombre === p.team)); return `<button data-player="${p.i}">${pshirt(p)}<span><b>${esc(p.nombre)}</b><small>${esc(p.team)}</small></span></button>`; }).join("")}
       ${tm.map(m => `<button data-open="${m.id}">${teamShirt(m.home.nombre)}<span><b>${esc(m.home.nombre)} v ${esc(m.away.nombre)}</b><small>Jornada ${m.jornada || ""}</small></span></button>`).join("") || (pl.length ? "" : `<div class="hm-none">Sin resultados</div>`)}</div>`;
   }
-  const tiles = [[mine ? `data-open="${mine.id}"` : "", teamShirt(DATA.miEquipo), esc(DATA.corto)], [`data-hf="pre"`, `<b class="hm-num">${jor || "–"}</b>`, "Jornada"], [`data-view="live"`, `<b class="hm-num live">${nLive}</b>`, "En directo"], [`data-view="rank"`, "🏆", "Ranking"], [`data-view="table"`, "📊", "Tabla"]];
+  const tiles = [myLg() ? [mine ? `data-open="${mine.id}"` : "", teamShirt(DATA.miEquipo), esc(DATA.corto)] : [`data-view="fut"`, "🏅", "Temporada"], [`data-hf="pre"`, `<b class="hm-num">${jor || "–"}</b>`, "Jornada"], [`data-view="live"`, `<b class="hm-num live">${nLive}</b>`, "En directo"], [`data-view="rank"`, "🏆", "Ranking"], [`data-view="table"`, "📊", "Tabla"]];
   const cd = mine && mine.status === "pre" && mine.fecha ? (() => { const t = new Date(mine.fecha) - Date.now(); if (t <= 0) return "Empieza ya"; const d = Math.floor(t / 864e5), h = Math.floor(t % 864e5 / 36e5), mi = Math.floor(t % 36e5 / 6e4); return (d ? d + "d " : "") + h + "h " + mi + "min"; })() : "";
   const leader = (S.ranking || [])[0];
   const banners = [];
@@ -1523,15 +1552,15 @@ function homeTop() {
   if (leader) banners.push(`<button class="hm-ban b2" data-view="rank"><small>Líder del ranking</small><b>${esc(leader.username || (S.names[leader.id] && S.names[leader.id].name) || "Jugador")}</b><span class="hm-big">${eur(leader.balance || 0)}</span><span class="hm-go">Ver ranking</span></button>`);
   { useFut("fut"); const ch = futMarket("champ"), f0 = ch && ch.outcomes[0];
     if (f0) banners.push(`<button class="hm-ban b4" data-view="fut"><small>Apuestas de temporada</small><b>Campeón, pichichi y más</b><span class="hm-fav">Favorito al título</span><span class="hm-fav t"><i>${esc(f0.label)}</i><em>${fo(f0.odds)}</em></span><span class="hm-go">Ver todas</span></button>`); }
-  banners.push(`<button class="hm-ban b3" data-hf="pre"><small>Tercera FFCV · Grupo 2</small><b>Jornada ${jor || ""}</b><span class="hm-big">${ms.filter(m => m.jornada === jor).length} partidos</span><span class="hm-go">${nLive ? nLive + " en directo" : "Ver partidos"}</span></button>`);
+  banners.push(myLg() ? `<button class="hm-ban b3" data-hf="pre"><small>Tercera FFCV · Grupo 2</small><b>Jornada ${jor || ""}</b><span class="hm-big">${ms.filter(m => m.jornada === jor && m.league === LIGA).length} partidos</span>` : `<button class="hm-ban b3" data-hf="pre"><small>${leagues.length} competiciones</small><b>Próximos partidos</b><span class="hm-big">${ms.filter(m => m.status === "pre").length} partidos</span><span class="hm-go">${nLive ? nLive + " en directo" : "Ver partidos"}</span></button>`);
   const hf = S.hf || "all";
   return `<div class="hm">
     <label class="hm-search"><span>⌕</span><input id="hm-q" data-search="1" placeholder="Buscar jugador o equipo" autocomplete="off" value="${esc(S.q || "")}"></label>${res}
     ${S.pendActas ? `<div class="block"><div class="note">Leyendo las actas del grupo (faltan ${S.pendActas}). Las cuotas de jugadores se completan en unos minutos.</div></div>` : ""}
     <div class="hm-tiles">${tiles.map(([a, ic, t]) => `<button class="hm-tile" ${a}><span class="hm-ic">${ic}</span>${t}</button>`).join("")}</div>
     <div class="hm-bans">${banners.join("")}</div>
-    <div class="mb-tabs hm-pills">${[["all", "Todos"], ["mine", DATA.corto], ["live", "En directo"], ["pre", "Próximos"]].map(([k, t]) => `<button data-hf="${k}" class="${hf === k ? "on" : ""}">${t}</button>`).join("")}</div>
-    ${mine && (hf === "all" || hf === "mine") ? boostCards(mine) : ""}
+    <div class="mb-tabs hm-pills">${[["all", "Todos"], ...(myLg() ? [["mine", DATA.corto]] : []), ["live", "En directo"], ["pre", "Próximos"]].map(([k, t]) => `<button data-hf="${k}" class="${hf === k ? "on" : ""}">${t}</button>`).join("")}</div>
+    ${hf === "all" || hf === "mine" ? (myLg() ? (mine ? boostCards(mine) : "") : multiBoostCards(soon.filter(m => m.status === "pre"))) : ""}
   </div>`;
 }
 // Próximos partidos por día (Hoy, Mañana o el día) y dentro de cada día por competición, ordenados por hora

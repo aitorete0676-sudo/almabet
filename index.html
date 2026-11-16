@@ -161,6 +161,12 @@ th{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06
 .sl-mk{font-weight:700;font-size:14px}.sl-m{font-size:13px;color:#55615c}.sl-chg{font-size:12px;color:#b45309;font-weight:600}
 .sl-od{color:#14201b;font-weight:800;font-size:16px;font-variant-numeric:tabular-nums;align-self:start}
 .sl-mini{display:none}
+.pteam{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:4px 0 10px}
+.pteam button{display:flex;align-items:center;gap:8px;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:8px 10px;font-weight:700;font-size:13px;text-align:left;min-width:0}
+.pteam button span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pteam button.on{background:#fff;color:#14201b;border-color:#fff}
+.pteam button:disabled{opacity:.4}
+.pteam .tshirt{width:24px;height:24px;flex:none}
 .sl-ea{display:inline-block;margin-top:3px;font-size:11px;font-weight:800;font-style:italic;text-transform:uppercase;color:#1b8a5a;letter-spacing:.02em}
 .tagp{font-style:italic;font-weight:900;color:#3ddc97;letter-spacing:.03em;margin-left:6px;text-transform:uppercase;font-size:11px;border:1px solid #3ddc97;border-radius:3px;padding:0 4px}
 .bst-wrap{margin:8px 0 12px}
@@ -537,6 +543,8 @@ const DATA = {
     { dorsal: 25, nombre: "Chechu", conv: 5, pj: 5, tit: 5, goles: 1, posicion: "CEN/LAT" },
     { dorsal: 27, nombre: "Tomás Balagué", conv: 6, pj: 5, tit: 2, goles: 1, amarillas: 1, posicion: "LAT" }
   ],
+  // Plantillas del resto de equipos, sacadas de las actas de la FFCV (jornadas 1-8): [nombre, dorsal, pj, titular, goles, amarillas, rojas, portero]
+  plantillas: {"C.D. Castellón S.A.D. 'C'":[["Roberto Banc",9,8,8,8,1,0,0],["Lucas Green Balbastre",21,8,1,7,0,0,0],["Adrian Cervera Ramia",7,8,6,3,2,0,0],["Juan Antonio Pozo Rueda",10,7,7,3,0,0,0],["Adrian Sanz Castillo",23,7,7,3,0,0,0],["Victor Adrian Mendoza Peralta",11,8,5,2,0,0,0],["Hugo Simon Bausa",4,8,8,2,2,0,0],["Raul Sacristan Moreno",16,5,1,1,0,0,0],["Raul Neata Moga",17,5,5,1,2,0,0],["Daniel Sabado Cañada",24,3,2,1,0,0,0],["Andreu Navarro Vilar",18,8,0,0,1,0,0],["Cristian Lozano de Souza",19,8,4,0,1,0,0],["Jorge Zamora Selma",14,8,7,0,4,0,0],["Marc Martos Benitez",20,8,1,0,0,0,0],["Adrian Perez Lopez",6,7,7,0,2,0,0],["Luis Miralles Burriel",2,7,7,0,2,0,0],["Carlos Segura Molina",13,5,5,0,0,0,1],["Alex Pallares Gonzalez",1,3,3,0,0,0,1],["Miguel Angel Gonzalez del Hoyo",26,2,2,0,0,0,0],["German Fernandez Cañes",24,1,0,0,1,0,0],["Joan Gozalbo Royo",2,1,0,0,1,0,0],["Carlos Luis Pinos Luna",8,1,1,0,0,0,0],["Pablo Gil Caballero",1,1,0,0,0,0,0],["Marc Monferrer Roda",24,1,1,0,0,0,0],["Jorge Garrido Martinez",26,1,0,0,0,0,0],["Ruben Ferrer Camiols",26,1,0,0,0,0,0]],"La Vilavella C.F. 'A'":[["Aaron Lara Monlleo",7,5,1,6,1,0,0],["Ismaail Haqy",21,8,6,5,2,0,0],["Gerard Martí Fenollosa",9,8,7,5,2,0,0],["Andreu Ferrandis Rogla",10,8,5,4,1,0,0],["Raul Fenollosa Carratala",20,8,7,3,0,0,0],["David Gabriel Pintoiu",8,8,4,2,1,0,0],["Iker Cerezo Serna",22,3,1,2,0,0,0],["Pablo Lara Monlleo",5,8,8,1,3,0,0],["David Solaz Jordán",19,7,7,1,2,0,0],["Alejandro de la Peña Mazarias",14,7,4,1,2,0,0],["Javier Salvador Tierraseca",11,8,5,0,1,0,0],["Raul Traver Martinez",16,8,4,0,2,0,0],["Unai Romero Carratalá",3,8,8,0,1,0,0],["Oussama Ouchtoubane El Maknasy",18,7,4,0,2,1,0],["Toni Serrano Corredor",1,7,7,0,0,0,1],["Manuel Navarro Serrano",2,7,1,0,1,0,0],["Juan Jose Vilar Llido",6,7,7,0,5,1,0],["David Naixes Daza",12,6,1,0,0,0,0],["Ismael Ezza Degoun",22,2,0,0,0,0,0],["Iker Saez Carratalá",13,1,0,0,0,0,0],["Ruben Ramos Gimeno",13,1,1,0,0,0,1],["Pablo Valero Ruiz",80,1,0,0,0,0,0]],"C.F. San Pedro 'B'":[["Daniel Brady Aparicio",11,7,7,8,2,0,0],["Albertcristian Mihaiu Solea",9,8,7,7,0,0,0],["Dylan Miguel M Bemba",14,8,5,3,3,0,0],["Alejandro Lopez Perez",10,8,7,3,0,0,0],["Juan Luis Lopez Perez",2,8,3,2,1,0,0],["Fher Alejandro Ramos Oberto",36,7,6,1,1,0,0],["Pablo Beivide Moreno",21,6,2,1,0,0,0],["Izan Balaguer Prades",22,6,5,1,3,1,0],["Iker Toran Ochoa",15,8,5,0,0,0,0],["Gradi Kizodisa Nkoko",12,8,7,0,1,0,0],["Hugo Ayza Gimenez",7,8,6,0,1,0,0],["Iker Sanchez Gasser",77,7,1,0,0,0,0],["Andres Lopez Servan",5,7,6,0,2,0,0],["Facundo Ignacio Budassi Sellart",19,6,5,0,1,0,0],["Adnan",18,6,3,0,1,0,0],["Ismael Sese Jinane",17,5,2,0,0,0,0],["Antonio Barrera Perez",20,5,2,0,1,0,0],["Tomas Roca Najera",13,5,5,0,0,0,1],["Miguel Lopez Perez",8,4,1,0,0,0,0],["Eric Salas Murcia",1,2,2,0,1,0,1],["Marc Luna Ortega",1,1,1,0,0,0,1],["Aaron Navalon Garcia",21,1,0,0,0,0,0],["Francisco Arrabal Muñoz",6,1,0,0,0,0,0]],"Eture F.C. 'B'":[["Owen Jeffrey Wasmund",9,7,4,3,1,0,0],["Noah Tristiano Embury Brown",14,4,1,3,0,0,0],["Ethan Glenn Peck",8,8,8,2,1,0,0],["Caelen Michael Michner",10,6,5,2,1,1,0],["George David Charlson",11,5,3,2,0,0,0],["Ruslan Oleksa Holubec",6,5,5,2,1,0,0],["Alexander Tiago Dejo",16,7,2,1,0,0,0],["Joaquin Navarro Rolf",2,6,5,1,1,0,0],["Thierno Sounounou Dick",19,5,1,1,0,1,0],["Shane Bernard Farrow",4,5,5,1,1,0,0],["Siyamthanda Shadrack",18,5,1,1,1,0,0],["Callum Cotton Wilson",5,4,3,1,1,0,0],["Christian Jacques Borno",11,8,7,0,0,0,0],["Ezra Walker Sharp",15,8,4,0,1,0,0],["Jace Maxwell Bassett",4,8,7,0,0,0,0],["Tristan Joseph Shaeffer",3,8,6,0,0,0,0],["Ezekiel Ray Sorensen",5,6,6,0,1,0,0],["Alonso Martinez Martin",3,5,4,0,0,0,0],["Bojan Victor Nedeljkovic",17,5,0,0,0,0,0],["Liam Joseph Kalutkiewicz",1,3,3,0,0,0,1],["Hudson Dean Forrest",19,2,1,0,1,0,0],["Jacob Michael Stinebaker",1,2,2,0,0,0,1],["David Kutrolli",1,2,2,0,0,0,1],["Brayden Michael Sullivan",13,1,1,0,0,0,1],["Dasj Javed Blaylock",3,1,1,0,0,0,0],["Andrs Rasmussen Karst",19,1,0,0,0,0,0],["Nathan Andrew Searle",18,1,0,0,1,0,0],["Grant Anderson Arnason",19,1,0,0,0,0,0],["Finnian Patrick Ross",9,1,1,0,0,0,0],["Randolph Denevi Carter",14,1,0,0,0,0,0]],"C.F. Borriol":[["Gael Alcacer Barbera",11,7,2,4,0,0,0],["Enric Pérez Ferrando",9,7,6,4,0,0,0],["Marc Perez Ferrando",14,8,6,3,1,0,0],["Juan Antonio Perez Paterna",17,8,8,3,1,0,0],["Juan Jose Melo Idrobo",15,5,1,3,1,0,0],["Efren Balaguer Cano",5,7,3,2,0,0,0],["Jeiler Yused Solano Clavijo",21,6,5,2,2,1,0],["Durel Tella",20,8,7,1,3,0,0],["Saul Gonzalez Barreda",6,8,6,1,2,0,0],["Jorge Gonzalez Ramos",8,7,4,1,0,0,0],["Diego Gimenez Igual",10,5,2,1,1,0,0],["Sekou Traore",27,3,3,1,0,0,0],["Raul Perez Ucher",7,8,7,0,2,0,0],["Adrian Esteve Soliva",19,8,5,0,0,0,0],["Abel Artuñedo Flecha",22,6,2,0,0,0,0],["Jose Antonio Nuñez Garcia",3,6,0,0,0,0,0],["Abdellah Dahmani",27,4,3,0,2,0,0],["Marcos Tomas Malla",2,4,4,0,0,0,0],["Juan Jose Relinque Arrabal",16,4,3,0,1,0,0],["David Moreno Tirado",18,4,2,0,0,0,0],["Raul Godoy Garcia",23,3,3,0,0,0,1],["Roberto Carlos Claros Pineda",1,3,3,0,0,0,1],["Juan Carlos Burdeus Lozano",1,2,2,0,0,0,1],["Andreu Sales Sales",5,1,1,0,0,0,0]],"C.D. San Lorenzo de Castellón":[["Hugo Extremera Cardo",8,7,7,8,0,0,0],["Jose Fidel Peña Mars",7,8,7,4,3,0,0],["Javier Beser Gomez",11,7,7,3,2,0,0],["Jeremy Hernandez Altaba",17,7,5,1,0,0,0],["Edgar Monfort Barreda",16,6,5,1,1,0,0],["Guillem Farran Bonet",22,6,6,1,1,0,0],["Adrián Altabás García",4,5,5,1,3,1,0],["Luis Solera Sanchez Camacho",10,5,3,1,2,0,0],["Hugo Peris Bagan",15,8,8,0,2,0,0],["Mohamed Et Tanjaouy",20,8,6,0,2,0,0],["Ruben Peris Bagan",6,8,8,0,1,0,0],["Alexis Alberto Castillo Galvez",1,7,7,0,0,0,1],["Gabriel Burgos Galmes",19,7,0,0,0,0,0],["Alvaro Navarro Viera",21,7,7,0,1,0,0],["David Gisbert Bayarri",12,5,4,0,3,0,0],["Jordan Garces Muñoz",18,4,0,0,1,0,0],["Pablo Maximiliano Martinez Ortiz",5,3,2,0,2,0,0],["Gerard Ortiz Suñer",9,2,0,0,0,0,0],["Ferran Nuñez Altabas",13,1,1,0,0,0,1]],"C.F. Joventut Almassora 'A'":[["Mohamed Azzouzy Ati Lamkadem",14,8,4,5,2,0,0],["Alex Izquierdo Villalta",10,8,8,4,3,0,0],["Cristian Ponce Segura",9,7,4,4,0,0,0],["Hector Guerrero Fores",19,6,6,4,0,0,0],["Nacho Grau Bordoy",11,8,7,2,0,0,0],["Francisco Francisco Garcia",20,7,1,2,0,0,0],["Deyvid",21,8,8,1,3,0,0],["Hector Diaz Sola",23,6,6,1,4,1,0],["Gamo Gaye",33,6,4,1,1,1,0],["Anas El Fahmi Zouiti",1,8,8,0,0,0,1],["Daniel Garcia Sanahuja",7,7,6,0,2,0,0],["Juan Salvador Gomez",15,6,4,0,3,0,0],["Kevin Cabrera Asensio",22,6,5,0,1,1,0],["Jopolio Perreira",8,6,5,0,2,0,0],["Valentin Ursu Cernei",2,6,0,0,1,0,0],["Hamza El Kamouni",17,6,2,0,1,0,0],["Samir Mrihdi Hernandez",4,6,3,0,1,0,0],["Fernando Salvador Gomez",3,4,3,0,0,0,0],["Zakaria Berrabah",5,3,0,0,0,0,0],["Elias Vazquez Ballester",13,2,0,0,0,0,0],["Sebastian Enrique Rosas Aldana",12,2,2,0,0,0,0],["David Darius Bungardean",18,2,1,0,0,0,0],["Unai Paulano Ibañez",18,1,0,0,0,0,0],["Sheriff Nyandou",6,1,1,0,1,0,0]],"C.F. Rafalafena de Castellón":[["Alejandro Cruceta Salas",8,8,7,4,1,0,0],["Javier Bartolome Barrachina",21,3,2,3,0,0,0],["Sheriff Jatta",15,7,7,2,2,0,0],["Carlos Pascual Ortiz",9,5,2,2,0,0,0],["Valero Torner Sales",5,8,7,1,2,0,0],["Eugenio Naches Escobar",12,7,7,1,1,0,0],["Juan Manuel Ortiz Pastor",24,7,7,1,4,1,0],["Adrian Gozalbo Garcia Vacas",10,6,5,1,1,0,0],["Javier Escrig Bastan",30,6,2,1,1,1,0],["Daniel Bogdan Dumitrascu",11,5,1,1,1,0,0],["Roberto Montañes Garcia Catalan",11,3,1,1,0,0,0],["Miguel Manjon Fornals",20,8,8,0,2,0,0],["Alvaro Ripolles Viciano",6,7,0,0,0,0,0],["Hugo Adelantado Chillida",22,7,3,0,2,0,0],["Ivan Tirado Lonjedo",2,7,7,0,2,0,0],["Hamza Berrabah El Hassouni",18,7,6,0,1,0,0],["Antonio Ortiz Pastor",13,7,7,0,0,0,1],["Abdoulie Keita",16,6,4,0,3,0,0],["Armando Albert Enguidanos",7,6,1,0,1,0,0],["David Ortells Safont",19,2,2,0,0,0,0],["Anthony Stephen Ediae Aiwekhoe",9,2,0,0,0,0,0],["Erik Ion Pruteanu",19,1,1,0,0,0,0],["Marc Deusdad Ubeda",1,1,1,0,0,0,1],["Oscar Morales Hernandez",12,1,0,0,1,0,0],["Aaron Sola Borras",3,1,0,0,1,0,0]],"F.C. Odisea 'B'":[["Zane Preston Duncan",9,8,7,5,1,0,0],["Kai Lennox Holmes",2,8,7,3,0,0,0],["Jesper Marc Marijke Louis",10,7,5,3,2,0,0],["Ezrah Cruz Valenzuela",8,7,5,2,1,0,0],["Aidan Ronaldo Ortiz",7,8,6,1,1,0,0],["Zachary Seecharan",6,8,6,1,1,0,0],["Diego Armando Martinez",4,6,5,1,0,1,0],["Tyler Witter",7,3,2,1,0,0,0],["Elijah Ameron González",2,7,3,0,2,0,0],["Lolelanji Wankumbu Sikaona",16,7,5,0,0,0,0],["Waheed Ishola Haruna",19,7,3,0,0,0,0],["Sammuel Cardona",3,6,6,0,0,0,0],["Caolan Laux",5,6,6,0,1,0,0],["Dominic Keenan Rocha",1,5,5,0,0,0,1],["Marthin Bobadilla Sandoval",11,5,5,0,1,0,0],["Angel Jose Caballero",8,4,4,0,1,0,0],["Carlos Horacio Rodríguez Jr",15,3,1,0,0,0,0],["Josiah Ryan Murphy",13,3,3,0,0,0,1],["Samuel Angelo Echanis",6,3,2,0,1,0,0],["Oskar Taiwhakaea Wano",5,2,2,0,1,0,0],["Elias Mondragon",14,2,0,0,0,0,0],["Mauricio Santos Jr",15,1,0,0,0,0,0]],"C.D. La Magdalena 'A'":[["Hadj Ahmed Meriouli Dris",26,5,5,6,2,0,0],["Aritz García Abascal",25,8,8,4,1,0,0],["Bakary Sarr",12,8,2,4,0,0,0],["Alejandro Selma Monserrat",7,6,4,4,2,0,0],["Yanis Meriouli Dris",11,5,5,4,3,0,0],["Adrián Traid Tello",4,7,7,2,0,0,0],["Jose M Gutierro Felip",8,3,2,2,0,0,0],["Marc Julbe Arayo",13,8,7,1,1,0,0],["Sergio Delgado Selma",21,6,6,1,2,1,0],["Adil Ennour Idrissi Lidueña",16,6,6,1,2,0,0],["Moussa Haidara",22,2,1,1,0,0,0],["Sergi Catalan Martinez",1,8,8,0,0,0,1],["Luis Fabian Tunaru Deaconescu",3,7,7,0,0,0,0],["Oscar Delgado Selma",14,5,2,0,1,0,0],["Adrian Cervera Martinez",24,5,2,0,2,1,0],["Hector Algarra Valero",17,4,3,0,0,0,0],["Pablo Petre Cerdá",6,4,2,0,0,0,0],["Yones El Ghoufairi Sadik",2,4,1,0,0,0,0],["Pablo Marco Agusti",18,4,3,0,1,0,0],["Antonio Jesus Pinedo Garcia",19,4,2,0,2,0,0],["Mohamed Bounouna Lahniche",23,3,3,0,2,0,0],["Ángel Muñoz García",28,2,0,0,0,0,0],["Eric Valcarcel Capuz",10,2,0,0,0,0,0],["Pedro Ros de Camargo",11,2,1,0,0,0,0],["Pietro Pini",20,2,0,0,0,0,0],["Juan Enrique Jarque González",8,1,0,0,0,0,0],["Iker Ros de Camargo",20,1,0,0,0,0,0],["Jose Vicente Ariza Valcarcel",9,1,1,0,0,0,0]],"C.D. Drac Castellón 'A'":[["Iker Jodar Gargallo",9,8,3,7,1,0,0],["Marc Saura Gozalbo",24,8,8,3,1,0,0],["Alejandro Mata Gilgado",22,5,4,2,1,0,0],["Daniel Robert Broch",6,8,5,1,1,0,0],["Robert Domingo Carrillo",5,8,8,1,0,0,0],["Miguel Rizo Garcia",26,7,4,1,0,0,0],["Alejandro Cozar Mampel",20,7,5,1,2,0,0],["Carlos Tudela Sarralde",10,2,1,1,0,0,0],["Ivan Reina Vizcarro",7,8,8,0,3,0,0],["Ilias Amri",1,8,8,0,2,0,1],["Asier Bolinaga Blasco",25,7,6,0,1,0,0],["Alvaro Murcia Mingorance",12,7,6,0,1,0,0],["Mario Jovani Martinez",11,6,4,0,0,0,0],["Ruben Garcia Gil",3,5,4,0,0,0,0],["Jose Javier Galvez Azorin",4,5,5,0,1,0,0],["Alejandro Garcia Pastor",14,5,1,0,1,0,0],["Alberto Moya Sales",8,4,1,0,2,1,0],["Mario Jañez Gallego",15,4,3,0,0,0,0],["Aaron Gonzalez Lucia",29,3,1,0,1,0,0],["Alejandro Moliner Nebot",2,3,2,0,1,0,0],["Abel Tirado Lonjedo",15,1,1,0,0,0,0],["Jorge García Bono",19,1,0,0,0,0,0],["Iker Carcel Sancho",13,1,0,0,0,0,0],["Andres Porcar Guinea",16,1,0,0,0,0,0],["Diego Cozar Mampel",14,1,0,0,0,0,0]],"C.F. Atlético Tales":[["Guzman Sande Badenes",22,8,8,2,2,0,0],["Henry Adolfo Berger Lechado",21,7,6,2,2,1,0],["Edgar Sales Montoliu",16,7,7,2,1,0,0],["Franco Nahuel Polichino",9,5,4,2,0,0,0],["Adrián Martí Pallarés",3,7,1,1,1,1,0],["Yeray Lopez Blanco",11,6,5,1,3,1,0],["Borja Safont Lengua",14,6,6,1,1,0,0],["Valentin Florin Mica",7,6,6,1,1,0,0],["Andrei Florin Caprarus",23,8,5,0,0,0,0],["Juan Francisco Diaz Grau",17,8,8,0,1,0,0],["Lucas Mas Pierna",18,7,6,0,0,0,0],["Deiby Yoani Montero Elejalde",19,7,4,0,4,1,0],["Manuel Aguilella Bonet",10,6,3,0,1,0,0],["José Francisco San Luís Lorente",1,6,6,0,0,0,1],["Ivan Miralles Soler",6,6,6,0,0,0,0],["Andreu Feliu Alvaro",12,5,2,0,1,0,0],["Adam Lozano Martinez",2,5,3,0,1,0,0],["David Navarro Bonet",15,4,1,0,0,1,0],["Alejandro Martinez Prades",20,3,1,0,0,0,0]],"C.F. Moro 'A'":[["Manel Bayot Peñarrocha",9,5,5,7,1,1,0],["Khalid Sahibi",17,7,6,2,0,0,0],["Álex Segarra Gil",5,6,3,2,1,0,0],["Mario Molina Jaime",7,4,4,2,2,1,0],["Pablo Godoy Gasch",20,8,8,1,0,0,0],["Cristian Moreira Barba",22,7,4,1,1,1,0],["Jesus Enrique Herrera Hernandez",6,4,4,1,2,1,0],["Adrian Plata Ramos",11,4,2,1,0,1,0],["Ayoub Sahibi",2,2,2,1,1,0,0],["Unai Poyatos Morcillo",18,7,6,0,4,0,0],["Blai Belles Lliberos",3,7,5,0,1,1,0],["Daniel Royo Bayot",4,6,6,0,0,0,0],["Pedro Sanchez Justo",10,6,2,0,2,0,0],["David Edo Martinez",14,6,6,0,0,0,0],["Issam El Kechebour Toubdarine",16,5,5,0,2,0,0],["Miguel Medina Palanques",15,5,4,0,1,0,1],["Adrian Mateu Pruñonosa",23,5,4,0,1,0,0],["Cherkaoui Gharibi",19,5,2,0,1,0,0],["Marian Robert Ioneci",13,4,4,0,0,0,1],["Marc Segui Creus",12,2,1,0,0,0,0],["Othmane El Jabbouri",1,2,2,0,0,0,1],["Daniel Blasco Baldayo",21,2,2,0,0,0,0],["Daniel Traver Beltran",8,1,1,0,0,0,0]],"Pampa Castellón F.C.":[["Nicolas Stiven Sanchez Perez",6,7,6,2,0,0,0],["Jhair Angelo Pinchi Torres",11,7,4,2,0,0,0],["Juan Estevan Benítez Romero",13,8,8,1,1,0,0],["Lautaro Nahuel Arce",10,7,7,1,2,0,0],["Facundo Nadir Lull Fuentes",7,7,7,1,2,0,0],["Sebastian Jesus Rodriguez Riccitelli",5,5,3,1,1,0,0],["Manuel Vilarroig Montas",14,7,7,0,4,0,0],["Juan Felipe Ruiz Guiot",19,7,4,0,0,0,0],["Jaider Rafael Urieles Navarro",16,6,3,0,0,0,0],["Lautaro Ezequiel Caceres",22,6,2,0,0,0,0],["Vembra Vembra",17,6,6,0,0,0,0],["Sekou Camara",12,6,6,0,0,0,1],["Jonier Javier Castro Rosero",2,5,3,0,0,0,0],["Gabriel Jose Tejeria",8,5,4,0,0,0,0],["Geronimo Maximo Macho Tolaba",21,4,3,0,1,1,0],["Nicolas Genghammer Lázaro",15,4,4,0,0,0,0],["Victor Hugo Zottola",20,4,3,0,1,0,0],["Franco Genghammer Lázaro",4,4,4,0,1,0,0],["Federico Tomas Gomez Herrero",3,2,0,0,0,0,0],["Sergio Fabian Ramirez",18,1,1,0,1,0,0]],"C.D. Ribesalbes 'B'":[["Aitor Bernal Mbula",67,1,1,1,0,0,0],["Alejandro Ibañez Peña",19,8,6,0,0,0,0],["Marco Mata Gascón",20,8,5,0,1,0,0],["Carlos Morro Padilla",1,8,8,0,0,0,1],["Juan Marin Cabez",7,8,7,0,1,0,0],["Javier Medina Albalat",30,8,8,0,2,0,0],["Juan Moran Piñana",18,7,4,0,0,0,0],["Carlos Quesada Moreno",2,6,4,0,0,0,0],["Mario Carrasco Jumilla",9,6,6,0,1,0,0],["Aitor Sanchez Carrasco",19,6,2,0,0,0,0],["Manel Bachero Blasco",3,5,5,0,1,0,0],["Neider Vanegas Suarez",4,5,5,0,1,0,0],["Aymen Es Sabaiy",14,5,4,0,1,0,0],["Carlos Andres Riascos Castro",12,4,2,0,0,0,0],["Victor Ibáñez Colomer",8,3,3,0,0,0,0],["Jaime Moran Piñana",23,3,1,0,1,0,0],["Abdelaziz Srhir",7,3,2,0,0,0,0],["Raul Mallen Traver",23,3,3,0,0,0,0],["Carlos Adis Reina Loaiza",3,2,1,0,0,0,0],["Joel Vicent Mor",30,2,1,0,0,0,0],["Hatim Falak Laaraj",14,1,1,0,1,0,0],["Ilyass Ezzajli",7,1,1,0,1,0,0],["Diego Ruiz Casares",6,1,1,0,0,0,0],["Joaquin Lay Catalan",4,1,1,0,0,0,0],["Anass Shaimi",17,1,1,0,0,0,0],["Vicent Miravet Pino",9,1,1,0,0,0,0],["Ismael Mas Balouah",66,1,1,0,0,0,0],["Unai Canovas Agut",28,1,1,0,0,0,0],["Marc Carceller Piquer",22,1,1,0,0,0,0],["Miguel A Villarroya Garcia",9,1,1,0,0,0,0]]},
   // Clasificación del grupo tras la jornada 8 (FFCV). pj, pts, gf (goles a favor), gc (en contra), racha (últimos 5).
   // CON ESTOS DATOS SE CALCULAN LAS CUOTAS.
   ligas: [
@@ -561,14 +569,14 @@ const DATA = {
   ],
   // Jornada 9. fecha: "2026-11-22T11:00" (opcional, también se pone desde el panel). Si quieres fijar tú las cuotas de un partido, añade cuotas: { "1": 2.30, "X": 3.20, "2": 2.90 } y mandan sobre la clasificación.
   partidos: [
-    { id: "j9-1", jornada: 9, liga: LIGA, local: "C.D. Almazora 'C'", visitante: "C.F. Atlético Tales" },
-    { id: "j9-2", jornada: 9, liga: LIGA, local: "C.D. Castellón S.A.D. 'C'", visitante: "C.F. Rafalafena de Castellón" },
-    { id: "j9-3", jornada: 9, liga: LIGA, local: "La Vilavella C.F. 'A'", visitante: "Eture F.C. 'B'" },
-    { id: "j9-4", jornada: 9, liga: LIGA, local: "C.F. San Pedro 'B'", visitante: "C.D. Drac Castellón 'A'" },
-    { id: "j9-5", jornada: 9, liga: LIGA, local: "C.D. San Lorenzo de Castellón", visitante: "C.F. Borriol" },
-    { id: "j9-6", jornada: 9, liga: LIGA, local: "C.F. Moro 'A'", visitante: "C.F. Joventut Almassora 'A'" },
-    { id: "j9-7", jornada: 9, liga: LIGA, local: "C.D. Ribesalbes 'B'", visitante: "F.C. Odisea 'B'" },
-    { id: "j9-8", jornada: 9, liga: LIGA, local: "C.D. La Magdalena 'A'", visitante: "Pampa Castellón F.C." }
+    { id: "j9-1", jornada: 9, fecha: "2026-11-22T15:00", liga: LIGA, local: "C.D. Almazora 'C'", visitante: "C.F. Atlético Tales" },
+    { id: "j9-2", jornada: 9, fecha: "2026-11-21T17:00", liga: LIGA, local: "C.D. Castellón S.A.D. 'C'", visitante: "C.F. Rafalafena de Castellón" },
+    { id: "j9-3", jornada: 9, fecha: "2026-11-22T17:30", liga: LIGA, local: "La Vilavella C.F. 'A'", visitante: "Eture F.C. 'B'" },
+    { id: "j9-4", jornada: 9, fecha: "2026-11-22T18:00", liga: LIGA, local: "C.F. San Pedro 'B'", visitante: "C.D. Drac Castellón 'A'" },
+    { id: "j9-5", jornada: 9, fecha: "2026-11-21T19:30", liga: LIGA, local: "C.D. San Lorenzo de Castellón", visitante: "C.F. Borriol" },
+    { id: "j9-6", jornada: 9, fecha: "2026-11-22T17:00", liga: LIGA, local: "C.F. Moro 'A'", visitante: "C.F. Joventut Almassora 'A'" },
+    { id: "j9-7", jornada: 9, fecha: "2026-11-22T18:00", liga: LIGA, local: "C.D. Ribesalbes 'B'", visitante: "F.C. Odisea 'B'" },
+    { id: "j9-8", jornada: 9, fecha: "2026-11-21T19:00", liga: LIGA, local: "C.D. La Magdalena 'A'", visitante: "Pampa Castellón F.C." }
   ],
   saldoInicial: 1000
 };
@@ -650,8 +658,14 @@ function rates(m) {
 }
 const PLAYER_MARGIN = 0.10;
 // Amarillas por minuto: las del equipo en la temporada (si las hay), si no 2 por partido
-const YEL_RATE = (() => { const pl = DATA.plantilla || [], y = pl.reduce((s, p) => s + (p.amarillas || 0), 0), n = Math.max(1, ...pl.map(p => p.conv || p.pj || 1));
-  return y ? Math.max(1, y / n) / 90 : 0.022; })();
+// Plantillas: la del Almazora (DATA.plantilla) y las del resto de equipos (DATA.plantillas, sacadas de las actas)
+const RAW = (DATA.plantilla || []).map(p => ({ ...p, team: DATA.miEquipo })).concat(
+  ...Object.entries(DATA.plantillas || {}).filter(([t]) => t !== DATA.miEquipo).map(([t, arr]) => arr.map(a => Array.isArray(a)
+    ? { nombre: a[0], dorsal: a[1], pj: a[2], tit: a[3], goles: a[4], amarillas: a[5], rojas: a[6], posicion: a[7] ? "POR" : undefined, team: t } : { ...a, team: t })));
+const TEAM_PJS = {}; RAW.forEach(p => TEAM_PJS[p.team] = Math.max(TEAM_PJS[p.team] || 1, p.conv || p.pj || 1));
+const TEAM_YEL = {}; Object.keys(TEAM_PJS).forEach(t => { const y = RAW.filter(p => p.team === t).reduce((s, p) => s + (p.amarillas || 0), 0); TEAM_YEL[t] = y ? Math.max(1, y / TEAM_PJS[t]) / 90 : 0; });
+const OPP_CARDS_ = 2.3;
+const teamYel = t => TEAM_YEL[t] || OPP_CARDS_ / 90;   // amarillas por minuto del equipo
 const POS_W = { POR: { g: 0, a: 0.1, y: 0.3 }, CEN: { g: 0.5, a: 0.5, y: 1.5 }, DEF: { g: 0.5, a: 0.8, y: 1.5 }, LAT: { g: 0.5, a: 1, y: 1.3 },
   MED: { g: 1, a: 1.3, y: 1.2 }, EXT: { g: 1.3, a: 1.4, y: 0.8 }, DEL: { g: 1.8, a: 1, y: 0.8 } };
 const POS_TXT = { POR: "Portero", CEN: "Central", DEF: "Defensa", LAT: "Lateral", MED: "Medio", EXT: "Banda", DEL: "Delantero" };
@@ -660,11 +674,10 @@ const posW = code => { const parts = String(code || "").split("/").map(c => POS_
 const posTxt = code => String(code || "").split("/").map(c => POS_TXT[c] || c).join(" / ");
 // Peso de cada jugador: cuánto juega (titularidades cuentan entero, entrar desde el banquillo un 35 %)
 // y su ritmo goleador por partido completo (con un mínimo para que nadie tenga cuota cerrada).
-const TEAM_PJ = Math.max(1, ...(DATA.plantilla || []).map(p => p.conv || p.pj || 1));
-const SQUAD = (DATA.plantilla || []).map((p, i) => {
+const SQUAD = RAW.map((p, i) => {
   if (p.tit == null) { const w = posW(p.posicion);   // formato antiguo, por posición
     return { ...p, i, wg: w.g + (p.goles || 0) * 0.8, wa: w.a + (p.asistencias || 0) * 0.8, wy: w.y + (p.amarillas || 0) * 0.5 }; }
-  const eq = p.tit + 0.35 * Math.max(0, (p.pj || 0) - p.tit), x = eq / TEAM_PJ;          // partidos completos equivalentes
+  const eq = p.tit + 0.35 * Math.max(0, (p.pj || 0) - p.tit), x = eq / (TEAM_PJS[p.team] || 1);          // partidos completos equivalentes
   const pw = posW(p.posicion);
   const rate = ((p.goles || 0) + 0.4 * pw.g) / (eq + 2);   // goles reales + un poco según la posición
   return { ...p, i, x, wg: p.posicion === "POR" ? 0 : x * rate,
@@ -673,12 +686,15 @@ const SQUAD = (DATA.plantilla || []).map((p, i) => {
 });
 const sideOf = m => m.home.nombre === DATA.miEquipo ? 0 : m.away.nombre === DATA.miEquipo ? 1 : -1;
 // Jugadores que siguen en el campo y su peso para gol / asistencia / amarilla
-function onPitch(m) { return SQUAD.filter(p => p.titular !== false && !m.ps[p.i].r && !m.ps[p.i].off); }
+const teamName = (m, s) => (s ? m.away : m.home).nombre;
+const teamP = (m, s) => m.pidx.map(i => SQUAD[i]).filter(p => p.team === teamName(m, s));
+const sideP = (m, p) => p.team === m.home.nombre ? 0 : p.team === m.away.nombre ? 1 : -1;
+function onPitch(m, s) { return teamP(m, s).filter(p => p.titular !== false && !m.ps[p.i].r && !m.ps[p.i].off); }
 // Cambio+: si cambian al jugador, la apuesta pasa al que entra (se suman lo que hicieron los dos)
 const SUBP = new Set(["pg1", "pg2", "pg3", "pga", "pas", "pst1", "pst2", "pst3", "psh1", "psh2", "psh3"]);
 const sumSt = (a, b) => ({ g: a.g + b.g, a: a.a + b.a, y: a.y, r: b.r, sot: a.sot + b.sot, sh: a.sh + b.sh, off: b.off });
 function subChain(m, i) { let st = m.ps[i], j = i, n = 0; while (m.ps[j].off && m.subIn[j] != null && n++ < 5) { j = m.subIn[j]; st = sumSt(st, m.ps[j]); } return { st, j }; }
-function share(m, field) { const on = onPitch(m), tot = on.reduce((s, p) => s + p[field], 0) || 1; return i => { const p = on.find(x => x.i === i); return p ? p[field] / tot : 0; }; }
+function share(m, field, s) { const on = onPitch(m, s), tot = on.reduce((s, p) => s + p[field], 0) || 1; return i => { const p = on.find(x => x.i === i); return p ? p[field] / tot : 0; }; }
 const pAtLeast = (k, l) => { if (k <= 0) return 1; let c = 0; for (let j = 0; j < k; j++) c += pois(j, l); return 1 - c; };
 const remaining = m => m.status === "pre" ? 90 : m.status === "ft" ? 0 : Math.max(0.5, 92 - m.minute);
 
@@ -762,7 +778,7 @@ function markets(m) {
   const cc = cmp3(CH, CA);
   L.push(mk("crnw", "Equipo - Mayor número de córners", 0.07, [["1", H, cc[0]], ["X", "Empate", cc[1]], ["2", A, cc[2]]], { group: "most" }));
   // Tarjetas
-  const my = sideOf(m), kH = (my === 0 ? YEL_RATE * 90 : OPP_CARDS) / 92, kA = (my === 1 ? YEL_RATE * 90 : OPP_CARDS) / 92;
+  const kH = teamYel(m.home.nombre) * 90 / 92, kA = teamYel(m.away.nombre) * 90 / 92;
   const ktot = m.cards[0] + m.cards[1];
   [2.5, 3.5, 4.5, 5.5, 6.5].forEach(l => { const po = pOverPois(ktot, (kH + kA) * rem, l);
     L.push(mk("crd" + l, "Tarjetas", 0.07, [["O", "Más de " + fmtL(l), po], ["U", "Menos de " + fmtL(l), 1 - po]], { group: "crd", line: l })); });
@@ -774,18 +790,20 @@ function markets(m) {
 }
 const SOT_CONV = 0.33, SHOT_CONV = 0.12;   // en categorías amateur, ~1 de cada 3 remates a puerta es gol y ~1 de cada 8 remates
 function playerMarkets(m, lh, la, rem) {
-  const s = sideOf(m); if (s < 0) return [];
-  const myL = s ? la : lh, oppL = s ? lh : la, conceded = s ? m.hg : m.ag;
-  const sg = share(m, "wg"), sa = share(m, "wa"), sy = share(m, "wy"), fin = m.status === "ft";
+  if (!m.pidx.length) return [];
+  const s = sideOf(m), fin = m.status === "ft";
+  const SD = [0, 1].map(k => ({ L: k ? la : lh, sg: share(m, "wg", k), sa: share(m, "wa", k), sy: share(m, "wy", k), tY: teamYel(teamName(m, k)) * rem }));
+  const list = m.pidx.map(i => SQUAD[i]).filter(p => p.titular !== false);
   const pm = (key, name, f, tab) => ({ key, name, tab, margin: PLAYER_MARGIN, players: true,
-    outcomes: SQUAD.filter(p => p.titular !== false).map(p => { let st = m.ps[p.i], q = p;
+    outcomes: list.map(p => { let st = m.ps[p.i], q = p;
       if (st.off && SUBP.has(key) && m.subIn[p.i] != null) { const c = subChain(m, p.i); st = c.st; q = SQUAD[c.j]; }
       const pr = st.r && !f.keep ? (f(q, st) >= 1 ? 1 : 0) : f(q, st);
-      return { k: String(p.i), label: p.nombre, p: pr, odds: fin ? null : price(pr, PLAYER_MARGIN) }; }) });
-  const lg = p => myL * sg(p.i), la_ = p => myL * 0.7 * sa(p.i);
-  const tY = YEL_RATE * rem;
-  const pcs = conceded > 0 ? 0 : Math.exp(-oppL);
-  return [
+      return { k: String(p.i), label: p.nombre, side: sideP(m, p), p: pr, odds: fin ? null : price(pr, PLAYER_MARGIN) }; }) });
+  const sd = p => SD[Math.max(0, sideP(m, p))];
+  const lg = p => sd(p).L * sd(p).sg(p.i), la_ = p => sd(p).L * 0.7 * sd(p).sa(p.i);
+  const myL = s ? la : lh, oppL = s ? lh : la, conceded = s ? m.hg : m.ag;
+  const pcs = s < 0 ? 0 : conceded > 0 ? 0 : Math.exp(-oppL);
+  const out = [
     pm("pga", "Anotará o asistirá", (p, st) => st.g + st.a >= 1 ? 1 : 1 - Math.exp(-(lg(p) + la_(p))), "Cualquier momento"),
     pm("pg1", "Jugador - Anotará", (p, st) => st.g >= 1 ? 1 : 1 - Math.exp(-lg(p)), "Cualquier momento"),
     pm("pg2", "Jugador - Anotará", (p, st) => pAtLeast(2 - st.g, lg(p)), "2 o más goles"),
@@ -797,10 +815,11 @@ function playerMarkets(m, lh, la, rem) {
     pm("psh2", "Remates", (p, st) => pAtLeast(2 - st.sh, lg(p) / SHOT_CONV), "2 o más"),
     pm("psh3", "Remates", (p, st) => pAtLeast(3 - st.sh, lg(p) / SHOT_CONV), "3 o más"),
     pm("pas", "Jugador - Asistirá", (p, st) => st.a >= 1 ? 1 : 1 - Math.exp(-la_(p)), "Asistirá"),
-    pm("pye", "Jugador - Tarjeta", (p, st) => st.y >= 1 || st.r ? 1 : 1 - Math.exp(-tY * sy(p.i) * (1 + 0.7 * Math.max(0, -m.mom * (s ? -1 : 1)))), "Recibirá tarjeta"),
+    pm("pye", "Jugador - Tarjeta", (p, st) => st.y >= 1 || st.r ? 1 : 1 - Math.exp(-sd(p).tY * sd(p).sy(p.i) * (1 + 0.7 * Math.max(0, -m.mom * (sideP(m, p) ? -1 : 1)))), "Recibirá tarjeta")];
+  if (s >= 0) out.push(
     { key: "pcs", name: "Portería a cero de " + DATA.miEquipo, margin: 0.06, group: "esp",
-      outcomes: [["Y", "Sí", pcs], ["N", "No", 1 - pcs]].map(([k, label, p]) => ({ k, label, p, odds: fin ? null : price(p, 0.06) })) }
-  ];
+      outcomes: [["Y", "Sí", pcs], ["N", "No", 1 - pcs]].map(([k, label, p]) => ({ k, label, p, odds: fin ? null : price(p, 0.06) })) });
+  return out;
 }
 const evHalf = e => e.h || (e.min <= 45 ? 1 : 2);
 
@@ -815,12 +834,13 @@ const FIX = DATA.partidos.map((f, i) => {
   let base, source = "nivel", str = null; const Ls = leagueStats(lg);
   if (f.cuotas) { const o = lambdasFromOdds(f.cuotas); base = { h: o.h, a: o.a }; source = "cuotas"; }
   else { const t = lambdasFromTable(home, away, Ls); if (t) { base = { h: t.h, a: t.a }; source = "tabla"; str = { h: t.sh, a: t.sa, mu: Ls.mu }; } else base = lambdasFromRatings(72, 72); }
-  return { id: f.id || ("p" + i), jornada: f.jornada, league: lg.nombre, home, away, base, source, str, initOdds: f.cuotas, fechaDef: f.fecha || "" };
+  const pidx = SQUAD.filter(p => p.team === home.nombre || p.team === away.nombre).map(p => p.i);
+  return { id: f.id || ("p" + i), jornada: f.jornada, league: lg.nombre, home, away, base, source, str, initOdds: f.cuotas, fechaDef: f.fecha || "", pidx };
 });
 const blankState = () => ({ phase: "pre", k1: 0, k2: 0, events: [], dom: 0, susp: false, suspUntil: 0, fecha: "" });
 
 const S = { view: "home", league: null, detail: null, slip: [], mode: "single", stakes: {}, combo: "", prev: {}, flash: {}, slipOpen: false, msg: "",
-  states: {}, wallet: { balance: DATA.saldoInicial, bets: [] }, store: "loading", admin: false, uid: null, ranking: [], names: {}, form: { side: "0", pl: "", as: "", min: "" }, confirmReset: false, openG: {}, cat: "all", ptab: {}, more: {}, betTab: "pend", openBet: {}, hf: "all", q: "" };
+  states: {}, wallet: { balance: DATA.saldoInicial, bets: [] }, store: "loading", admin: false, uid: null, ranking: [], names: {}, form: { side: "0", pl: "", as: "", min: "" }, confirmReset: false, openG: {}, cat: "all", ptab: {}, more: {}, betTab: "pend", openBet: {}, hf: "all", q: "", pside: {} };
 
 // Construye el partido "vivo" a partir del estado guardado
 function build(f) {
@@ -833,12 +853,12 @@ function build(f) {
   minute = Math.max(st.phase === "pre" ? 0 : 1, minute);
   const m = { ...f, st, phase: st.phase, minute, extra, status: st.phase === "pre" ? "pre" : st.phase === "ft" ? "ft" : st.phase === "ht" ? "ht" : "live",
     hg: 0, ag: 0, ht: [0, 0], h2: [0, 0], yel: [0, 0], red: [0, 0], cards: [0, 0], corners: [0, 0], goals: [],
-    ps: SQUAD.map(() => ({ g: 0, a: 0, y: 0, r: 0, sot: 0, sh: 0 })), subIn: {}, mom: (st.dom || 0) * 0.6, fecha: st.fecha || f.fechaDef };
-  const my = sideOf(m);
+    ps: [], subIn: {}, mom: (st.dom || 0) * 0.6, fecha: st.fecha || f.fechaDef };
+  f.pidx.forEach(i => m.ps[i] = { g: 0, a: 0, y: 0, r: 0, sot: 0, sh: 0 });
   st.events.forEach(e => {
-    const P_ = e.s === my && e.p != null ? m.ps[e.p] : null;
+    const P_ = e.p != null ? m.ps[e.p] || null : null;
     if (e.t === "goal") { if (e.s) m.ag++; else m.hg++; m.goals.push(e.s ? "a" : "h"); (evHalf(e) === 1 ? m.ht : m.h2)[e.s]++;
-      if (P_) { P_.g++; P_.sot++; P_.sh++; } if (e.s === my && e.as != null && m.ps[e.as]) m.ps[e.as].a++; }
+      if (P_) { P_.g++; P_.sot++; P_.sh++; } if (e.as != null && m.ps[e.as]) m.ps[e.as].a++; }
     else if (e.t === "sot") { if (P_) { P_.sot++; P_.sh++; } }
     else if (e.t === "sh") { if (P_) P_.sh++; }
     else if (e.t === "cor") m.corners[e.s]++;
@@ -1110,7 +1130,7 @@ function adminAct(id, act, arg) {
   else if (act === "undo") st.events.pop();
   else if (["goal", "yel", "red", "sot", "sh", "cor", "sub"].includes(act)) {
     if (st.phase === "pre") { toast("Primero pulsa «Empezar partido»."); return; }
-    const s = +S.form.side, mine = s === sideOf(m);
+    const s = +S.form.side, mine = teamP(m, s).length > 0;
     if (act === "sub" && (!mine || S.form.pl === "" || S.form.as === "" || S.form.pl === S.form.as)) { toast("Elige el jugador que sale y el que entra."); return; }
     const e = { t: act, s, min: m.minute, x: m.extra || 0, h: st.phase === "1h" || st.phase === "ht" ? 1 : 2, at: now };
     if (mine && S.form.pl !== "") e.p = +S.form.pl;
@@ -1213,7 +1233,7 @@ function boostCards(m) {
   return `<div class="hm-sec"><span><span class="bst-tag">SuperCuotas</span> ${esc(m.home.nombre)} v ${esc(m.away.nombre)}</span></div>
     <div class="hm-cards">${bs.map(b => { const key = "boost|" + m.id + "|" + b.t, sel = S.slip.some(s => s.key === key);
       return `<div class="hm-card"><div class="hm-ct">${esc(b.t)}<span>${teamShirt(m.home.nombre)}${teamShirt(m.away.nombre)}</span></div>
-        ${b.d.map(x => { const pi = /^p/.test(x.mk) ? SQUAD[+x.oc] : null; return `<div class="hm-leg">${pi ? shirt(pi.dorsal) : teamShirt(DATA.miEquipo)}<span>${esc(pi ? shortName(pi.nombre) + " - " + x.mname.replace(/^Jugador - /, "") : x.label + " - " + x.mname)}</span></div>`; }).join("")}
+        ${b.d.map(x => { const pi = /^p/.test(x.mk) ? SQUAD[+x.oc] : null; return `<div class="hm-leg">${pi ? pshirt(pi) : teamShirt(DATA.miEquipo)}<span>${esc(pi ? shortName(pi.nombre) + " - " + x.mname.replace(/^Jugador - /, "") : x.label + " - " + x.mname)}</span></div>`; }).join("")}
         <div class="hm-cf"><span>CREAR APUESTA</span><em class="bst-mini">Máx. ${BOOST_MAX} €</em></div>
         <button class="hm-odds ${sel ? "sel" : ""}" data-boost="${esc(m.id + "|" + b.t)}">${sel ? CHECK : `<b><s>${fo(b.odds)}</s> ${fo(b.boosted)}</b>`}<small>10 €: ganancias de ${eur(10 * b.boosted)}</small></button></div>`; }).join("")}</div>`;
 }
@@ -1224,7 +1244,7 @@ function homeTop() {
   let res = "";
   if (q.length >= 2) {
     const pl = SQUAD.filter(p => p.nombre.toLowerCase().includes(q)).slice(0, 5), tm = ms.filter(m => (m.home.nombre + " " + m.away.nombre).toLowerCase().includes(q)).slice(0, 5);
-    res = `<div class="hm-res">${pl.map(p => `<button data-open="${mine ? mine.id : ""}">${shirt(p.dorsal)}<span><b>${esc(p.nombre)}</b><small>${esc(DATA.miEquipo)}</small></span></button>`).join("")}
+    res = `<div class="hm-res">${pl.map(p => { const pm_ = ms.find(m => m.status !== "ft" && (m.home.nombre === p.team || m.away.nombre === p.team)); return `<button data-open="${pm_ ? pm_.id : ""}">${pshirt(p)}<span><b>${esc(p.nombre)}</b><small>${esc(p.team)}</small></span></button>`; }).join("")}
       ${tm.map(m => `<button data-open="${m.id}">${teamShirt(m.home.nombre)}<span><b>${esc(m.home.nombre)} v ${esc(m.away.nombre)}</b><small>Jornada ${m.jornada || ""}</small></span></button>`).join("") || (pl.length ? "" : `<div class="hm-none">Sin resultados</div>`)}</div>`;
   }
   const tiles = [[mine ? `data-open="${mine.id}"` : "", teamShirt(DATA.miEquipo), "Almazora C"], [`data-hf="pre"`, `<b class="hm-num">${jor || "–"}</b>`, "Jornada"], [`data-view="live"`, `<b class="hm-num live">${nLive}</b>`, "En directo"], [`data-view="rank"`, "🏆", "Ranking"], [`data-view="table"`, "📊", "Tabla"]];
@@ -1267,8 +1287,8 @@ function listView(liveOnly) {
   return h;
 }
 function adminPanel(m) {
-  const my = sideOf(m), s = +S.form.side, mine = s === my;
-  const opts = (sel) => `<option value="">${mine ? "Jugador…" : "—"}</option>` + (mine ? SQUAD.map(p => `<option value="${p.i}" ${String(p.i) === sel ? "selected" : ""}>${p.dorsal != null ? p.dorsal + ". " : ""}${esc(p.nombre)}</option>`).join("") : "");
+  const s = +S.form.side, TP = teamP(m, s), mine = TP.length > 0;
+  const opts = (sel) => `<option value="">${mine ? "Jugador…" : "—"}</option>` + (mine ? TP.map(p => `<option value="${p.i}" ${String(p.i) === sel ? "selected" : ""}>${p.dorsal != null ? p.dorsal + ". " : ""}${esc(p.nombre)}</option>`).join("") : "");
   const ph = m.phase;
   const phaseBtns = { pre: [["start", "Empezar partido"]], "1h": [["ht", "Descanso"]], ht: [["2h", "Empezar 2ª parte"]], "2h": [["ft", "Final del partido"]], ft: [["reopen", "Reabrir"]] }[ph];
   const open = S.openG.adm ?? true;
@@ -1280,7 +1300,7 @@ function adminPanel(m) {
       <div class="arow"><label>Evento</label>
         <select id="ad-side" data-form="side"><option value="0" ${s === 0 ? "selected" : ""}>${esc(m.home.nombre)}</option><option value="1" ${s === 1 ? "selected" : ""}>${esc(m.away.nombre)}</option></select>
         <select id="ad-pl" data-form="pl" ${mine ? "" : "disabled"}>${opts(S.form.pl)}</select>
-        <select id="ad-as" data-form="as" ${mine ? "" : "disabled"}>${mine ? `<option value="">Sin asistencia / entra</option>` + SQUAD.map(p => `<option value="${p.i}" ${String(p.i) === S.form.as ? "selected" : ""}>Asist. o entra: ${esc(p.nombre)}</option>`).join("") : `<option value="">—</option>`}</select></div>
+        <select id="ad-as" data-form="as" ${mine ? "" : "disabled"}>${mine ? `<option value="">Sin asistencia / entra</option>` + TP.map(p => `<option value="${p.i}" ${String(p.i) === S.form.as ? "selected" : ""}>Asist. o entra: ${esc(p.nombre)}</option>`).join("") : `<option value="">—</option>`}</select></div>
       <div class="arow"><label></label><button class="abtn goal" data-adm="goal" data-mid="${m.id}">Gol</button><button class="abtn yel" data-adm="yel" data-mid="${m.id}">Amarilla</button><button class="abtn red" data-adm="red" data-mid="${m.id}">Roja</button>
         <button class="abtn" data-adm="sot" data-mid="${m.id}">Remate a puerta</button><button class="abtn" data-adm="sh" data-mid="${m.id}">Remate fuera</button><button class="abtn" data-adm="cor" data-mid="${m.id}">Córner</button><button class="abtn" data-adm="sub" data-mid="${m.id}" ${mine ? "" : "disabled"}>Cambio</button>
         <button class="abtn" data-adm="undo" data-mid="${m.id}" ${m.st.events.length ? "" : "disabled"}>Deshacer último</button></div>
@@ -1314,12 +1334,17 @@ function detailView() {
   </div></div>`;
 }
 /* ===================== MERCADOS EN DESPLEGABLES ===================== */
-const shortName = n => { const w = n.trim().split(/\s+/); return w.length > 1 ? w[0][0] + ". " + w.slice(1).join(" ") : n; };
+const PART = new Set(["de", "del", "la", "las", "los", "y", "da", "van"]);
+const shortName = n => { const w = n.trim().split(/\s+/); if (w.length < 2) return n;
+  const g = []; let pre = []; w.slice(1).forEach(x => { if (PART.has(x.toLowerCase())) pre.push(x); else { g.push(pre.concat(x).join(" ")); pre = []; } });
+  if (!g.length) return n; return w[0][0] + ". " + (g.length >= 2 ? g[g.length - 2] : g[0]); };
 const SHIRT_PATH = "M13 5 L5 10 L8 18 L11 16.5 L11 36 L29 36 L29 16.5 L32 18 L35 10 L27 5 Q20 10 13 5 Z";
+const plainShirt = n => `<svg class="shirt" viewBox="0 0 40 40" aria-hidden="true"><path d="${SHIRT_PATH}" fill="#d9dedb"/><path d="${SHIRT_PATH}" fill="none" stroke="#9aa3a0" stroke-width=".8"/><text x="20" y="26.3" text-anchor="middle" font-size="${n != null && String(n).length > 1 ? 11 : 12.5}" font-weight="800" fill="#14201b" font-family="-apple-system,Inter,Arial,sans-serif">${n ?? ""}</text></svg>`;
+const pshirt = p => p.team === DATA.miEquipo ? shirt(p.dorsal) : plainShirt(p.dorsal);
 const shirt = n => `<svg class="shirt" viewBox="0 0 40 40" aria-hidden="true"><path d="${SHIRT_PATH}" fill="#111"/><g clip-path="url(#shirtClip)"><rect x="9" y="0" width="4.4" height="40" fill="#fff"/><rect x="17.8" y="0" width="4.4" height="40" fill="#fff"/><rect x="26.6" y="0" width="4.4" height="40" fill="#fff"/></g><path d="${SHIRT_PATH}" fill="none" stroke="#9aa3a0" stroke-width=".8"/><rect x="12.5" y="16" width="15" height="13" rx="1.5" fill="#fff"/><text x="20" y="26.3" text-anchor="middle" font-size="${n != null && String(n).length > 1 ? 10.5 : 12}" font-weight="800" fill="#d71920" font-family="-apple-system,Inter,Arial,sans-serif">${n ?? ""}</text></svg>`;
 const CATS = [["all", "Todos"], ["jug", "Jugador"], ["pop", "Populares"], ["gol", "Goles"], ["mit", "Mitades"], ["crn", "Córners"], ["crd", "Tarjetas"], ["esp", "Especiales"]];
 function marketGroups(m) {
-  const G = [], pl = sideOf(m) >= 0;
+  const G = [], pl = m.pidx.length > 0;
   if (pl) G.push(
     { id: "pga", cat: "jug", title: "Anotará o asistirá", players: ["pg1", "pas", "pga"], heads: ["Anotará", "Asistirá", "Anotará o asistirá"] },
     { id: "pg", cat: "jug", title: "Jugador - Anotará", players: ["pg1", "pg2", "pg3"], heads: ["Anotará", "2 o más", "Hat-trick"] },
@@ -1339,7 +1364,7 @@ function marketGroups(m) {
     { id: "htft", cat: "mit", title: "Descanso/Resultado final", std: ["htft"] },
     { id: "cs", cat: "gol", title: "Marcador", cs: "cs" },
     { id: "half", cat: "mit", title: "Mitad con el mayor número de goles", std: ["half"] },
-    { id: "esp", cat: "esp", title: "Equipo - Especiales", std: ["wtn", "sbh", "wbh"].concat(pl ? ["pcs"] : []) },
+    { id: "esp", cat: "esp", title: "Equipo - Especiales", std: ["wtn", "sbh", "wbh"].concat(sideOf(m) >= 0 ? ["pcs"] : []) },
     { id: "tg", cat: "gol", title: "Equipo - Goleador", teamLines: true },
     { id: "mrg", cat: "gol", title: "Margen de victoria", std: ["mrg"] },
     { id: "next", cat: "pop", title: "Siguiente gol", std: ["next"] });
@@ -1365,23 +1390,27 @@ function groupBody(m, mk, g) {
   if (g.players) {
     const subs = g.players.map(k => mk.list.find(x => x.key === k));
     if (subs.some(x => !x)) return "";
-    const items = subs[0].outcomes.map((o, j) => ({ p: SQUAD[+o.k], cells: subs.map(k => k.outcomes[j]) }))
+    const ps_ = pSide(m);
+    const items = subs[0].outcomes.map((o, j) => ({ p: SQUAD[+o.k], cells: subs.map(k => k.outcomes[j]) })).filter(x => x.cells[0].side === ps_)
       .sort((x, y) => (x.cells[0].odds ?? 1e9) - (y.cells[0].odds ?? 1e9) || (x.p.dorsal ?? 99) - (y.p.dorsal ?? 99));
     const all = S.more[g.id], shown = all ? items : items.slice(0, 6), n = subs.length;
     const rows = shown.map(({ p, cells }) => { const st = m.ps[p.i];
       const stat = [st.g ? st.g + " G" : "", st.a ? st.a + " A" : "", st.sot ? st.sot + " RP" : "", st.r ? "Roja" : st.y ? "Amarilla" : ""].filter(Boolean).join(" · ");
-      return `<div class="pr"><div class="pn">${shirt(p.dorsal)}<div class="pnt"><b>${esc(shortName(p.nombre))}</b>${stat ? `<span>Hoy: ${stat}</span>` : ""}</div></div>${cells.map((o, j) => oddBtn(m, subs[j], o, false)).join("")}</div>`; }).join("");
+      return `<div class="pr"><div class="pn">${pshirt(p)}<div class="pnt"><b>${esc(shortName(p.nombre))}</b>${stat ? `<span>Hoy: ${stat}</span>` : ""}</div></div>${cells.map((o, j) => oddBtn(m, subs[j], o, false)).join("")}</div>`; }).join("");
     return `<div class="ptbl" style="--n:${n}"><div class="pr ph"><span>Jugador</span>${g.heads.map(h => `<span>${esc(h)}</span>`).join("")}</div>${rows}
       ${items.length > 6 ? `<button class="vermas" data-more="${g.id}">${all ? "Ver menos" : "Ver más"}<i class="chev ${all ? "up" : ""}"></i></button>` : ""}</div>`;
   }
   return "";
 }
+// Equipo cuyos jugadores se ven en las tablas (por defecto el Almazora si juega, si no el local)
+const pSide = m => { const v = S.pside[m.id]; if (v === 0 || v === 1) return teamP(m, v).length ? v : 1 - v; const s = sideOf(m); return s >= 0 ? s : teamP(m, 0).length ? 0 : 1; };
 function marketsHTML(m, mk) {
-  const G = marketGroups(m).filter(g => S.cat === "all" || g.cat === S.cat);
-  return `<div class="cats">${CATS.filter(([c]) => c !== "jug" || sideOf(m) >= 0).map(([c, t]) => `<button data-cat="${c}" class="${S.cat === c ? "on" : ""}">${t}</button>`).join("")}</div>
+  const G = marketGroups(m).filter(g => S.cat === "all" || g.cat === S.cat), ps_ = pSide(m);
+  const sw = m.pidx.length && G.some(g => g.cat === "jug") ? `<div class="pteam">${[0, 1].map(k => `<button data-pside="${m.id}|${k}" class="${ps_ === k ? "on" : ""}" ${teamP(m, k).length ? "" : "disabled"}>${teamShirt(teamName(m, k))}<span>${esc(teamName(m, k))}</span></button>`).join("")}</div>` : "";
+  return `<div class="cats">${CATS.filter(([c]) => c !== "jug" || m.pidx.length).map(([c, t]) => `<button data-cat="${c}" class="${S.cat === c ? "on" : ""}">${t}</button>`).join("")}</div>
     ${m.suspended ? `<div class="suspbar">Mercados suspendidos un momento</div>` : ""}
-    ${S.cat === "all" || S.cat === "pop" ? boostCards(m) : ""}
-    ${G.map(g => { const open = isOpen(g.id); const tag = g.cat === "jug" ? `<span class="tagj">${esc(DATA.miEquipo)}${g.id !== "pany" ? ` <em class="tagp">Cambio+</em>` : ""}</span>` : g.id === "1x2" && m.status === "pre" ? `<span class="tagj">2 goles de ventaja = pagada</span>` : "";
+    ${S.cat === "all" || S.cat === "pop" ? boostCards(m) : ""}${sw}
+    ${G.map(g => { const open = isOpen(g.id); const tag = g.cat === "jug" ? `<span class="tagj">${esc(teamName(m, ps_))}${g.id !== "pany" ? ` <em class="tagp">Cambio+</em>` : ""}</span>` : g.id === "1x2" && m.status === "pre" ? `<span class="tagj">2 goles de ventaja = pagada</span>` : "";
       return `<div class="acc ${open ? "open" : ""}"><button class="acch" data-acc="${g.id}" aria-expanded="${open}"><span>${esc(g.title)}${tag}</span><i class="chev"></i></button>${open ? `<div class="accb">${groupBody(m, mk, g)}</div>` : ""}</div>`; }).join("")}`;
 }
 function tableView() {
@@ -1471,13 +1500,13 @@ const SAME_MARGIN = 0.10, NSIM = 4000;
 function rpois(l) { if (l <= 0) return 0; const L = Math.exp(-l); let k = 0, p = 1; do { k++; p *= Math.random(); } while (p > L); return k - 1; }
 function wdraw(arr, f) { const t = arr.reduce((s, p) => s + p[f], 0); if (!t) return null; let r = Math.random() * t; for (const p of arr) { r -= p[f]; if (r <= 0) return p; } return arr[arr.length - 1]; }
 function simulateFinal(m) {
-  const r = rates(m), [r1, r2] = remHalves(m), my = sideOf(m), rem = r1 + r2;
-  const on = my >= 0 ? onPitch(m) : [], sg = my >= 0 ? share(m, "wg") : null, sy = my >= 0 ? share(m, "wy") : null;
-  const myRate = my === 0 ? r.h : r.a;
+  const r = rates(m), [r1, r2] = remHalves(m), rem = r1 + r2;
+  const on = [onPitch(m, 0), onPitch(m, 1)], sg = [share(m, "wg", 0), share(m, "wg", 1)], sy = [share(m, "wy", 0), share(m, "wy", 1)];
   const sh = m.base.h / (m.base.h + m.base.a), cH = CORNERS_PER_MATCH * (0.5 + (sh - 0.5) * 0.7) / 92, cA = CORNERS_PER_MATCH / 92 - cH;
-  const kH = (my === 0 ? YEL_RATE * 90 : OPP_CARDS) / 92, kA = (my === 1 ? YEL_RATE * 90 : OPP_CARDS) / 92;
+  const ky = [teamYel(m.home.nombre), teamYel(m.away.nombre)];
+  const ps = []; for (const i of m.pidx) ps[i] = { ...m.ps[i] };
   const f = { ...m, status: "ft", phase: "ft", hg: m.hg, ag: m.ag, ht: [...m.ht], h2: [...m.h2], goals: [...m.goals], corners: [...m.corners], cards: [...m.cards],
-    ps: m.ps.map(p => ({ ...p })), st: { ...m.st, events: [...m.st.events] } };
+    ps, st: { ...m.st, events: [...m.st.events] } };
   const start1 = m.phase === "1h" ? m.minute : 0, start2 = m.phase === "2h" ? m.minute : 45;
   const gl = [];
   [[r1, 1, start1, 45], [r2, 2, start2, 90]].forEach(([len, h, a, b]) => { if (len <= 0) return;
@@ -1485,13 +1514,15 @@ function simulateFinal(m) {
   gl.sort((x, y) => x.h - y.h || x.min - y.min).forEach(g => {
     if (g.s) f.ag++; else f.hg++; f.goals.push(g.s ? "a" : "h"); (g.h === 1 ? f.ht : f.h2)[g.s]++;
     f.st.events.push({ t: "goal", s: g.s, min: g.min, h: g.h });
-    if (g.s === my) { const sc = wdraw(on, "wg"); if (sc) { f.ps[sc.i].g++; f.ps[sc.i].sot++; f.ps[sc.i].sh++; }
-      if (Math.random() < 0.7) { const as = wdraw(on.filter(p => p !== sc), "wa"); if (as) f.ps[as.i].a++; } }
+    const o = on[g.s]; if (!o.length) return;
+    const sc = wdraw(o, "wg"); if (sc) { f.ps[sc.i].g++; f.ps[sc.i].sot++; f.ps[sc.i].sh++; }
+    if (Math.random() < 0.7) { const as = wdraw(o.filter(p => p !== sc), "wa"); if (as) f.ps[as.i].a++; }
   });
-  if (my >= 0) on.forEach(p => { const lg = myRate * rem * sg(p.i), ps = f.ps[p.i];
-    const extraSot = rpois(lg * (1 / SOT_CONV - 1)); ps.sot += extraSot; ps.sh += extraSot + rpois(lg * (1 / SHOT_CONV - 1 / SOT_CONV));
-    const y = rpois(YEL_RATE * rem * sy(p.i)); ps.y += y; f.cards[my] += y; });
-  const oppC = rpois((my === 0 ? kA : my === 1 ? kH : kA) * rem); if (my >= 0) f.cards[1 - my] += oppC; else { f.cards[0] += rpois(kH * rem); f.cards[1] += oppC; }
+  [0, 1].forEach(s => { const rate = s ? r.a : r.h;
+    if (!on[s].length) { f.cards[s] += rpois(ky[s] * rem); return; }
+    on[s].forEach(p => { const lg = rate * rem * sg[s](p.i), q = f.ps[p.i];
+      const extraSot = rpois(lg * (1 / SOT_CONV - 1)); q.sot += extraSot; q.sh += extraSot + rpois(lg * (1 / SHOT_CONV - 1 / SOT_CONV));
+      const y = rpois(ky[s] * rem * sy[s](p.i)); q.y += y; f.cards[s] += y; }); });
   f.corners[0] += rpois(cH * rem); f.corners[1] += rpois(cA * rem);
   return f;
 }
@@ -1666,6 +1697,7 @@ document.addEventListener("click", e => {
   else if (ds.co) S.coConfirm = ds.co;
   else if (ds.btab) S.betTab = ds.btab;
   else if (ds.rtab) S.rankTab = ds.rtab;
+  else if (ds.pside) { const [mid, k] = ds.pside.split("|"); S.pside[mid] = +k; }
   else if (ds.hf) { S.hf = ds.hf; S.view = "home"; S.detail = null; }
   else if (ds.preset != null && ds.preset !== "") { const mine = allMatches().find(m => sideOf(m) >= 0 && m.status !== "ft"), c = mine && presetCombos(mine)[+ds.preset];
     if (c) { c.d.forEach(x => { if (!S.slip.some(y => y.key === x.key)) S.slip.push({ key: x.key, mid: x.mid, mk: x.mk, oc: x.oc, label: x.label, mname: x.mname, added: x.odds }); });

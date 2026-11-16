@@ -1207,7 +1207,7 @@ function boostCards(m) {
     <div class="hm-cards">${bs.map(b => { const key = "boost|" + m.id + "|" + b.t, sel = S.slip.some(s => s.key === key);
       return `<div class="hm-card"><div class="hm-ct">${esc(b.t)}<span>${teamShirt(m.home.nombre)}${teamShirt(m.away.nombre)}</span></div>
         ${b.d.map(x => { const pi = /^p/.test(x.mk) ? SQUAD[+x.oc] : null; return `<div class="hm-leg">${pi ? shirt(pi.dorsal) : teamShirt(DATA.miEquipo)}<span>${esc(pi ? shortName(pi.nombre) + " - " + x.mname.replace(/^Jugador - /, "") : x.label + " - " + x.mname)}</span></div>`; }).join("")}
-        <div class="hm-cf"><span>CREAR APUESTA</span><em class="bst-mini">SuperCuota</em></div>
+        <div class="hm-cf"><span>CREAR APUESTA</span><em class="bst-mini">Máx. ${BOOST_MAX} €</em></div>
         <button class="hm-odds ${sel ? "sel" : ""}" data-boost="${esc(m.id + "|" + b.t)}">${sel ? CHECK : `<b><s>${fo(b.odds)}</s> ${fo(b.boosted)}</b>`}<small>10 €: ganancias de ${eur(10 * b.boosted)}</small></button></div>`; }).join("")}</div>`;
 }
 function homeTop() {

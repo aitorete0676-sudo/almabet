@@ -43,9 +43,8 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--yellow);outline
 header{position:sticky;top:env(safe-area-inset-top,0px);z-index:20}
 .top{background:var(--top)}
 .top .wrap{display:flex;align-items:center;gap:20px;min-height:54px;flex-wrap:wrap;padding-block:6px}
-.logo{font-family:var(--f-cond);font-style:italic;font-weight:800;font-size:28px;letter-spacing:-.5px;color:#fff;line-height:1}
-.logo span{color:var(--yellow);position:relative;display:inline-block}
-.logo span::after{content:"";position:absolute;left:8%;right:4%;bottom:-.14em;height:.11em;border-radius:.06em;background:var(--yellow)}
+.logo{font-family:var(--f-cond);font-style:italic;font-weight:800;font-size:28px;letter-spacing:-.5px;color:var(--yellow);line-height:1}
+.logo span{color:var(--fg)}
 .tabs{display:flex;gap:4px;flex:1;overflow-x:auto;scrollbar-width:none}
 .tabs button{padding:8px 12px;font-weight:600;color:#cfe0d8;border-radius:3px;white-space:nowrap}
 .tabs button:hover{color:#fff;background:rgba(255,255,255,.06)}

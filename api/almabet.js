@@ -62,8 +62,8 @@ module.exports = async (req, res) => {
   // Prueba temporal: ¿llega el servidor a la web de actas? (/api/almabet?probe=1)
   if (req.method === "GET" && req.query && req.query.probe) {
     const out = {};
-    for (const [k, u] of [["standings", "https://www.elbalondelacomunitat.es/api/ffcv/standings?idGroup=905431622&round=99"], ["results", "https://www.elbalondelacomunitat.es/api/ffcv/results?idGroup=905431622&round=8"], ["acta", "https://www.elbalondelacomunitat.es/acta/26498353"]]) {
-      try { const r = await fetch(u, { headers: { "User-Agent": "Mozilla/5.0 (AlmaBet)" } }); const t = await r.text(); out[k] = { status: r.status, len: t.length, head: t.slice(0, 200) }; }
+    for (const [k, u] of [["standings", "https://www.elbalondelacomunitat.es/api/ffcv/standings?idGroup=905431622&round=99"], ["results", "https://www.elbalondelacomunitat.es/api/ffcv/results?idGroup=905431622&round=8"], ["acta", "https://www.elbalondelacomunitat.es/acta/26498345"]]) {
+      try { const r = await fetch(u, { headers: { "User-Agent": "Mozilla/5.0 (AlmaBet)" } }); const t = await r.text(); out[k] = { status: r.status, len: t.length, head: t.slice(0, 200), goles: t.includes(">Goles<"), titulares: t.includes("Titulares") }; }
       catch (e) { out[k] = { error: String(e.message || e) }; }
     }
     return send(200, out);

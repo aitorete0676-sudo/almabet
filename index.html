@@ -720,8 +720,8 @@ const teamP = (m, s) => m.pidx.map(i => SQUAD[i]).filter(p => p.team === teamNam
 const sideP = (m, p) => p.team === m.home.nombre ? 0 : p.team === m.away.nombre ? 1 : -1;
 function onPitch(m, s) { return teamP(m, s).filter(p => p.titular !== false && !m.ps[p.i].r && !m.ps[p.i].off); }
 // Cambio+: si cambian al jugador, la apuesta pasa al que entra (se suman lo que hicieron los dos)
-const SUBP = new Set(["pg1", "pg2", "pg3", "pga", "pas", "pst1", "pst2", "pst3", "psh1", "psh2", "psh3"]);
-const sumSt = (a, b) => ({ g: a.g + b.g, a: a.a + b.a, y: a.y, r: b.r, sot: a.sot + b.sot, sh: a.sh + b.sh, off: b.off });
+const SUBP = new Set(["pg1", "pg2", "pg3", "pga", "pas", "pst1", "pst2", "pst3", "psh1", "psh2", "psh3", "pye"]);
+const sumSt = (a, b) => ({ g: a.g + b.g, a: a.a + b.a, y: a.y + b.y, r: a.r || b.r, sot: a.sot + b.sot, sh: a.sh + b.sh, off: b.off });
 function subChain(m, i) { let st = m.ps[i], j = i, n = 0; while (m.ps[j].off && m.subIn[j] != null && n++ < 5) { j = m.subIn[j]; st = sumSt(st, m.ps[j]); } return { st, j }; }
 function share(m, field, s) { const on = onPitch(m, s), tot = on.reduce((s, p) => s + p[field], 0) || 1; return i => { const p = on.find(x => x.i === i); return p ? p[field] / tot : 0; }; }
 const pAtLeast = (k, l) => { if (k <= 0) return 1; let c = 0; for (let j = 0; j < k; j++) c += pois(j, l); return 1 - c; };

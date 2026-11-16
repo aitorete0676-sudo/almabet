@@ -179,6 +179,15 @@ module.exports = async (req, res) => {
       if (!superAdmin) { await redis("SADD", "lgm:" + id, me.name); await redis("SADD", "ul:" + me.name, id); await setJ(K(id).wallet(me.name), { balance: START, bets: [] }); }
       return send(200, { id, code, leagues: await myLeagues() });
     }
+    if (a === "deleteLeague") {   // solo el admin de AlmaBet; la liga original no se puede borrar
+      if (!superAdmin) return send(403, { error: "Solo el administrador de AlmaBet puede eliminar ligas." });
+      const id = String(b.id || "").replace(/[^a-z0-9]/gi, ""); if (!id || id === MAIN) return send(400, { error: "Esa liga no se puede eliminar." });
+      const D = await getJ("lg:" + id); if (!D) return send(404, { error: "Esa liga ya no existe." });
+      for (const u of ((await redis("SMEMBERS", "lgm:" + id)) || [])) { await redis("SREM", "ul:" + u, id); await redis("DEL", K(id).wallet(u)); await redis("DEL", K(id).bonus(u)); }
+      await redis("DEL", "lgm:" + id); await redis("DEL", "lgban:" + id); if (D.code) await redis("DEL", "lgcode:" + D.code);
+      await redis("SREM", "lgall", id); await redis("DEL", "lg:" + id);
+      return send(200, { ok: true, leagues: await myLeagues() });
+    }
     if (a === "joinLeague") {
       const code = String(b.code || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
       const id = code && await redis("GET", "lgcode:" + code);

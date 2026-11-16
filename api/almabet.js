@@ -59,6 +59,15 @@ async function allMatches() {
 module.exports = async (req, res) => {
   res.setHeader("Cache-Control", "no-store");
   const send = (code, obj) => res.status(code).json(obj);
+  // Prueba temporal: ¿llega el servidor a la web de actas? (/api/almabet?probe=1)
+  if (req.method === "GET" && req.query && req.query.probe) {
+    const out = {};
+    for (const [k, u] of [["standings", "https://www.elbalondelacomunitat.es/api/ffcv/standings?idGroup=905431622&round=99"], ["results", "https://www.elbalondelacomunitat.es/api/ffcv/results?idGroup=905431622&round=8"], ["acta", "https://www.elbalondelacomunitat.es/acta/26498353"]]) {
+      try { const r = await fetch(u, { headers: { "User-Agent": "Mozilla/5.0 (AlmaBet)" } }); const t = await r.text(); out[k] = { status: r.status, len: t.length, head: t.slice(0, 200) }; }
+      catch (e) { out[k] = { error: String(e.message || e) }; }
+    }
+    return send(200, out);
+  }
   if (!URL_ || !TOKEN) return send(500, { error: "Falta conectar la base de datos: en Vercel ve a Storage > Upstash for Redis > Connect y vuelve a desplegar." });
   try {
     let b = req.body || {};

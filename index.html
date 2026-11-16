@@ -496,6 +496,11 @@ th{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06
 .pl-match{display:flex;align-items:center;gap:8px;width:100%;text-align:left;padding:4px 0 10px;flex-wrap:wrap}.pl-match .tshirt{width:22px;height:22px}.pl-match small{color:var(--muted);width:100%}
 .pl-tbl{margin:0}.pl-tbl .pn{padding-left:12px}.pl-match{padding-left:12px;padding-right:12px}
 .fut-desc{display:block;width:100%;box-sizing:border-box;padding-right:12px;word-break:break-word}
+.lg-btn{margin-left:auto;background:rgba(255,255,255,.1);border-radius:14px;padding:4px 10px;font-weight:700;font-size:12px;max-width:55%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lg-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px;border-top:1px solid var(--line)}.lg-row div{display:flex;flex-direction:column;min-width:0}.lg-row small{color:var(--muted)}.lg-row.on b{color:#3ddc97}.lg-cur{color:#3ddc97;font-weight:700;font-size:13px}
+.lg-code{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px}.lg-code b{font-family:var(--f-cond);font-size:30px;letter-spacing:.12em;color:var(--yellow)}
+.lg-form{display:flex;gap:8px;padding:12px}.lg-form.col{flex-direction:column}.lg-form label{font-size:13px;color:var(--muted);font-weight:600}
+.lg-form input,.lg-form select{flex:1;min-width:0;background:var(--panel2);color:var(--fg);border:1px solid var(--line);border-radius:4px;padding:10px;font:inherit;font-size:16px}
 </style>
 
 <header>
@@ -522,6 +527,7 @@ if(seen||!window.matchMedia("(max-width:760px)").matches){el.remove();return}set
   <div class="sub"><div class="wrap">
     <span class="livepill"><i class="dot"></i><span id="liveCount">0 en directo</span></span>
     <span style="color:#cfe0d8" id="modeTxt">Conectando…</span>
+    <button id="lgBtn" class="lg-btn" data-view="ligas" hidden>Ligas ▾</button>
   </div></div>
 </header>
 
@@ -541,7 +547,7 @@ if(seen||!window.matchMedia("(max-width:760px)").matches){el.remove();return}set
   <button data-view="table"><svg viewBox="0 0 24 24"><path d="M4 5h16M4 10h16M4 15h16M4 20h16M9 5v15"/></svg>Tabla</button>
 </nav>
 
-<script>
+<script id="app-src" type="text/x-almabet">
 /* =====================================================================
    DATOS EDITABLES (clasificación, plantilla y jornada)
    - ligas: cada liga con sus equipos.
@@ -550,8 +556,8 @@ if(seen||!window.matchMedia("(max-width:760px)").matches){el.remove();return}set
    - partidos: opcional. Si pones "cuotas" (1, X, 2), el modelo calcula
      los goles esperados de cada equipo a partir de ellas.
    ===================================================================== */
-const LIGA = "Tercera FFCV · Grupo 2";
-const DATA = {
+const LIGA0 = "Tercera FFCV · Grupo 2";
+const DATA_MAIN = {
   miEquipo: "C.D. Almazora 'C'",
   // Plantilla tras la jornada 8: conv (convocado), pj (jugados), tit (titular), goles, amarillas, rojas. posicion: POR portero, CEN central, LAT lateral, MED medio, EXT banda, DEL delantero (se pueden combinar: "EXT/DEL").
   plantilla: [
@@ -582,7 +588,7 @@ const DATA = {
   // Clasificación del grupo tras la jornada 8 (FFCV). pj, pts, gf (goles a favor), gc (en contra), racha (últimos 5).
   // CON ESTOS DATOS SE CALCULAN LAS CUOTAS.
   ligas: [
-    { nombre: LIGA, equipos: [
+    { nombre: LIGA0, equipos: [
       { nombre: "C.D. Castellón S.A.D. 'C'", pj: 8, pts: 22, gf: 32, gc: 9, racha: "GGGGG" },
       { nombre: "La Vilavella C.F. 'A'", pj: 8, pts: 20, gf: 31, gc: 6, racha: "GEGGG" },
       { nombre: "C.F. San Pedro 'B'", pj: 8, pts: 20, gf: 26, gc: 3, racha: "GGGEG" },
@@ -603,17 +609,24 @@ const DATA = {
   ],
   // Jornada 9. fecha: "2026-11-22T11:00" (opcional, también se pone desde el panel). Si quieres fijar tú las cuotas de un partido, añade cuotas: { "1": 2.30, "X": 3.20, "2": 2.90 } y mandan sobre la clasificación.
   partidos: [
-    { id: "j9-1", jornada: 9, fecha: "2026-11-22T15:00", liga: LIGA, local: "C.D. Almazora 'C'", visitante: "C.F. Atlético Tales" },
-    { id: "j9-2", jornada: 9, fecha: "2026-11-21T17:00", liga: LIGA, local: "C.D. Castellón S.A.D. 'C'", visitante: "C.F. Rafalafena de Castellón" },
-    { id: "j9-3", jornada: 9, fecha: "2026-11-22T17:30", liga: LIGA, local: "La Vilavella C.F. 'A'", visitante: "Eture F.C. 'B'" },
-    { id: "j9-4", jornada: 9, fecha: "2026-11-22T18:00", liga: LIGA, local: "C.F. San Pedro 'B'", visitante: "C.D. Drac Castellón 'A'" },
-    { id: "j9-5", jornada: 9, fecha: "2026-11-21T19:30", liga: LIGA, local: "C.D. San Lorenzo de Castellón", visitante: "C.F. Borriol" },
-    { id: "j9-6", jornada: 9, fecha: "2026-11-22T17:00", liga: LIGA, local: "C.F. Moro 'A'", visitante: "C.F. Joventut Almassora 'A'" },
-    { id: "j9-7", jornada: 9, fecha: "2026-11-22T18:00", liga: LIGA, local: "C.D. Ribesalbes 'B'", visitante: "F.C. Odisea 'B'" },
-    { id: "j9-8", jornada: 9, fecha: "2026-11-21T19:00", liga: LIGA, local: "C.D. La Magdalena 'A'", visitante: "Pampa Castellón F.C." }
+    { id: "j9-1", jornada: 9, fecha: "2026-11-22T15:00", liga: LIGA0, local: "C.D. Almazora 'C'", visitante: "C.F. Atlético Tales" },
+    { id: "j9-2", jornada: 9, fecha: "2026-11-21T17:00", liga: LIGA0, local: "C.D. Castellón S.A.D. 'C'", visitante: "C.F. Rafalafena de Castellón" },
+    { id: "j9-3", jornada: 9, fecha: "2026-11-22T17:30", liga: LIGA0, local: "La Vilavella C.F. 'A'", visitante: "Eture F.C. 'B'" },
+    { id: "j9-4", jornada: 9, fecha: "2026-11-22T18:00", liga: LIGA0, local: "C.F. San Pedro 'B'", visitante: "C.D. Drac Castellón 'A'" },
+    { id: "j9-5", jornada: 9, fecha: "2026-11-21T19:30", liga: LIGA0, local: "C.D. San Lorenzo de Castellón", visitante: "C.F. Borriol" },
+    { id: "j9-6", jornada: 9, fecha: "2026-11-22T17:00", liga: LIGA0, local: "C.F. Moro 'A'", visitante: "C.F. Joventut Almassora 'A'" },
+    { id: "j9-7", jornada: 9, fecha: "2026-11-22T18:00", liga: LIGA0, local: "C.D. Ribesalbes 'B'", visitante: "F.C. Odisea 'B'" },
+    { id: "j9-8", jornada: 9, fecha: "2026-11-21T19:00", liga: LIGA0, local: "C.D. La Magdalena 'A'", visitante: "Pampa Castellón F.C." }
   ],
   saldoInicial: 1000
 };
+// Otras ligas: datos que manda el servidor (clasificación, plantillas sacadas de las actas y partidos de la jornada)
+const LGX = window.__LGDATA || null, IS_MAIN = !LGX;
+const shortTeam = n => String(n || "").replace(/\b(C\.?\s?F\.?|C\.?\s?D\.?|F\.?\s?C\.?|U\.?\s?D\.?|C\.?\s?E\.?|S\.?\s?A\.?\s?D\.?|A\.?\s?D\.?|Club|Deportivo|Fútbol|Futbol)(?=\s|$)/gi, "").replace(/'/g, "").replace(/\s+/g, " ").trim() || n;
+const DATA = LGX ? { miEquipo: LGX.league.team, plantilla: [], plantillas: LGX.data.plantillas || {}, saldoInicial: 1000,
+    ligas: [{ nombre: LGX.data.liga, equipos: LGX.data.equipos }], partidos: (LGX.data.partidos || []).map(p => ({ ...p, liga: LGX.data.liga })) } : DATA_MAIN;
+DATA.corto = IS_MAIN ? "Almazora C" : shortTeam(DATA.miEquipo);
+const LIGA = DATA.ligas[0].nombre;
 
 /* ===================== MODELO DE CUOTAS ===================== */
 const MARGIN = { "1x2": 0.07, dc: 0.05, ou25: 0.06, btts: 0.06, next: 0.07 };
@@ -694,7 +707,7 @@ const PLAYER_MARGIN = 0.10;
 // Amarillas por minuto: las del equipo en la temporada (si las hay), si no 2 por partido
 // Plantillas: la del Almazora (DATA.plantilla) y las del resto de equipos (DATA.plantillas, sacadas de las actas)
 const RAW = (DATA.plantilla || []).map(p => ({ ...p, team: DATA.miEquipo })).concat(
-  ...Object.entries(DATA.plantillas || {}).filter(([t]) => t !== DATA.miEquipo).map(([t, arr]) => arr.map(a => Array.isArray(a)
+  ...Object.entries(DATA.plantillas || {}).filter(([t]) => t !== DATA.miEquipo || !(DATA.plantilla || []).length).map(([t, arr]) => arr.map(a => Array.isArray(a)
     ? { nombre: a[0], dorsal: a[1], pj: a[2], tit: a[3], goles: a[4], amarillas: a[5], rojas: a[6], posicion: a[7] ? "POR" : undefined, team: t } : { ...a, team: t })));
 const TEAM_PJS = {}; RAW.forEach(p => TEAM_PJS[p.team] = Math.max(TEAM_PJS[p.team] || 1, p.conv || p.pj || 1));
 const TEAM_YEL = {}; Object.keys(TEAM_PJS).forEach(t => { const y = RAW.filter(p => p.team === t).reduce((s, p) => s + (p.amarillas || 0), 0); TEAM_YEL[t] = y ? Math.max(1, y / TEAM_PJS[t]) / 90 : 0; });
@@ -943,8 +956,12 @@ let sbBusy = false, sbDirty = false;
 const CFG = window.ALMABET_CONFIG || {};
 const TK = "almabet-token" + (/^\/admin/.test(location.pathname) ? "-admin" : "");
 const tok = () => { try { return localStorage.getItem(TK) || ""; } catch (e) { return ""; } };
+const LGK = "almabet-lg" + (/^\/admin/.test(location.pathname) ? "-admin" : "");
+let CUR_LG = window.__LG || "";
+const setLg = id => { try { localStorage.setItem(LGK, id); } catch (e) {} };
+const switchLg = id => { setLg(id); location.reload(); };
 async function api(action, body) {
-  const r = await fetch(CFG.api, { method: "POST", headers: { "Content-Type": "application/json", Authorization: "Bearer " + tok() }, body: JSON.stringify({ action, ...(body || {}) }) });
+  const r = await fetch(CFG.api, { method: "POST", headers: { "Content-Type": "application/json", Authorization: "Bearer " + tok() }, body: JSON.stringify({ action, lg: CUR_LG || undefined, ...(body || {}) }) });
   let j = {}; try { j = await r.json(); } catch (e) {}
   if (!r.ok) { const err = new Error(j.error || "Error de conexión"); err.status = r.status; throw err; }
   return j;
@@ -970,7 +987,19 @@ async function applyBonus(list) {
 const MONTHLY = 150;
 const ymNow = () => { const d = new Date(new Date().toLocaleString("en-US", { timeZone: "Europe/Madrid" })); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0"); };
 async function sbStart() {
+  if (window.__LGERR) { S.lgErr = window.__LGERR; }
   const d = await api("me");
+  S.leagues = d.leagues || []; S.me = d.username;
+  if (d.noLeague) {   // no está en la liga elegida (o en ninguna)
+    const other = S.leagues[0];
+    if (other && other.id !== CUR_LG) return switchLg(other.id);
+    S.uid = d.username; S.store = "noleague"; S.view = "ligas"; render(); return;
+  }
+  if (!CUR_LG || (d.league && d.league.id !== CUR_LG)) { CUR_LG = d.league ? d.league.id : "main"; setLg(CUR_LG); if (!IS_MAIN && CUR_LG === "main") return location.reload(); }
+  S.league_ = d.league || null;
+  if (LGX && LGX.data.pendingActas > 0) { S.pendActas = LGX.data.pendingActas;
+    const t = setInterval(async () => { try { const j = await api("leagueData"); S.pendActas = j.data ? j.data.pendingActas : 0; render();
+      if (!S.pendActas) { clearInterval(t); toast("Actas del grupo leídas: actualizando cuotas…"); setTimeout(() => { if (!S.slip.length) location.reload(); }, 1500); } } catch (e) {} }, 15000); }
   S.uid = d.username; S.me = d.username; S.admin = !!d.admin;
   S.wallet = { balance: +d.wallet.balance, bets: d.wallet.bets || [], bonusIds: d.wallet.bonusIds || [], moves: d.wallet.moves || [], lastPay: d.wallet.lastPay || "" }; S.states = d.matches || {};
   // Paga mensual: 150 € el día 1 de cada mes (la primera vez solo se apunta el mes)
@@ -1066,7 +1095,7 @@ function legResult(leg, m) {
   return null;
 }
 function settle() {
-  if (S.store === "loading" || S.store === "auth") return;
+  if (S.store === "loading" || S.store === "auth" || S.store === "noleague") return;
   let changed = false;
   S.wallet.bets.forEach(b => {
     if (b.status !== "pending") return;
@@ -1243,7 +1272,7 @@ const kitSVG = (nm, n, cls) => { const k = KITS[nm] || { base: "#d9dedb", num: "
     + (k.v ? `<path d="M11 4 L16 4 L20 11 L24 4 L29 4 L20 17.5 Z" fill="${k.v}"/>` : "");
   const num = n == null ? "" : `<text x="20" y="${k.v ? 30.5 : k.st ? 27 : 26.3}" text-anchor="middle" font-size="${String(n).length > 1 ? 11 : 12.5}" font-weight="800" fill="${k.num}" ${k.st ? `stroke="${k.base}" stroke-width="2.4" paint-order="stroke"` : ""} font-family="-apple-system,Inter,Arial,sans-serif">${n}</text>`;
   return `<svg class="${cls}" viewBox="0 0 40 40" aria-hidden="true"><path d="${SHIRT_PATH}" fill="${k.base}"/><g clip-path="url(#shirtClip)">${deco}</g><path d="${SHIRT_PATH}" fill="none" stroke="${light ? "#9aa3a0" : "rgba(255,255,255,.25)"}" stroke-width=".8"/>${num}</svg>`; };
-const teamShirt = nm => nm === DATA.miEquipo ? `<svg class="tshirt" viewBox="0 0 40 40" aria-hidden="true"><path d="${SHIRT_PATH}" fill="#111"/><g clip-path="url(#shirtClip)"><rect x="9" y="0" width="4.4" height="40" fill="#fff"/><rect x="17.8" y="0" width="4.4" height="40" fill="#fff"/><rect x="26.6" y="0" width="4.4" height="40" fill="#fff"/></g></svg>`
+const teamShirt = nm => IS_MAIN && nm === DATA.miEquipo ? `<svg class="tshirt" viewBox="0 0 40 40" aria-hidden="true"><path d="${SHIRT_PATH}" fill="#111"/><g clip-path="url(#shirtClip)"><rect x="9" y="0" width="4.4" height="40" fill="#fff"/><rect x="17.8" y="0" width="4.4" height="40" fill="#fff"/><rect x="26.6" y="0" width="4.4" height="40" fill="#fff"/></g></svg>`
   : kitSVG(nm, null, "tshirt");
 function legCount(l, m) {   // mercados de contar: valor actual y línea
   const k = markets(m).list.find(x => x.key === l.mk); if (!k) return null;
@@ -1451,7 +1480,7 @@ function homeTop() {
     res = `<div class="hm-res">${pl.map(p => { const pm_ = ms.find(m => m.status !== "ft" && (m.home.nombre === p.team || m.away.nombre === p.team)); return `<button data-player="${p.i}">${pshirt(p)}<span><b>${esc(p.nombre)}</b><small>${esc(p.team)}</small></span></button>`; }).join("")}
       ${tm.map(m => `<button data-open="${m.id}">${teamShirt(m.home.nombre)}<span><b>${esc(m.home.nombre)} v ${esc(m.away.nombre)}</b><small>Jornada ${m.jornada || ""}</small></span></button>`).join("") || (pl.length ? "" : `<div class="hm-none">Sin resultados</div>`)}</div>`;
   }
-  const tiles = [[mine ? `data-open="${mine.id}"` : "", teamShirt(DATA.miEquipo), "Almazora C"], [`data-hf="pre"`, `<b class="hm-num">${jor || "–"}</b>`, "Jornada"], [`data-view="live"`, `<b class="hm-num live">${nLive}</b>`, "En directo"], [`data-view="rank"`, "🏆", "Ranking"], [`data-view="table"`, "📊", "Tabla"]];
+  const tiles = [[mine ? `data-open="${mine.id}"` : "", teamShirt(DATA.miEquipo), esc(DATA.corto)], [`data-hf="pre"`, `<b class="hm-num">${jor || "–"}</b>`, "Jornada"], [`data-view="live"`, `<b class="hm-num live">${nLive}</b>`, "En directo"], [`data-view="rank"`, "🏆", "Ranking"], [`data-view="table"`, "📊", "Tabla"]];
   const cd = mine && mine.status === "pre" && mine.fecha ? (() => { const t = new Date(mine.fecha) - Date.now(); if (t <= 0) return "Empieza ya"; const d = Math.floor(t / 864e5), h = Math.floor(t % 864e5 / 36e5), mi = Math.floor(t % 36e5 / 6e4); return (d ? d + "d " : "") + h + "h " + mi + "min"; })() : "";
   const leader = (S.ranking || [])[0];
   const banners = [];
@@ -1465,9 +1494,10 @@ function homeTop() {
   const hf = S.hf || "all";
   return `<div class="hm">
     <label class="hm-search"><span>⌕</span><input id="hm-q" data-search="1" placeholder="Buscar jugador o equipo" autocomplete="off" value="${esc(S.q || "")}"></label>${res}
+    ${S.pendActas ? `<div class="block"><div class="note">Leyendo las actas del grupo (faltan ${S.pendActas}). Las cuotas de jugadores se completan en unos minutos.</div></div>` : ""}
     <div class="hm-tiles">${tiles.map(([a, ic, t]) => `<button class="hm-tile" ${a}><span class="hm-ic">${ic}</span>${t}</button>`).join("")}</div>
     <div class="hm-bans">${banners.join("")}</div>
-    <div class="mb-tabs hm-pills">${[["all", "Todos"], ["mine", "Almazora C"], ["live", "En directo"], ["pre", "Próximos"]].map(([k, t]) => `<button data-hf="${k}" class="${hf === k ? "on" : ""}">${t}</button>`).join("")}</div>
+    <div class="mb-tabs hm-pills">${[["all", "Todos"], ["mine", DATA.corto], ["live", "En directo"], ["pre", "Próximos"]].map(([k, t]) => `<button data-hf="${k}" class="${hf === k ? "on" : ""}">${t}</button>`).join("")}</div>
     ${mine && (hf === "all" || hf === "mine") ? boostCards(mine) : ""}
   </div>`;
 }
@@ -1479,7 +1509,7 @@ function listView(liveOnly) {
   const h2 = t => `<h2 style="margin:4px 0 0;font-family:var(--f-cond);font-size:22px">${t}</h2>`;
   let h = liveOnly ? "" : homeTop();
   const hf = liveOnly ? "all" : (S.hf || "all");
-  if (hf === "mine") return h + (my.length ? h2("Tu equipo: " + esc(DATA.miEquipo)) + `<div class="block mine">${my.map(rowHTML).join("")}</div>` : `<div class="block empty">No hay partidos del Almazora C pendientes.</div>`);
+  if (hf === "mine") return h + (my.length ? h2("Tu equipo: " + esc(DATA.miEquipo)) + `<div class="block mine">${my.map(rowHTML).join("")}</div>` : `<div class="block empty">No hay partidos de ${esc(DATA.corto)} pendientes.</div>`);
   if (hf === "live") return h + (block(live, leagues[0], true) || `<div class="block empty">Ahora no se está jugando ningún partido.</div>`);
   if (hf === "pre") { const byJ = {}; pre.forEach(m => (byJ[m.jornada || 0] ??= []).push(m));
     return h + (Object.keys(byJ).map(j => block(byJ[j], (j > 0 ? "Jornada " + j + " · " : "") + leagues[0], false)).join("") || `<div class="block empty">No hay partidos programados.</div>`); }
@@ -1546,7 +1576,7 @@ const shortName = n => { const w = n.trim().split(/\s+/); if (w.length < 2) retu
   if (!g.length) return n; const c = g.length >= 2 && g[g.length - 2].replace(/\./g, "").length > 2 ? g[g.length - 2] : g[g.length - 1]; return w[0][0] + ". " + c; };
 const SHIRT_PATH = "M13 5 L5 10 L8 18 L11 16.5 L11 36 L29 36 L29 16.5 L32 18 L35 10 L27 5 Q20 10 13 5 Z";
 const plainShirt = n => `<svg class="shirt" viewBox="0 0 40 40" aria-hidden="true"><path d="${SHIRT_PATH}" fill="#d9dedb"/><path d="${SHIRT_PATH}" fill="none" stroke="#9aa3a0" stroke-width=".8"/><text x="20" y="26.3" text-anchor="middle" font-size="${n != null && String(n).length > 1 ? 11 : 12.5}" font-weight="800" fill="#14201b" font-family="-apple-system,Inter,Arial,sans-serif">${n ?? ""}</text></svg>`;
-const pshirt = p => p.team === DATA.miEquipo ? shirt(p.dorsal) : kitSVG(p.team, p.dorsal, "shirt");
+const pshirt = p => IS_MAIN && p.team === DATA.miEquipo ? shirt(p.dorsal) : kitSVG(p.team, p.dorsal, "shirt");
 const shirt = n => `<svg class="shirt" viewBox="0 0 40 40" aria-hidden="true"><path d="${SHIRT_PATH}" fill="#111"/><g clip-path="url(#shirtClip)"><rect x="9" y="0" width="4.4" height="40" fill="#fff"/><rect x="17.8" y="0" width="4.4" height="40" fill="#fff"/><rect x="26.6" y="0" width="4.4" height="40" fill="#fff"/></g><path d="${SHIRT_PATH}" fill="none" stroke="#9aa3a0" stroke-width=".8"/><rect x="12.5" y="16" width="15" height="13" rx="1.5" fill="#fff"/><text x="20" y="26.3" text-anchor="middle" font-size="${n != null && String(n).length > 1 ? 10.5 : 12}" font-weight="800" fill="#d71920" font-family="-apple-system,Inter,Arial,sans-serif">${n ?? ""}</text></svg>`;
 const CATS = [["all", "Todos"], ["jug", "Jugador"], ["pop", "Populares"], ["gol", "Goles"], ["mit", "Mitades"], ["crn", "Córners"], ["crd", "Tarjetas"], ["esp", "Especiales"]];
 function marketGroups(m) {
@@ -1683,9 +1713,27 @@ function futView() {
     : ft === "gol" ? ["pich", "xmas"].map(k => acc(by(k))).join("") + tacc
     : almAcc + ["apos", "agol"].map(k => acc(by(k))).join("");
   return `<h2 style="margin:4px 0 0;font-family:var(--f-cond);font-size:22px">Temporada</h2>
-    <div class="mb-tabs">${[["liga", "Liga"], ["gol", "Goleadores"], ["alm", "Almazora C"]].map(([k, t]) => `<button data-ftab="${k}" class="${ft === k ? "on" : ""}">${t}</button>`).join("")}</div>
+    <div class="mb-tabs">${[["liga", "Liga"], ["gol", "Goleadores"], ["alm", DATA.corto]].map(([k, t]) => `<button data-ftab="${k}" class="${ft === k ? "on" : ""}">${t}</button>`).join("")}</div>
     <div class="block">${sec}</div>
     <div class="block"><div class="note">Se resuelven a final de temporada (o en Navidad y al acabar la primera vuelta). Solo sencillas. Si dos goleadores empatan, el pago se reparte.</div></div>`;
+}
+// Ligas: las mías, invitar, unirse con código y crear una nueva
+function ligasView() {
+  const L = S.leagues || [], cur = CUR_LG, curL = L.find(l => l.id === cur), cr = S.lgCreate || {};
+  const list = L.map(l => `<div class="lg-row ${l.id === cur ? "on" : ""}"><div><b>${esc(l.name)}</b><small>${esc(l.team)}${l.admin ? " · Eres el admin" : ""}</small></div>${l.id === cur && S.store === "sb" ? `<span class="lg-cur">Abierta</span>` : `<button class="abtn pri" data-lgo="${esc(l.id)}">Abrir</button>`}</div>`).join("");
+  return `<h2 style="margin:4px 0 0;font-family:var(--f-cond);font-size:22px">Ligas</h2>
+    ${S.lgErr ? `<div class="block empty">${esc(S.lgErr)}</div>` : ""}
+    ${L.length ? `<div class="block"><div class="bh">Mis ligas</div>${list}</div>` : `<div class="block"><div class="note">Todavía no estás en ninguna liga. Únete con el código que te pasen o crea la tuya.</div></div>`}
+    ${curL && S.store === "sb" ? `<div class="block"><div class="bh">Invitar a esta liga</div><div class="lg-code"><b>${esc(curL.code)}</b><button class="abtn" data-lgshare="${esc(curL.code)}">Compartir código</button></div><div class="note">Quien tenga el código entra con su cuenta de AlmaBet. Los que ya están dentro no tienen que volver a ponerlo.</div></div>` : ""}
+    <div class="block"><div class="bh">Unirse con código</div><div class="lg-form"><input id="lg-code" placeholder="Código de 6 letras" autocapitalize="characters" autocomplete="off" maxlength="8"><button class="abtn pri" data-lgjoin="1">Unirme</button></div></div>
+    <div class="block"><div class="bh">Crear una liga</div><div class="lg-form col">
+      <label for="lg-url">Enlace del grupo en El Balón de la Comunitat</label><input id="lg-url" placeholder="https://www.elbalondelacomunitat.es/competicion/…/grupo/…" autocomplete="off" value="${esc(cr.url || "")}">
+      ${cr.teams ? `<label for="lg-team">${esc(cr.liga)} · Tu equipo</label><select id="lg-team">${cr.teams.map(t => `<option>${esc(t)}</option>`).join("")}</select>
+        <label for="lg-name">Nombre de la liga (opcional)</label><input id="lg-name" maxlength="40" placeholder="Ej.: Los del vestuario" autocomplete="off"><button class="abtn pri" data-lgcreate="1" ${cr.busy ? "disabled" : ""}>Crear liga</button>`
+        : `<button class="abtn" data-lgfind="1" ${cr.busy ? "disabled" : ""}>Buscar grupo</button>`}
+      ${cr.busy ? `<div class="note">${esc(cr.busy)}</div>` : ""}<div class="note">Tú serás el admin: metes los eventos de los partidos y das o quitas saldo. Los datos del grupo (clasificación, plantillas y partidos) se actualizan solos desde las actas.</div>
+    </div></div>
+    ${S.store === "noleague" ? `<button class="abtn" data-logout="1">Cerrar sesión (${esc(S.me || "")})</button>` : ""}`;
 }
 function betsView() {
   const bets = S.wallet.bets;
@@ -1902,7 +1950,8 @@ function render() {
   document.querySelectorAll("#tabs button").forEach(b => b.classList.toggle("on", b.dataset.view === S.view || (S.view === "detail" && b.dataset.view === "home")));
   patch(document.getElementById("side"), sideHTML());
   const v = S.view;
-  patch(document.getElementById("main"), S.store === "auth" ? authView() : v === "detail" ? detailView() : v === "bets" ? betsView() : v === "table" ? tableView() : v === "rank" ? rankingView() : v === "fut" ? futView() : v === "player" ? playerView() : v === "how" ? howView() : listView(v === "live"));
+  { const lb = document.getElementById("lgBtn"); if (lb) { lb.hidden = S.store !== "sb" && S.store !== "noleague"; lb.textContent = (S.league_ ? S.league_.name : "Ligas") + " ▾"; } }
+  patch(document.getElementById("main"), S.store === "auth" ? authView() : S.store === "noleague" || v === "ligas" ? ligasView() : v === "detail" ? detailView() : v === "bets" ? betsView() : v === "table" ? tableView() : v === "rank" ? rankingView() : v === "fut" ? futView() : v === "player" ? playerView() : v === "how" ? howView() : listView(v === "live"));
   const slip = document.getElementById("slip");
   patch(slip, slipHTML());
   slip.classList.toggle("open", S.slipOpen && S.slip.length > 0);
@@ -1915,7 +1964,7 @@ function render() {
 
 function place() {
   const d = slipData(); S.msg = "";
-  if (S.store === "sb" && S.admin) { S.msg = "La cuenta de administrador no apuesta. Entra con tu cuenta de jugador."; return render(); }
+  if (S.store === "sb" && S.admin && IS_MAIN) { S.msg = "La cuenta de administrador no apuesta. Entra con tu cuenta de jugador."; return render(); }
   if (d.some(x => !x.susp && x.odds !== x.added)) { S.msg = "Han cambiado las cuotas: acepta los cambios."; return render(); }
   const mk = legs => legs.map(x => ({ mid: x.mid, mk: x.mk, oc: x.oc, label: x.label, mname: x.mname, match: x.fut ? "Temporada · " + LIGA : x.m.home.nombre + " v " + x.m.away.nombre, odds: x.odds, status: "pending",
     ...(x.m && x.mk === "1x2" && x.oc !== "X" && x.m.status === "pre" ? { ea: 1 } : {}) }));
@@ -1943,6 +1992,16 @@ document.addEventListener("click", e => {
   else if (ds.league !== undefined) { S.league = ds.league || null; S.view = "home"; }
   else if (ds.player !== undefined) { S.view = "player"; S.player = +ds.player; S.q = ""; window.scrollTo(0, 0); }
   else if (ds.ftab) S.futTab = ds.ftab;
+  else if (ds.lgo) return switchLg(ds.lgo);
+  else if (ds.lgjoin) { const c = (document.getElementById("lg-code") || {}).value || "";
+    api("joinLeague", { code: c }).then(j => switchLg(j.id), e => toast(e.message)); return; }
+  else if (ds.lgfind) { const u = (document.getElementById("lg-url") || {}).value || ""; S.lgCreate = { url: u, busy: "Buscando el grupo…" }; render();
+    api("groupTeams", { group: u }).then(j => { S.lgCreate = { url: u, teams: j.teams, liga: j.liga }; render(); }, e => { S.lgCreate = { url: u }; toast(e.message); render(); }); return; }
+  else if (ds.lgcreate) { const cr = S.lgCreate || {}, team = (document.getElementById("lg-team") || {}).value, name = (document.getElementById("lg-name") || {}).value || "";
+    S.lgCreate = { ...cr, busy: "Creando la liga y leyendo las actas del grupo. Puede tardar un poco…" }; render();
+    api("createLeague", { group: cr.url, team, name }).then(j => switchLg(j.id), e => { S.lgCreate = { ...cr, busy: "" }; toast(e.message); render(); }); return; }
+  else if (ds.lgshare) { const txt = "Únete a mi liga de AlmaBet con el código " + ds.lgshare + " en " + location.origin;
+    if (navigator.share) navigator.share({ text: txt }).catch(() => {}); else if (navigator.clipboard) navigator.clipboard.writeText(txt).then(() => toast("Copiado")); return; }
   else if (ds.fpick) { const [, mk, oc] = ds.fpick.split("|"), i = S.slip.findIndex(s => s.key === ds.fpick);
     if (i >= 0) S.slip.splice(i, 1);
     else { const k = futMarket(mk), o = k && k.outcomes.find(x => x.k === oc);
@@ -2028,6 +2087,20 @@ document.addEventListener("change", e => {
 
 render(); connect();
 setInterval(() => { settle(); render(); }, 1000);
+</script>
+<script>
+// Carga la liga elegida antes de arrancar la app (tu liga original va dentro del propio código)
+(function () {
+  var CFG = window.ALMABET_CONFIG || {}, adm = /^\/admin/.test(location.pathname), get = function (k) { try { return localStorage.getItem(k) || ""; } catch (e) { return ""; } };
+  var tok = get("almabet-token" + (adm ? "-admin" : "")), lg = get("almabet-lg" + (adm ? "-admin" : ""));
+  window.__LG = lg;
+  function run() { var s = document.createElement("script"); s.textContent = document.getElementById("app-src").textContent; document.body.appendChild(s); }
+  if (!CFG.api || !tok || !lg || lg === "main") return run();
+  fetch(CFG.api, { method: "POST", headers: { "Content-Type": "application/json", Authorization: "Bearer " + tok }, body: JSON.stringify({ action: "leagueData", lg: lg }) })
+    .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
+    .then(function (x) { if (x.ok && x.j.data) window.__LGDATA = x.j; else window.__LGERR = (x.j && x.j.error) || "No se ha podido cargar la liga."; run(); })
+    .catch(function () { window.__LGERR = "Sin conexión."; run(); });
+})();
 </script>
 
 <script>if ("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js").catch(() => {});</script>

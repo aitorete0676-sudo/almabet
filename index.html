@@ -1074,8 +1074,34 @@ function doCashout(id) {
 }
 
 /* ===================== TARJETA DE APUESTA ===================== */
+// Primera equipación de cada equipo (de las fotos del usuario). base, rayas verticales (st), mangas (sl), pico en V (v), color del dorsal (num)
+const KITS = {
+  "C.F. Atlético Tales": { base: "#fff", st: "#111", sl: "#111", num: "#111" },
+  "C.D. San Lorenzo de Castellón": { base: "#fff", v: "#0a1cf0", num: "#0a1cf0" },
+  "C.F. Joventut Almassora 'A'": { base: "#f09a45", num: "#111" },
+  "La Vilavella C.F. 'A'": { base: "#e83324", num: "#fff" },
+  "C.F. Rafalafena de Castellón": { base: "#111", num: "#fff" },
+  "C.D. La Magdalena 'A'": { base: "#111", num: "#fff" },
+  "Eture F.C. 'B'": { base: "#e83324", num: "#fff" },
+  "C.F. San Pedro 'B'": { base: "#0a1cf0", num: "#fff" },
+  "C.F. Borriol": { base: "#e83324", num: "#fff" },
+  "Pampa Castellón F.C.": { base: "#5aa0f5", num: "#fff" },
+  "C.D. Drac Castellón 'A'": { base: "#76f54a", st: "#111", sl: "#111", num: "#111" },
+  "F.C. Odisea 'B'": { base: "#111", num: "#fff" },
+  "C.F. Moro 'A'": { base: "#76f54a", num: "#111" },
+  "C.D. Castellón S.A.D. 'C'": { base: "#fff", st: "#111", num: "#111" },
+  "C.D. Ribesalbes 'B'": { base: "#fff", num: "#111" }
+};
+const kitSVG = (nm, n, cls) => { const k = KITS[nm] || { base: "#d9dedb", num: "#14201b" };
+  const light = /^#(f|e|d|7|5)/i.test(k.base) && k.base !== "#5aa0f5";
+  const deco = (k.st ? (k.sl ? `<rect x="14.6" y="0" width="3.4" height="40" fill="${k.st}"/><rect x="22" y="0" width="3.4" height="40" fill="${k.st}"/>`
+      : `<rect x="10.5" y="0" width="3.6" height="40" fill="${k.st}"/><rect x="18.2" y="0" width="3.6" height="40" fill="${k.st}"/><rect x="25.9" y="0" width="3.6" height="40" fill="${k.st}"/>`) : "")
+    + (k.sl ? `<rect x="0" y="0" width="11" height="22" fill="${k.sl}"/><rect x="29" y="0" width="11" height="22" fill="${k.sl}"/>` : "")
+    + (k.v ? `<path d="M11 4 L16 4 L20 11 L24 4 L29 4 L20 17.5 Z" fill="${k.v}"/>` : "");
+  const num = n == null ? "" : `<text x="20" y="${k.v ? 30.5 : k.st ? 27 : 26.3}" text-anchor="middle" font-size="${String(n).length > 1 ? 11 : 12.5}" font-weight="800" fill="${k.num}" ${k.st ? `stroke="${k.base}" stroke-width="2.4" paint-order="stroke"` : ""} font-family="-apple-system,Inter,Arial,sans-serif">${n}</text>`;
+  return `<svg class="${cls}" viewBox="0 0 40 40" aria-hidden="true"><path d="${SHIRT_PATH}" fill="${k.base}"/><g clip-path="url(#shirtClip)">${deco}</g><path d="${SHIRT_PATH}" fill="none" stroke="${light ? "#9aa3a0" : "rgba(255,255,255,.25)"}" stroke-width=".8"/>${num}</svg>`; };
 const teamShirt = nm => nm === DATA.miEquipo ? `<svg class="tshirt" viewBox="0 0 40 40" aria-hidden="true"><path d="${SHIRT_PATH}" fill="#111"/><g clip-path="url(#shirtClip)"><rect x="9" y="0" width="4.4" height="40" fill="#fff"/><rect x="17.8" y="0" width="4.4" height="40" fill="#fff"/><rect x="26.6" y="0" width="4.4" height="40" fill="#fff"/></g></svg>`
-  : `<svg class="tshirt" viewBox="0 0 40 40" aria-hidden="true"><path d="${SHIRT_PATH}" fill="#8d9893"/></svg>`;
+  : kitSVG(nm, null, "tshirt");
 function legCount(l, m) {   // mercados de contar: valor actual y línea
   const k = markets(m).list.find(x => x.key === l.mk); if (!k) return null;
   const pl = /^p(st|sh)(\d)$/.exec(l.mk);
@@ -1337,10 +1363,10 @@ function detailView() {
 const PART = new Set(["de", "del", "la", "las", "los", "y", "da", "van"]);
 const shortName = n => { const w = n.trim().split(/\s+/); if (w.length < 2) return n;
   const g = []; let pre = []; w.slice(1).forEach(x => { if (PART.has(x.toLowerCase())) pre.push(x); else { g.push(pre.concat(x).join(" ")); pre = []; } });
-  if (!g.length) return n; return w[0][0] + ". " + (g.length >= 2 ? g[g.length - 2] : g[0]); };
+  if (!g.length) return n; const c = g.length >= 2 && g[g.length - 2].replace(/\./g, "").length > 2 ? g[g.length - 2] : g[g.length - 1]; return w[0][0] + ". " + c; };
 const SHIRT_PATH = "M13 5 L5 10 L8 18 L11 16.5 L11 36 L29 36 L29 16.5 L32 18 L35 10 L27 5 Q20 10 13 5 Z";
 const plainShirt = n => `<svg class="shirt" viewBox="0 0 40 40" aria-hidden="true"><path d="${SHIRT_PATH}" fill="#d9dedb"/><path d="${SHIRT_PATH}" fill="none" stroke="#9aa3a0" stroke-width=".8"/><text x="20" y="26.3" text-anchor="middle" font-size="${n != null && String(n).length > 1 ? 11 : 12.5}" font-weight="800" fill="#14201b" font-family="-apple-system,Inter,Arial,sans-serif">${n ?? ""}</text></svg>`;
-const pshirt = p => p.team === DATA.miEquipo ? shirt(p.dorsal) : plainShirt(p.dorsal);
+const pshirt = p => p.team === DATA.miEquipo ? shirt(p.dorsal) : kitSVG(p.team, p.dorsal, "shirt");
 const shirt = n => `<svg class="shirt" viewBox="0 0 40 40" aria-hidden="true"><path d="${SHIRT_PATH}" fill="#111"/><g clip-path="url(#shirtClip)"><rect x="9" y="0" width="4.4" height="40" fill="#fff"/><rect x="17.8" y="0" width="4.4" height="40" fill="#fff"/><rect x="26.6" y="0" width="4.4" height="40" fill="#fff"/></g><path d="${SHIRT_PATH}" fill="none" stroke="#9aa3a0" stroke-width=".8"/><rect x="12.5" y="16" width="15" height="13" rx="1.5" fill="#fff"/><text x="20" y="26.3" text-anchor="middle" font-size="${n != null && String(n).length > 1 ? 10.5 : 12}" font-weight="800" fill="#d71920" font-family="-apple-system,Inter,Arial,sans-serif">${n ?? ""}</text></svg>`;
 const CATS = [["all", "Todos"], ["jug", "Jugador"], ["pop", "Populares"], ["gol", "Goles"], ["mit", "Mitades"], ["crn", "Córners"], ["crd", "Tarjetas"], ["esp", "Especiales"]];
 function marketGroups(m) {

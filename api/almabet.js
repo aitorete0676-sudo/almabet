@@ -6,7 +6,10 @@ const URL_ = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
 const TOKEN = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
 const START = 1000;
 
+// Todas las claves llevan "ab:" delante, por si la base de datos se comparte con otra app.
+const P = "ab:";
 async function redis(...cmd) {
+  if (cmd.length > 1) cmd[1] = P + cmd[1];
   const r = await fetch(URL_, { method: "POST", headers: { Authorization: "Bearer " + TOKEN, "Content-Type": "application/json" }, body: JSON.stringify(cmd) });
   const j = await r.json();
   if (j.error) throw new Error(j.error);

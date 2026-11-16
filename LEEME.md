@@ -18,7 +18,7 @@ Solo necesitas **GitHub** (guarda el código) y **Vercel** (la web y la base de 
 ## 3. Vercel: la base de datos (cuentas y saldos)
 
 1. Dentro del proyecto, pestaña **Storage > Create Database**.
-2. Elige **Upstash for Redis** (plan gratis) y pulsa **Create**. Cuando pregunte, conéctala al proyecto `almabet`.
+2. Elige **Upstash for Redis** (plan gratis) y pulsa **Create**. Cuando pregunte, conéctala al proyecto `almabet`. Si ya tienes una base de datos gratis de otra app (por ejemplo `bebagua-db`), conecta esa: AlmaBet guarda todo con el prefijo `ab:` y no se mezcla.
 3. Ve a **Deployments**, en el último pulsa **⋯ > Redeploy**. Así la web ya ve la base de datos.
 
 ## 4. Tus dos cuentas: administrador y jugador

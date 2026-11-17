@@ -1,7 +1,7 @@
 // AlmaBet · servidor en Vercel. Guarda usuarios, carteras y partidos en Upstash Redis
 // (Vercel > Storage > Upstash for Redis). No hace falta tocar nada aquí.
 const crypto = require("crypto");
-const { buildGroup, getJSON } = require("../lib/ffcv.js");
+const { buildGroup, upcomingGroup, getJSON } = require("../lib/ffcv.js");
 
 // Vale cualquier prefijo que ponga Vercel al conectar la base de datos (KV_, STORAGE_, UPSTASH_REDIS_...)
 const envKey = suf => process.env["KV" + suf] ? "KV" + suf : Object.keys(process.env).find(k => k.endsWith(suf) && !k.includes("READ_ONLY"));
@@ -173,7 +173,9 @@ module.exports = async (req, res) => {
       const ids = ((await redis("SMEMBERS", "comps")) || []).sort((x, y) => ((ORDER.indexOf(x) + 1) || 99) - ((ORDER.indexOf(y) + 1) || 99) || x.localeCompare(y));
       const out = await Promise.all(ids.map(async id => { const C = await getJ("comp:" + id); if (!C) return null;
         try { return { comp: { id, name: C.name, team: C.team || "", full: C.full || [] }, data: await compData(id, b.refresh && superAdmin) }; } catch (e) { return null; } }));
-      return send(200, { comps: out.filter(Boolean) });
+      let main = await getJ("lgnext:" + MAIN_GROUP);   // calendario de las próximas jornadas de la Tercera G2
+      if (!main || Date.now() - main.updated > 6 * 3600e3 || (b.refresh && superAdmin)) { try { main = await upcomingGroup(MAIN_GROUP); await setJ("lgnext:" + MAIN_GROUP, main); } catch (e) {} }
+      return send(200, { comps: out.filter(Boolean), main: main || null });
     }
     if (a === "createLeague") {   // liga de amigos: solo nombre; se apuesta en todas las competiciones
       const name = String(b.name || "").trim().slice(0, 40);

@@ -643,6 +643,9 @@ EXTRA.forEach(c => { const nm = c.comp.name || c.data.liga;
   DATA.ligas.push({ nombre: nm, equipos: c.data.equipos || [], comp: c.comp.id, team: c.comp.team || "" });
   Object.assign(DATA.plantillas = DATA.plantillas || {}, c.data.plantillas || {});
   (c.data.partidos || []).forEach(p => DATA.partidos.push({ ...p, liga: nm })); });
+// Tercera G2: las jornadas siguientes que manda el servidor (las que ya están en DATA_MAIN no se repiten)
+((window.__MAINNEXT || {}).partidos || []).forEach(p => { if (!DATA.partidos.some(q => q.local === p.local && q.visitante === p.visitante && (q.jornada === p.jornada || q.id === p.id)))
+  DATA.partidos.push({ ...p, liga: DATA.ligas[0].nombre }); });
 DATA.corto = "Almazora C"; DATA.ligas[0].team = DATA.miEquipo;
 const LIGA = DATA.ligas[0].nombre;
 // Mercados completos (córners, remates, asistencias) solo en partidos de los equipos que se siguen en directo; el resto, solo lo que sale en las actas
@@ -2249,7 +2252,7 @@ setInterval(() => { settle(); render(); }, 1000);
   if (!CFG.api || !tok) return run();
   fetch(CFG.api, { method: "POST", headers: { "Content-Type": "application/json", Authorization: "Bearer " + tok }, body: JSON.stringify({ action: "compsData", lg: lg }) })
     .then(function (r) { return r.json(); })
-    .then(function (j) { window.__COMPS = j.comps || []; if (j.error) window.__LGERR = j.error; run(); })
+    .then(function (j) { window.__COMPS = j.comps || []; window.__MAINNEXT = j.main; if (j.error) window.__LGERR = j.error; run(); })
     .catch(function () { run(); });
 })();
 </script>

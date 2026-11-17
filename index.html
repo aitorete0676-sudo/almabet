@@ -1970,7 +1970,22 @@ function simsWhere(m, legs) {
   const set = simSet(m), sig = legs.map(l => l.mk + ":" + l.oc).sort().join(",");
   return set.sub[sig] ??= set.sims.filter(f => legs.every(l => legResult(l, f) === "won"));
 }
-function jointProb(m, legs) { return simsWhere(m, legs).length / NSIM; }
+// Probabilidad de que salgan todas a la vez. Si la simulación tiene pocos casos (combinaciones raras pero posibles),
+// se estima con las probabilidades sueltas y la relación entre cada par. Solo es imposible (0) si un par nunca coincide
+// cuando debería haber coincidido muchas veces (p. ej. gana el local y gana el visitante).
+function legP(m, l) { const c = simsWhere(m, [l]).length; if (c >= 30) return c / NSIM;
+  const mk = markets(m).list.find(k => k.key === l.mk), o = mk && mk.outcomes.find(x => x.k === l.oc);
+  return o && o.p ? o.p : Math.max(c, 0.5) / NSIM; }
+function jointProb(m, legs) {
+  const hits = simsWhere(m, legs).length; if (hits >= 40 || legs.length < 2) return hits / NSIM;
+  const ps = legs.map(l => legP(m, l)); let p = ps.reduce((a, x) => a * x, 1);
+  for (let i = 0; i < legs.length; i++) for (let j = i + 1; j < legs.length; j++) {
+    const h = simsWhere(m, [legs[i], legs[j]]).length, exp = ps[i] * ps[j] * NSIM;
+    if (exp >= 15 && h === 0) return 0;
+    if (exp >= 15 || h >= 5) p *= Math.min(5, Math.max(0.2, h / exp));
+  }
+  return Math.min(p, ...ps);
+}
 // Cuota que se muestra en un botón cuando ya hay selecciones del mismo partido en el boleto: probabilidad condicionada
 function condOdds(m, mkt, oc) {
   if (oc.odds == null || m.status === "ft" || m.suspended) return oc.odds;
@@ -1978,10 +1993,10 @@ function condOdds(m, mkt, oc) {
   simSet(m);
   const ck = same.map(s => s.mk + ":" + s.oc).sort().join(",") + ">" + mkt.key + ":" + oc.k, cc = condCache[m.id];
   if (ck in cc) return cc[ck];
-  const base = simsWhere(m, same);
-  if (base.length < 150) return cc[ck] = oc.odds;
-  const p = base.filter(f => legResult({ mk: mkt.key, oc: oc.k }, f) === "won").length / base.length;
-  return cc[ck] = p < 0.003 ? null : Math.min(501, Math.max(1.01, roundOdds(1 / (p * (1 + SAME_MARGIN)))));
+  const legs = same.map(s => ({ mk: s.mk, oc: s.oc })), pb = jointProb(m, legs);
+  if (pb <= 0) return cc[ck] = oc.odds;
+  const pa = jointProb(m, legs.concat({ mk: mkt.key, oc: oc.k })), p = pa / pb;
+  return cc[ck] = pa <= 0 ? null : Math.min(501, Math.max(1.01, roundOdds(1 / (Math.min(0.99, p) * (1 + SAME_MARGIN)))));
 }
 // Cuota total de un boleto combinado: partidos distintos se multiplican; selecciones del mismo partido, por simulación
 function comboInfo(d) {
@@ -1994,7 +2009,7 @@ function comboInfo(d) {
   for (const mid in groups) { const g = groups[mid];
     if (g.length === 1) { odds *= g[0].odds || 0; continue; }
     const m = g[0].m, p = jointProb(m, g.map(x => ({ mk: x.mk, oc: x.oc })));
-    if (p < 0.003) return { ok: false, why: "Esas selecciones del mismo partido no pueden darse a la vez." };
+    if (p <= 0) return { ok: false, why: "Esas selecciones del mismo partido no pueden darse a la vez." };
     const o = Math.min(501, Math.max(1.01, roundOdds(1 / (p * (1 + SAME_MARGIN)))));
     odds *= o; parts.push({ m, n: g.length, odds: o, naive: g.reduce((a, x) => a * x.odds, 1) });
   }

@@ -96,7 +96,7 @@ async function allMatches() {   // estados de todos los partidos de todas las co
   return o;
 }
 async function compData(comp, refresh) {
-  const ck = "lgdata2:" + comp; let d = await getJ(ck);
+  const ck = "lgdata3:" + comp; let d = await getJ(ck);
   const stale = !d || Date.now() - d.updated > 6 * 3600e3 || d.pendingActas > 0 || refresh;
   if (stale) { try { d = await buildGroup({ groupId: comp, getJ, setJ, maxActas: 12 }); await setJ(ck, d); } catch (e) { if (!d) throw e; } }
   return d;

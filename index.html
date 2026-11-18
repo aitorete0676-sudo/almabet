@@ -644,8 +644,14 @@ EXTRA.forEach(c => { const nm = c.comp.name || c.data.liga;
   Object.assign(DATA.plantillas = DATA.plantillas || {}, c.data.plantillas || {});
   (c.data.partidos || []).forEach(p => DATA.partidos.push({ ...p, liga: nm })); });
 // Tercera G2: las jornadas siguientes que manda el servidor (las que ya están en DATA_MAIN no se repiten)
-((window.__MAINNEXT || {}).partidos || []).forEach(p => { if (!DATA.partidos.some(q => q.local === p.local && q.visitante === p.visitante && (q.jornada === p.jornada || q.id === p.id)))
-  DATA.partidos.push({ ...p, liga: DATA.ligas[0].nombre }); });
+// La FFCV a veces escribe distinto el mismo equipo ("C. F. Atlético Tales", "PAMPA CASTELLÓN FÚTBOL CLUB"): se usa el nombre de la clasificación.
+// Si el partido ya está metido a mano, solo se actualiza la fecha y hora (la de la FFCV manda).
+{ const nk = t => String(t || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/futbol club/g, "fc").replace(/club de futbol/g, "cf").replace(/[^a-z0-9]/g, "");
+  const byK = {}; DATA.ligas[0].equipos.forEach(e => byK[nk(e.nombre)] = e.nombre);
+  const fix = t => byK[nk(t)] || t;
+  ((window.__MAINNEXT || {}).partidos || []).forEach(p0 => { const p = { ...p0, local: fix(p0.local), visitante: fix(p0.visitante), liga: DATA.ligas[0].nombre };
+    const q = DATA.partidos.find(q => q.id === p.id || (q.jornada === p.jornada && [q.local, q.visitante].sort().join("|") === [p.local, p.visitante].sort().join("|")));
+    if (q) { if (p.fecha) q.fecha = p.fecha; } else DATA.partidos.push(p); }); }
 DATA.corto = "Almazora C"; DATA.ligas[0].team = DATA.miEquipo;
 const LIGA = DATA.ligas[0].nombre;
 // Mercados completos (córners, remates, asistencias) solo en partidos de los equipos que se siguen en directo; el resto, solo lo que sale en las actas

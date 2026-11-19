@@ -95,6 +95,26 @@ async function allMatches() {   // estados de todos los partidos de todas las co
   }
   return o;
 }
+// --- Cierre de apuestas: nada de apostar cuando el partido ha empezado ---
+const madridMs = s => { const m = /^(\d+)-(\d+)-(\d+)T(\d+):(\d+)/.exec(s || ""); if (!m) return NaN;
+  const u = Date.UTC(+m[1], m[2] - 1, +m[3], +m[4], +m[5]), loc = Date.parse(new Date(u).toLocaleString("en-US", { timeZone: "Europe/Madrid" }) + " GMT");
+  return u - (loc - u); };
+const J9 = { "j9-1": "a26498357", "j9-2": "a26498355", "j9-3": "a26498359", "j9-4": "a26498358", "j9-5": "a26498356", "j9-6": "a26498360", "j9-7": "a26498353", "j9-8": "a26498354" };
+async function kickoffs() {   // id de partido -> fecha "AAAA-MM-DDTHH:MM" (hora de Madrid)
+  const k = {}, add = d => ((d && d.partidos) || []).forEach(p => { if (p.fecha) k[p.id] = p.fecha; });
+  add(await getJ("lgnext:" + MAIN_GROUP));
+  for (const c of (await redis("SMEMBERS", "comps")) || []) add(await getJ("lgdata3:" + c));
+  for (const j in J9) if (k[J9[j]]) k[j] = k[J9[j]];
+  return k;
+}
+async function startedLeg(bets, oldBets) {   // devuelve true si alguna apuesta nueva toca un partido ya empezado
+  const old = new Set((oldBets || []).map(x => x.id)), fresh = bets.filter(x => x && !old.has(x.id));
+  const legs = [].concat(...fresh.map(x => Array.isArray(x.legs) ? x.legs : [])).filter(l => l && !/^fut/.test(String(l.mid)));
+  if (!legs.length) return false;
+  const st = await allMatches(), ko = await kickoffs(), now = Date.now();
+  return legs.some(l => { const s = st[l.mid] || {}; if (s.phase && s.phase !== "pre") return true;
+    const t = madridMs(s.fecha || ko[l.mid]); return !isNaN(t) && now >= t; });
+}
 async function compData(comp, refresh) {
   const ck = "lgdata3:" + comp; let d = await getJ(ck);
   const stale = !d || Date.now() - d.updated > 6 * 3600e3 || d.pendingActas > 0 || refresh;
@@ -235,6 +255,8 @@ module.exports = async (req, res) => {
       if (!realMember) return send(403, { error: "Gestionas esta liga, pero no juegas en ella." });
       const w = { balance: +b.balance, bets: Array.isArray(b.bets) ? b.bets : [], bonusIds: Array.isArray(b.bonusIds) ? b.bonusIds.slice(-200) : [], moves: Array.isArray(b.moves) ? b.moves.slice(0, 50) : [], lastPay: String(b.lastPay || "").slice(0, 7) };
       if (!isFinite(w.balance)) return send(400, { error: "Saldo no válido." });
+      const prev = await getJ(KK.wallet(me.name));
+      if (await startedLeg(w.bets, prev && prev.bets)) return send(409, { error: "Ese partido ya ha empezado: no se puede apostar." });
       await setJ(KK.wallet(me.name), w);
       return send(200, { ok: true });
     }

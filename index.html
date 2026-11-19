@@ -948,6 +948,8 @@ function build(f) {
     else if (e.t === "sub") { if (P_) { P_.off = 1; if (e.in != null && m.ps[e.in]) m.subIn[e.p] = e.in; } }
   });
   m.suspended = m.status !== "ft" && (st.susp || now < (st.suspUntil || 0));
+  // Apuestas cerradas en cuanto empieza el partido (o llega su hora aunque el admin no lo haya marcado)
+  { const t = m.fecha ? Date.parse(m.fecha) : NaN; m.closed = m.status !== "pre" || (!isNaN(t) && now >= t); }
   return m;
 }
 const allMatches = () => FIX.map(build);
@@ -1001,7 +1003,7 @@ async function api(action, body) {
 }
 async function sbSaveWallet() {
   if (sbBusy) { sbDirty = true; return; } sbBusy = true;
-  try { await api("wallet", { balance: S.wallet.balance, bets: S.wallet.bets, bonusIds: S.wallet.bonusIds, moves: S.wallet.moves, lastPay: S.wallet.lastPay }); } catch (e) { toast("No se ha podido guardar. Revisa la conexión."); }
+  try { await api("wallet", { balance: S.wallet.balance, bets: S.wallet.bets, bonusIds: S.wallet.bonusIds, moves: S.wallet.moves, lastPay: S.wallet.lastPay }); } catch (e) { if (e.status === 409) { toast(e.message); setTimeout(() => location.reload(), 1800); } else toast("No se ha podido guardar. Revisa la conexión."); }
   sbBusy = false; if (sbDirty) { sbDirty = false; sbSaveWallet(); } else sbRanking();
 }
 async function sbRanking() { try { const { ranking } = await api("ranking"); S.ranking = ranking; ranking.forEach(r => S.names[r.id] = { name: r.username }); render(); } catch (e) {} }
@@ -1488,7 +1490,7 @@ function oddBtn(m, mkt, oc, showLabel) {
   if (prev != null && oc.odds != null && prev !== oc.odds) S.flash[key] = { dir: oc.odds > prev ? "up" : "down", until: now + 4000 };
   S.prev[key] = oc.odds;
   const fl = S.flash[key] && S.flash[key].until > now ? S.flash[key].dir : "";
-  const closed = oc.odds == null || m.suspended;
+  const closed = oc.odds == null || m.suspended || m.closed;
   const sel = S.slip.some(s => s.key === key);
   const inner = (showLabel ? `<span class="l">${esc(oc.label)}</span>` : "") + `<span class="v">${sel ? CHECK : closed ? LOCK : fo(oc.odds)}</span>`;
   return `<button class="o ${sel ? "sel" : ""} ${fl}" data-pick="${key}" ${closed ? "disabled" : ""} aria-label="${esc(oc.label)} ${fo(oc.odds)}">${inner}</button>`;
@@ -1510,7 +1512,7 @@ function rowHTML(m) {
 function legOf(m, key, oc) { const k = markets(m).list.find(x => x.key === key), o = k && k.outcomes.find(x => x.k === String(oc));
   return o && o.odds != null ? { key: m.id + "|" + key + "|" + o.k, mid: m.id, mk: key, oc: o.k, label: o.label, mname: k.name, added: o.odds, odds: o.odds, m, susp: m.suspended } : null; }
 function presetCombos(m) {
-  const mk = markets(m).list, side = sideOf(m); if (side < 0 || m.status === "ft") return [];
+  const mk = markets(m).list, side = sideOf(m); if (side < 0 || m.status === "ft" || m.closed) return [];
   const best = (key, n) => { const k = mk.find(x => x.key === key); return k ? k.outcomes.filter(o => o.odds != null).sort((a, b) => a.odds - b.odds).slice(0, n) : []; };
   const sc = best("pg1", 3), ga = best("pga", 3), yl = best("pye", 2), st = best("pst1", 3);
   const win = side === 0 ? "1" : "2", dc = side === 0 ? "1X" : "X2";
@@ -1530,7 +1532,7 @@ const boostOf = o => Math.max(Math.round((o + 0.1) * 100) / 100, roundOdds(o * B
 // En cualquier partido: entre 3 y 6 SuperCuotas. Si no juega un Almazora, se monta sobre el favorito.
 const favSide = m => { const k = markets(m).list.find(x => x.key === "1x2"); return k && (k.outcomes[2].odds ?? 99) < (k.outcomes[0].odds ?? 99) ? 1 : 0; };
 function boosts(m) {
-  if (!m || m.status === "ft") return [];
+  if (!m || m.status === "ft" || m.closed) return [];
   const mk = markets(m).list, side = sideOf(m), f = side >= 0 ? side : favSide(m), win = f ? "2" : "1", dc = f ? "X2" : "1X", fs = f ? "a" : "h";
   const best = (key, n, sd) => { const k = mk.find(x => x.key === key); return k ? k.outcomes.filter(o => o.odds != null && (sd == null || o.side === sd)).sort((a, b) => a.odds - b.odds).slice(0, n) : []; };
   const sc = best("pg1", 2, f), scAny = best("pg1", 1), yl = best("pye", 2), ga = best("pga", 2), st = best("pst1", 1);
@@ -1767,7 +1769,7 @@ function marketsHTML(m, mk) {
   const G = marketGroups(m).filter(g => S.cat === "all" || g.cat === S.cat), ps_ = pSide(m);
   const sw = m.pidx.length && G.some(g => g.cat === "jug") ? `<div class="pteam">${[0, 1].map(k => `<button data-pside="${m.id}|${k}" class="${ps_ === k ? "on" : ""}" ${teamP(m, k).length ? "" : "disabled"}>${teamShirt(teamName(m, k))}<span>${esc(teamName(m, k))}</span></button>`).join("")}</div>` : "";
   return `<div class="cats">${CATS.filter(([c]) => (c !== "jug" || m.pidx.length) && (c !== "crn" || fullMatch(m))).map(([c, t]) => `<button data-cat="${c}" class="${S.cat === c ? "on" : ""}">${t}</button>`).join("")}</div>
-    ${m.suspended ? `<div class="suspbar">Mercados suspendidos un momento</div>` : ""}
+    ${m.closed && m.status !== "ft" ? `<div class="suspbar">Partido empezado: ya no se puede apostar</div>` : m.suspended ? `<div class="suspbar">Mercados suspendidos un momento</div>` : ""}
     ${S.cat === "all" || S.cat === "pop" ? boostCards(m) : ""}${sw}
     ${G.map(g => { const open = isOpen(g.id); const tag = g.cat === "jug" ? `<span class="tagj">${esc(teamName(m, ps_))}${g.id !== "pany" ? ` <em class="tagp">Cambio+</em>` : ""}</span>` : g.id === "1x2" && m.status === "pre" ? `<span class="tagj">2 goles de ventaja = pagada</span>` : "";
       return `<div class="acc ${open ? "open" : ""}"><button class="acch" data-acc="${g.id}" aria-expanded="${open}"><span>${esc(g.title)}${tag}</span><i class="chev"></i></button>${open ? `<div class="accb">${groupBody(m, mk, g)}</div>` : ""}</div>`; }).join("")}`;
@@ -1997,7 +1999,7 @@ function jointProb(m, legs) {
 }
 // Cuota que se muestra en un botón cuando ya hay selecciones del mismo partido en el boleto: probabilidad condicionada
 function condOdds(m, mkt, oc) {
-  if (oc.odds == null || m.status === "ft" || m.suspended) return oc.odds;
+  if (oc.odds == null || m.status === "ft" || m.suspended || m.closed) return oc.odds;
   const same = S.slip.filter(s => s.mid === m.id && !s.boost); if (!same.length) return oc.odds;
   simSet(m);
   const ck = same.map(s => s.mk + ":" + s.oc).sort().join(",") + ">" + mkt.key + ":" + oc.k, cc = condCache[m.id];
@@ -2029,9 +2031,9 @@ function slipData() {
       return { ...s, m: null, fut: 1, odds: o ? o.odds : null, mname: k ? k.name : s.mname, susp: !o || o.odds == null }; }
     const m = findMatch(s.mid);
     if (s.boost) { const base = m && m.status !== "ft" ? boostLegsNow(m, s.legs) : null, legs = base ? s.legs.map(l => legOf(m, l.mk, l.oc)) : null;
-      return { ...s, m, legs, was: base, odds: base ? boostOf(base) : null, susp: !m || m.suspended || !base }; } const mk = m && markets(m).list.find(k => k.key === s.mk);
+      return { ...s, m, legs, was: base, odds: base ? boostOf(base) : null, susp: !m || m.suspended || m.closed || !base }; } const mk = m && markets(m).list.find(k => k.key === s.mk);
     const oc = mk && mk.outcomes.find(o => o.k === s.oc);
-    return { ...s, m, odds: oc ? oc.odds : null, mname: mk ? mk.name : s.mname, susp: !m || m.suspended || !oc || oc.odds == null }; });
+    return { ...s, m, odds: oc ? oc.odds : null, mname: mk ? mk.name : s.mname, susp: !m || m.suspended || m.closed || !oc || oc.odds == null }; });
 }
 const num = v => Math.round((parseFloat(String(v || "").replace(",", ".")) || 0) * 100) / 100;
 const COMBO_NAME = n => ({ 2: "Doble", 3: "Triple", 4: "Cuádruple", 5: "Quíntuple", 6: "Séxtuple" })[n] || "Combinada de " + n;
@@ -2116,6 +2118,7 @@ function render() {
 function place() {
   const d = slipData(); S.msg = "";
   if (S.store === "sb" && S.admin && (CUR_LG === "main" || S.super)) { S.msg = "La cuenta de administrador no apuesta. Entra con tu cuenta de jugador."; return render(); }
+  if (d.some(x => x.m && x.m.closed)) { S.msg = "Ese partido ya ha empezado: no se puede apostar."; return render(); }
   if (d.some(x => !x.susp && x.odds !== x.added)) { S.msg = "Han cambiado las cuotas: acepta los cambios."; return render(); }
   const mk = legs => legs.map(x => ({ mid: x.mid, mk: x.mk, oc: x.oc, label: x.label, mname: x.mname, match: x.fut ? "Temporada · " + ((FUTS[x.mid] || FUTS.fut).LG0.nombre) : x.m.home.nombre + " v " + x.m.away.nombre, odds: x.odds, status: "pending",
     ...(x.m && x.mk === "1x2" && x.oc !== "X" && x.m.status === "pre" ? { ea: 1 } : {}) }));

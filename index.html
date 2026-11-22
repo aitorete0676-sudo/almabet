@@ -660,7 +660,7 @@ EXTRA.forEach(c => { const nm = c.comp.name || c.data.liga;
   const fix = t => byK[nk(t)] || t;
   ((window.__MAINNEXT || {}).partidos || []).forEach(p0 => { const p = { ...p0, local: fix(p0.local), visitante: fix(p0.visitante), liga: DATA.ligas[0].nombre };
     const q = DATA.partidos.find(q => q.id === p.id || (q.jornada === p.jornada && [q.local, q.visitante].sort().join("|") === [p.local, p.visitante].sort().join("|")));
-    if (q) { if (p.fecha) q.fecha = p.fecha; if (p.res) q.res = p.res; } else DATA.partidos.push(p); }); }
+    if (q) { if (p.fecha) q.fecha = p.fecha; if (p.res && p.res.ev) q.res = p.res; } else DATA.partidos.push(p); }); }
 DATA.corto = "Almazora C"; DATA.ligas[0].team = DATA.miEquipo;
 const LIGA = DATA.ligas[0].nombre;
 // Mercados completos (córners, remates, asistencias) solo en partidos de los equipos que se siguen en directo; el resto, solo lo que sale en las actas

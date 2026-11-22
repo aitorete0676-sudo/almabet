@@ -627,7 +627,16 @@ const DATA_MAIN = {
     { id: "j9-3", jornada: 9, fecha: "2026-11-22T17:30", liga: LIGA0, local: "La Vilavella C.F. 'A'", visitante: "Eture F.C. 'B'" },
     { id: "j9-4", jornada: 9, fecha: "2026-11-22T18:00", liga: LIGA0, local: "C.F. San Pedro 'B'", visitante: "C.D. Drac Castellón 'A'" },
     { id: "j9-5", jornada: 9, fecha: "2026-11-21T19:30", liga: LIGA0, local: "C.D. San Lorenzo de Castellón", visitante: "C.F. Borriol" },
-    { id: "j9-6", jornada: 9, fecha: "2026-11-22T17:00", liga: LIGA0, local: "C.F. Moro 'A'", visitante: "C.F. Joventut Almassora 'A'" },
+    { id: "j9-6", jornada: 9, fecha: "2026-11-22T17:00", liga: LIGA0, local: "C.F. Moro 'A'", visitante: "C.F. Joventut Almassora 'A'",
+      // Resultado metido a mano (datos de la app de la FFCV, 22-nov): Moro 1-4 Joventut. 43' gol en propia de D. Edo (Moro).
+      res: { sc: [1, 4], ev: [
+        { t: "goal", s: 1, min: 7, n: "N. Grau" }, { t: "goal", s: 0, min: 18, n: "M. Bayot" }, { t: "sub", s: 1, min: 19, n: "H. Diaz", in: { n: "M. Azzouzy" } },
+        { t: "sub", s: 1, min: 40, n: "N. Grau", in: { n: "H. Guerrero" } }, { t: "goal", s: 1, min: 43 },
+        { t: "sub", s: 0, min: 46, n: "Á. Segarra", in: { n: "C. Gharibi" } }, { t: "sub", s: 0, min: 46, n: "M. Bayot", in: { n: "A. Sahibi" } },
+        { t: "sub", s: 1, min: 46, n: "E. Vazquez", in: { n: "A. El" } }, { t: "sub", s: 1, min: 46, n: "Z. Berrabah", in: { n: "C. Ponce" } },
+        { t: "goal", s: 1, min: 58, n: "D. Garcia" }, { t: "sub", s: 0, min: 58, n: "M. Segui", in: { n: "A. Plata" } },
+        { t: "yel", s: 1, min: 63, n: "F. Francisco" }, { t: "sub", s: 1, min: 63, n: "F. Francisco", in: { n: "G. Gaye" } },
+        { t: "yel", s: 0, min: 75, n: "C. Gharibi" }, { t: "yel", s: 0, min: 78, n: "P. Sanchez" }, { t: "goal", s: 1, min: 83, n: "K. Cabrera" }] } },
     { id: "j9-7", jornada: 9, fecha: "2026-11-22T18:00", liga: LIGA0, local: "C.D. Ribesalbes 'B'", visitante: "F.C. Odisea 'B'" },
     { id: "j9-8", jornada: 9, fecha: "2026-11-21T19:00", liga: LIGA0, local: "C.D. La Magdalena 'A'", visitante: "Pampa Castellón F.C." }
   ],
@@ -960,6 +969,8 @@ function actaIdx(f, s, n, d) {
   let hit = cand.filter(p => nkP(p.nombre).join(" ") === aj); if (hit.length === 1) return hit[0].i;
   hit = cand.filter(p => { const t = nkP(p.nombre); return t.length >= 2 && t.every(x => a.includes(x)); }); if (hit.length === 1) return hit[0].i;
   hit = cand.filter(p => { const t = nkP(p.nombre); return t.length && t[0] === a[0] && a.includes(t[t.length - 1]); }); if (hit.length === 1) return hit[0].i;
+  if (a.length >= 2 && a[0].length === 1) {   // "K. Cabrera": inicial del nombre + un apellido
+    hit = cand.filter(p => { const t = nkP(p.nombre); return t.length >= 2 && t[0][0] === a[0] && a.slice(1).every(x => t.slice(1).includes(x)); }); if (hit.length === 1) return hit[0].i; }
   if (d != null) { hit = cand.filter(p => p.dorsal === d); if (hit.length === 1) return hit[0].i; }
   return null;
 }

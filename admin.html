@@ -1628,18 +1628,20 @@ const preGroups = arr => { const g = {}; arr.forEach(m => { const k = leagues.in
 function listView(liveOnly) {
   const ms = allMatches().filter(m => !S.league || m.league === S.league);
   const my = ms.filter(m => sideOf(m) >= 0 && m.status !== "ft");
-  const live = ms.filter(m => m.status === "live" || m.status === "ht"), pre = ms.filter(m => m.status === "pre"), ft = ms.filter(m => m.status === "ft");
+  const live = ms.filter(m => m.status === "live" || m.status === "ht"), pre = ms.filter(m => m.status === "pre" && !m.closed), ft = ms.filter(m => m.status === "ft"),
+    started = ms.filter(m => m.status === "pre" && m.closed).sort((a, b) => String(b.fecha).localeCompare(String(a.fecha)));   // ya es la hora: apuestas cerradas, a falta del resultado
   const block = (arr, title, dot) => arr.length ? `<div class="block"><div class="bh">${dot ? `<span class="livepill"><i class="dot"></i></span>` : ""}<span>${esc(title)}</span><span class="sp"></span><div class="cols"><span>1</span><span>X</span><span>2</span></div></div>${arr.map(rowHTML).join("")}</div>` : "";
   const h2 = t => `<h2 style="margin:4px 0 0;font-family:var(--f-cond);font-size:22px">${t}</h2>`;
   let h = liveOnly ? "" : homeTop();
   const hf = liveOnly ? "all" : (S.hf || "all");
   if (hf === "mine") return h + (my.length ? `<div class="block">${my.map(rowHTML).join("")}</div>` : `<div class="block empty">No hay partidos de ${esc(DATA.corto)} pendientes.</div>`);
-  if (hf === "live") return h + (block(live, "En directo", true) || `<div class="block empty">Ahora no se está jugando ningún partido.</div>`);
+  const stBlock = () => started.length ? h2("Empezados · apuestas cerradas") + leagues.map(lg => block(started.filter(m => m.league === lg), lg, false)).join("") : "";
+  if (hf === "live") return h + (block(live, "En directo", true) || `<div class="block empty">Ahora no se está jugando ningún partido.</div>`) + stBlock();
   if (hf === "pre") {
     return h + (dayBlocks(pre, block) || `<div class="block empty">No hay partidos programados.</div>`); }
   h += h2("En directo") + (block(live, "En directo", true) || `<div class="block empty">Ahora no se está jugando ningún partido.${S.admin ? " Abre uno y pulsa «Empezar partido» cuando arranque." : ""}</div>`);
   if (!liveOnly) {
-    h += h2("Próximos partidos") + (dayBlocks(pre, block) || `<div class="block empty">No hay partidos programados.</div>`);
+    h += stBlock() + h2("Próximos partidos") + (dayBlocks(pre, block) || `<div class="block empty">No hay partidos programados.</div>`);
     if (ft.length) h += h2("Finalizados") + leagues.map(lg => block(ft.filter(m => m.league === lg), lg, false)).join("");
   }
   return h;
@@ -2266,6 +2268,12 @@ setInterval(() => { settle(); render(); }, 1000);
 })();
 </script>
 
+<script>
+// Si se publica una versión nueva, la app se recarga sola (si no tienes un boleto a medias)
+(function () { var tag = null; function chk() { fetch(location.pathname + "?v=" + Date.now(), { method: "HEAD", cache: "no-store" }).then(function (r) {
+  var t = r.headers.get("etag"); if (!t) return; if (tag && t !== tag) { if (typeof S === "undefined" || !S.slip || !S.slip.length) location.reload(); } else tag = t; }).catch(function () {}); }
+  chk(); setInterval(chk, 120000); document.addEventListener("visibilitychange", function () { if (!document.hidden) chk(); }); })();
+</script>
 <script>if ("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js").catch(() => {});</script>
 </body>
 </html>

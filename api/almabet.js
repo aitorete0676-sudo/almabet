@@ -102,8 +102,8 @@ const madridMs = s => { const m = /^(\d+)-(\d+)-(\d+)T(\d+):(\d+)/.exec(s || "")
 const J9 = { "j9-1": "a26498357", "j9-2": "a26498355", "j9-3": "a26498359", "j9-4": "a26498358", "j9-5": "a26498356", "j9-6": "a26498360", "j9-7": "a26498353", "j9-8": "a26498354" };
 async function kickoffs() {   // id de partido -> fecha "AAAA-MM-DDTHH:MM" (hora de Madrid)
   const k = {}, add = d => ((d && d.partidos) || []).forEach(p => { if (p.fecha) k[p.id] = p.fecha; });
-  add(await getJ("lgnext:" + MAIN_GROUP));
-  for (const c of (await redis("SMEMBERS", "comps")) || []) add(await getJ("lgdata3:" + c));
+  add(await getJ("lgnext2:" + MAIN_GROUP));
+  for (const c of (await redis("SMEMBERS", "comps")) || []) add(await getJ("lgdata4:" + c));
   for (const j in J9) if (k[J9[j]]) k[j] = k[J9[j]];
   return k;
 }
@@ -116,7 +116,7 @@ async function startedLeg(bets, oldBets) {   // devuelve true si alguna apuesta 
     const t = madridMs(s.fecha || ko[l.mid]); return !isNaN(t) && now >= t; });
 }
 async function compData(comp, refresh) {
-  const ck = "lgdata3:" + comp; let d = await getJ(ck);
+  const ck = "lgdata4:" + comp; let d = await getJ(ck);
   const stale = !d || Date.now() - d.updated > 6 * 3600e3 || d.pendingActas > 0 || refresh;
   if (stale) { try { d = await buildGroup({ groupId: comp, getJ, setJ, maxActas: 12 }); await setJ(ck, d); } catch (e) { if (!d) throw e; } }
   return d;
@@ -193,8 +193,8 @@ module.exports = async (req, res) => {
       const ids = ((await redis("SMEMBERS", "comps")) || []).sort((x, y) => ((ORDER.indexOf(x) + 1) || 99) - ((ORDER.indexOf(y) + 1) || 99) || x.localeCompare(y));
       const out = await Promise.all(ids.map(async id => { const C = await getJ("comp:" + id); if (!C) return null;
         try { return { comp: { id, name: C.name, team: C.team || "", full: C.full || [] }, data: await compData(id, b.refresh && superAdmin) }; } catch (e) { return null; } }));
-      let main = await getJ("lgnext:" + MAIN_GROUP);   // calendario de las próximas jornadas de la Tercera G2
-      if (!main || Date.now() - main.updated > 6 * 3600e3 || (b.refresh && superAdmin)) { try { main = await upcomingGroup(MAIN_GROUP); await setJ("lgnext:" + MAIN_GROUP, main); } catch (e) {} }
+      let main = await getJ("lgnext2:" + MAIN_GROUP);   // calendario de las próximas jornadas de la Tercera G2
+      if (!main || Date.now() - main.updated > 6 * 3600e3 || (b.refresh && superAdmin)) { try { main = await upcomingGroup(MAIN_GROUP); await setJ("lgnext2:" + MAIN_GROUP, main); } catch (e) {} }
       return send(200, { comps: out.filter(Boolean), main: main || null });
     }
     if (a === "createLeague") {   // liga de amigos: solo nombre; se apuesta en todas las competiciones

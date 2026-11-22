@@ -651,7 +651,7 @@ EXTRA.forEach(c => { const nm = c.comp.name || c.data.liga;
   const fix = t => byK[nk(t)] || t;
   ((window.__MAINNEXT || {}).partidos || []).forEach(p0 => { const p = { ...p0, local: fix(p0.local), visitante: fix(p0.visitante), liga: DATA.ligas[0].nombre };
     const q = DATA.partidos.find(q => q.id === p.id || (q.jornada === p.jornada && [q.local, q.visitante].sort().join("|") === [p.local, p.visitante].sort().join("|")));
-    if (q) { if (p.fecha) q.fecha = p.fecha; } else DATA.partidos.push(p); }); }
+    if (q) { if (p.fecha) q.fecha = p.fecha; if (p.res) q.res = p.res; } else DATA.partidos.push(p); }); }
 DATA.corto = "Almazora C"; DATA.ligas[0].team = DATA.miEquipo;
 const LIGA = DATA.ligas[0].nombre;
 // Mercados completos (córners, remates, asistencias) solo en partidos de los equipos que se siguen en directo; el resto, solo lo que sale en las actas
@@ -916,7 +916,7 @@ const FIX = DATA.partidos.map((f, i) => {
   if (f.cuotas) { const o = lambdasFromOdds(f.cuotas); base = { h: o.h, a: o.a }; source = "cuotas"; }
   else { const t = lambdasFromTable(home, away, Ls); if (t) { base = { h: t.h, a: t.a }; source = "tabla"; str = { h: t.sh, a: t.sa, mu: Ls.mu }; } else base = lambdasFromRatings(72, 72); }
   const pidx = SQUAD.filter(p => p.team === home.nombre || p.team === away.nombre).map(p => p.i);
-  return { id: f.id || ("p" + i), jornada: f.jornada, league: lg.nombre, home, away, base, source, str, initOdds: f.cuotas, fechaDef: f.fecha || "", pidx };
+  return { id: f.id || ("p" + i), jornada: f.jornada, league: lg.nombre, home, away, base, source, str, initOdds: f.cuotas, fechaDef: f.fecha || "", pidx, res: f.res || null };
 });
 const blankState = () => ({ phase: "pre", k1: 0, k2: 0, events: [], dom: 0, susp: false, suspUntil: 0, fecha: "" });
 
@@ -953,6 +953,27 @@ function build(f) {
   return m;
 }
 const allMatches = () => FIX.map(build);
+// Resultados de las actas: si el admin no ha cerrado el partido, se cierra con lo que dice el acta (goles, tarjetas y cambios)
+const nkP = t => String(t || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z ]/g, " ").split(/\s+/).filter(Boolean);
+function actaIdx(f, s, n, d) {
+  if (!n) return null; const tn = s ? f.away.nombre : f.home.nombre, cand = f.pidx.map(i => SQUAD[i]).filter(p => p.team === tn), a = nkP(n), aj = a.join(" ");
+  let hit = cand.filter(p => nkP(p.nombre).join(" ") === aj); if (hit.length === 1) return hit[0].i;
+  hit = cand.filter(p => { const t = nkP(p.nombre); return t.length >= 2 && t.every(x => a.includes(x)); }); if (hit.length === 1) return hit[0].i;
+  hit = cand.filter(p => { const t = nkP(p.nombre); return t.length && t[0] === a[0] && a.includes(t[t.length - 1]); }); if (hit.length === 1) return hit[0].i;
+  if (d != null) { hit = cand.filter(p => p.dorsal === d); if (hit.length === 1) return hit[0].i; }
+  return null;
+}
+function withActas(states) {
+  const out = { ...states };
+  FIX.forEach(f => { const r = f.res, cur = out[f.id]; if (!r || !r.ev || (cur && cur.phase === "ft")) return;
+    const ev = [];
+    r.ev.forEach(e => { const o = { t: e.t, s: e.s, min: e.min || 0, h: (e.min || 0) <= 45 ? 1 : 2, at: 0 }, p = actaIdx(f, e.s, e.n, e.d); if (p != null) o.p = p;
+      if (e.t === "sub") { if (p == null) return; const q = actaIdx(f, e.s, e.in && e.in.n, e.in && e.in.d); if (q != null) o.in = q; }
+      ev.push(o); });
+    const extra = ((cur && cur.events) || []).filter(e => ["cor", "sot", "sh"].includes(e.t));   // lo que no sale en el acta y metió el admin en directo
+    out[f.id] = { ...blankState(), ...(cur || {}), phase: "ft", events: ev.concat(extra), acta: 1 }; });
+  return out;
+}
 const findMatch = id => { const f = FIX.find(x => x.id === id); return f ? build(f) : null; };
 
 /* ===================== ALMACENAMIENTO ===================== */
@@ -1007,7 +1028,7 @@ async function sbSaveWallet() {
   sbBusy = false; if (sbDirty) { sbDirty = false; sbSaveWallet(); } else sbRanking();
 }
 async function sbRanking() { try { const { ranking } = await api("ranking"); S.ranking = ranking; ranking.forEach(r => S.names[r.id] = { name: r.username }); render(); } catch (e) {} }
-async function sbPoll() { try { const { matches, bonus } = await api("matches"); S.states = matches; applyBonus(bonus || []); settle(); render(); } catch (e) {} }
+async function sbPoll() { try { const { matches, bonus } = await api("matches"); S.states = withActas(matches); applyBonus(bonus || []); settle(); render(); } catch (e) {} }
 async function applyBonus(list) {
   const done = new Set(S.wallet.bonusIds || []), fresh = list.filter(x => !done.has(x.id));
   if (fresh.length) {
@@ -1042,7 +1063,7 @@ async function sbStart() {
       const t = setInterval(async () => { try { const j = await api("compsData"); S.pendActas = (j.comps || []).reduce((x, c) => x + ((c.data || {}).pendingActas || 0), 0); render();
         if (!S.pendActas) { clearInterval(t); toast("Actas leídas: actualizando cuotas…"); setTimeout(() => { if (!S.slip.length) location.reload(); }, 1500); } } catch (e) {} }, 15000); } }
   S.uid = d.username; S.me = d.username; S.admin = !!d.admin;
-  S.wallet = { balance: +d.wallet.balance, bets: d.wallet.bets || [], bonusIds: d.wallet.bonusIds || [], moves: d.wallet.moves || [], lastPay: d.wallet.lastPay || "" }; S.states = d.matches || {};
+  S.wallet = { balance: +d.wallet.balance, bets: d.wallet.bets || [], bonusIds: d.wallet.bonusIds || [], moves: d.wallet.moves || [], lastPay: d.wallet.lastPay || "" }; S.states = withActas(d.matches || {});
   // Paga mensual: 150 € el día 1 de cada mes (la primera vez solo se apunta el mes)
   if (!S.admin) { const cur = ymNow();
     if (!S.wallet.lastPay) { S.wallet.lastPay = cur; sbSaveWallet(); }
@@ -2272,7 +2293,9 @@ setInterval(() => { settle(); render(); }, 1000);
 // Si se publica una versión nueva, la app se recarga sola (si no tienes un boleto a medias)
 (function () { var tag = null; function chk() { fetch(location.pathname + "?v=" + Date.now(), { method: "HEAD", cache: "no-store" }).then(function (r) {
   var t = r.headers.get("etag"); if (!t) return; if (tag && t !== tag) { if (typeof S === "undefined" || !S.slip || !S.slip.length) location.reload(); } else tag = t; }).catch(function () {}); }
-  chk(); setInterval(chk, 120000); document.addEventListener("visibilitychange", function () { if (!document.hidden) chk(); }); })();
+  var hid = 0, t0 = Date.now(), idle = function () { return typeof S === "undefined" || !S.slip || !S.slip.length; };
+  chk(); setInterval(function () { chk(); if (Date.now() - t0 > 30 * 60e3 && document.hidden && idle()) location.reload(); }, 120000);   // resultados nuevos de las actas
+  document.addEventListener("visibilitychange", function () { if (document.hidden) { hid = Date.now(); return; } if (hid && Date.now() - hid > 15 * 60e3 && idle()) location.reload(); else chk(); }); })();
 </script>
 <script>if ("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js").catch(() => {});</script>
 </body>

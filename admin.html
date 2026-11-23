@@ -651,8 +651,12 @@ const DATA = DATA_MAIN; DATA.ligas[0].comp = "main";
 // solo partidos, titularidades, goles y tarjetas; posición, asistencias y demás siguen siendo los que puso el usuario.
 { const M = window.__MAINNEXT;
   if (M && M.equipos && M.equipos.length >= DATA.ligas[0].equipos.length && (M.pendingActas || 0) <= 3 && (M.jornada || 0) >= 8) {
-    DATA.ligas[0].equipos = M.equipos;
-    Object.entries(M.plantillas || {}).forEach(([t, arr]) => { if (t !== DATA.miEquipo) DATA.plantillas[t] = arr; });
+    // Los nombres de siempre mandan (la FFCV a veces cambia cómo los escribe: "PAMPA CASTELLÓN FÚTBOL CLUB", "C. F. Atlético Tales")
+    const nk = t => String(t || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/futbol club/g, "fc").replace(/club de futbol/g, "cf").replace(/[^a-z0-9]/g, "");
+    const old = {}; DATA.ligas[0].equipos.forEach(e => old[nk(e.nombre)] = e.nombre); const canon = t => old[nk(t)] || t;
+    DATA.ligas[0].equipos = M.equipos.map(e => ({ ...e, nombre: canon(e.nombre) }));
+    M.plantillas = Object.fromEntries(Object.entries(M.plantillas || {}).map(([t, arr]) => [canon(t), arr]));
+    Object.entries(M.plantillas).forEach(([t, arr]) => { if (t !== DATA.miEquipo) DATA.plantillas[t] = arr; });
     const tk = t => String(t || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z ]/g, " ").split(/\s+/).filter(Boolean);
     const mine = (M.plantillas || {})[DATA.miEquipo] || [];
     (DATA.plantilla || []).forEach(p => { const t = tk(p.nombre);

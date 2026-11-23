@@ -130,6 +130,12 @@ module.exports = async (req, res) => {
   const send = (code, obj) => res.status(code).json(obj);
   if (!URL_ || !TOKEN) return send(500, { error: "Falta conectar la base de datos: en Vercel ve a Storage > Upstash for Redis > Connect y vuelve a desplegar." });
   try {
+    if (req.method === "GET" && /estado=1/.test(req.url || "")) {   // diagnóstico público: estado de los datos de la Tercera (solo resultados, nada privado)
+      const d = await getJ("lgdata6:" + MAIN_GROUP), n = await getJ("lgnext4:" + MAIN_GROUP);
+      const sum = x => x && { jornada: x.jornada, pendingActas: x.pendingActas, updated: new Date(x.updated || 0).toISOString(), equipos: (x.equipos || []).length,
+        partidos: (x.partidos || []).filter(p => p.jornada <= (x.jornada || 0) + 1).map(p => p.id + " " + p.local + " - " + p.visitante + " " + (p.res ? p.res.sc.join("-") + (p.res.ev ? "" : " (sin eventos)") : "sin acta")) };
+      return send(200, { main: sum(d), next: sum(n) });
+    }
     let b = req.body || {};
     if (typeof b === "string") b = JSON.parse(b || "{}");
     const a = b.action;

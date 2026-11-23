@@ -1,4 +1,28 @@
 {
-  "rewrites": [{ "source": "/admin", "destination": "/admin.html" }, { "source": "/admin/", "destination": "/admin.html" }],
-  "headers": [{ "source": "/(.*)", "headers": [{ "key": "Cache-Control", "value": "no-cache" }] }]
+  "rewrites": [
+    {
+      "source": "/admin",
+      "destination": "/admin.html"
+    },
+    {
+      "source": "/admin/",
+      "destination": "/admin.html"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache"
+        }
+      ]
+    }
+  ],
+  "functions": {
+    "api/almabet.js": {
+      "maxDuration": 60
+    }
+  }
 }

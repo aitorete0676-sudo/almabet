@@ -996,7 +996,21 @@ function withActas(states) {
       ev.push(o); });
     const extra = ((cur && cur.events) || []).filter(e => ["cor", "sot", "sh"].includes(e.t));   // lo que no sale en el acta y metió el admin en directo
     out[f.id] = { ...blankState(), ...(cur || {}), phase: "ft", events: ev.concat(extra), acta: 1 }; });
+  liveAssists(out);
   return out;
+}
+// Asistencias del Almazora C: las que dio el usuario (hasta la jornada 8) + las que mete el admin en los partidos terminados desde la jornada 9.
+// Las actas no traen asistencias, así que salen de ahí. Se recalcula el peso de asistencia de cada jugador.
+function liveAssists(states) {
+  const add = {};
+  FIX.forEach(f => { const st = states[f.id]; if (!st || st.phase !== "ft" || (f.jornada || 0) < 9) return;
+    (st.events || []).forEach(e => { if (e.t === "goal" && e.as != null && SQUAD[e.as] && SQUAD[e.as].team === DATA.miEquipo) add[e.as] = (add[e.as] || 0) + 1; }); });
+  let changed = false;
+  SQUAD.forEach(p => { if (p.team !== DATA.miEquipo || p.tit == null) return;
+    if (p.asis0 == null) { p.asis0 = p.asistencias || 0; p.wa0 = p.wa; }
+    const n = p.asis0 + (add[p.i] || 0); if (n === p.asistencias && p.wa != null && p.asisSet) return;
+    p.asistencias = n; p.asisSet = 1; p.wa = p.wa0 * (1 + 0.5 * n) / (1 + 0.5 * p.asis0); changed = true; });
+  if (changed && typeof simSets !== "undefined") { for (const k in simSets) delete simSets[k]; }
 }
 const findMatch = id => { const f = FIX.find(x => x.id === id); return f ? build(f) : null; };
 

@@ -647,6 +647,19 @@ const DATA_MAIN = {
 const LGX = null, IS_MAIN = true, COMP = "main";
 const shortTeam = n => String(n || "").replace(/\b(C\.?\s?F\.?|C\.?\s?D\.?|F\.?\s?C\.?|U\.?\s?D\.?|C\.?\s?E\.?|S\.?\s?A\.?\s?D\.?|A\.?\s?D\.?|Club|Deportivo|Fútbol|Futbol)(?=\s|$)/gi, "").replace(/'/g, "").replace(/\s+/g, " ").trim() || n;
 const DATA = DATA_MAIN; DATA.ligas[0].comp = "main";
+// Tercera G2 al día desde las actas (clasificación y plantillas del resto de equipos). Del Almazora C se actualizan
+// solo partidos, titularidades, goles y tarjetas; posición, asistencias y demás siguen siendo los que puso el usuario.
+{ const M = window.__MAINNEXT;
+  if (M && M.equipos && M.equipos.length >= DATA.ligas[0].equipos.length && (M.pendingActas || 0) <= 3 && (M.jornada || 0) >= 8) {
+    DATA.ligas[0].equipos = M.equipos;
+    Object.entries(M.plantillas || {}).forEach(([t, arr]) => { if (t !== DATA.miEquipo) DATA.plantillas[t] = arr; });
+    const tk = t => String(t || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z ]/g, " ").split(/\s+/).filter(Boolean);
+    const mine = (M.plantillas || {})[DATA.miEquipo] || [];
+    (DATA.plantilla || []).forEach(p => { const t = tk(p.nombre);
+      const hit = mine.filter(a => { const b = tk(a[0]); return t.length && t.every(x => b.includes(x)); });
+      if (hit.length !== 1) return; const a = hit[0];
+      p.pj = a[2]; p.tit = a[3]; p.goles = a[4]; p.amarillas = a[5]; p.rojas = a[6]; p.conv = Math.max(p.conv || 0, a[2]); });
+    DATA.jornadaTabla = M.jornada; } }
 const EXTRA = (window.__COMPS || []).filter(c => c && c.data && c.comp);
 EXTRA.forEach(c => { const nm = c.comp.name || c.data.liga;
   DATA.ligas.push({ nombre: nm, equipos: c.data.equipos || [], comp: c.comp.id, team: c.comp.team || "" });

@@ -2063,9 +2063,14 @@ function jointProb(m, legs) {
   return Math.min(p, ...ps);
 }
 // Cuota que se muestra en un botón cuando ya hay selecciones del mismo partido en el boleto: probabilidad condicionada
+// «Anotará o asistirá» de un jugador no se combina con «Anotará» (1, 2, 3+) ni con «Asistirá» del mismo jugador: una incluye a la otra
+const PGA_SUB = new Set(["pg1", "pg2", "pg3", "pas"]);
+const redundantPair = (a, b) => a.oc === b.oc && ((a.mk === "pga" && PGA_SUB.has(b.mk)) || (b.mk === "pga" && PGA_SUB.has(a.mk)));
+const hasRedundant = legs => legs.some((a, i) => legs.some((b, j) => j > i && redundantPair(a, b)));
 function condOdds(m, mkt, oc) {
   if (oc.odds == null || m.status === "ft" || m.suspended || m.closed) return oc.odds;
   const same = S.slip.filter(s => s.mid === m.id && !s.boost); if (!same.length) return oc.odds;
+  if (same.some(s => redundantPair(s, { mk: mkt.key, oc: oc.k }))) return null;
   simSet(m);
   const ck = same.map(s => s.mk + ":" + s.oc).sort().join(",") + ">" + mkt.key + ":" + oc.k, cc = condCache[m.id];
   if (ck in cc) return cc[ck];
@@ -2084,6 +2089,7 @@ function comboInfo(d) {
   let odds = 1; const parts = [];
   for (const mid in groups) { const g = groups[mid];
     if (g.length === 1) { odds *= g[0].odds || 0; continue; }
+    if (hasRedundant(g)) return { ok: false, why: "«Anotará o asistirá» no se puede combinar con «Anotará» ni «Asistirá» del mismo jugador." };
     const m = g[0].m, p = jointProb(m, g.map(x => ({ mk: x.mk, oc: x.oc })));
     if (p <= 0) return { ok: false, why: "Esas selecciones del mismo partido no pueden darse a la vez." };
     const o = Math.min(501, Math.max(1.01, roundOdds(1 / (p * (1 + SAME_MARGIN)))));
